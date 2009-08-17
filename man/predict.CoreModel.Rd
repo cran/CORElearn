@@ -1,0 +1,78 @@
+\name{predict.CoreModel}
+\alias{predict.CoreModel}
+
+\title{ Prediction using constructed model }
+\description{
+   Using a previously built model and new data, predicts the class value and probabilities for 
+  classification problem and function value for regression problem.
+ }
+\usage{
+\method{predict}{CoreModel}(object, newdata, ..., costMatrix=NULL, dataFromFiles=FALSE, type=c("both","class","probability"))
+}
+
+\arguments{
+  \item{object}{ The model structure as returned by \code{\link{CoreModel}}. }
+  \item{newdata}{ Data frame with fresh data. }
+  \item{costMatrix}{ Optional cost matrix can provide nonuniform costs for classification problems. }
+  \item{dataFromFiles }{Value TRUE specifies that the data for prediction shall be read directly from files.} 
+  \item{type}{ Controls what will be return value in case of classification. } 
+  \item{... }{ Other model dependent options for prediction. See \code{\link{optionCore}}. }
+  }
+\details{
+   The function uses the \code{object} structure as returned by \code{\link{CoreModel}} and
+   applies it on the data frame \code{newdata}. The \code{newdata} must be transformable
+   using the formula specified for building  the model (with dependent variable removed). If the dependent
+    variable is present in \code{newdata}, it is ignored. In case of \code{dataFromFiles=TRUE}
+    the passed structure must be \cr \code{matrix(nrow=numberOfPredicted,ncol=numberOfClasses)}
+    for classification and \cr \code{matrix(nrow=numberOfPredicted,ncol=1)}
+    for regression problems.  
+  
+  Optional cost matrix can provide nonuniform costs for classification problems. For regression
+  problem this parameter is ignored. The costs can be different from the ones used for building the model 
+   in \code{\link{CoreModel}}.
+    
+  If the data for the prediction is read read directly from files with \code{dataFromFiles=TRUE} it has
+  to conform to data format of C4.5 (M5) or native format of CORElearn. Its
+  description is available at \url{http://lkm.fri.uni-lj.si/rmarko/software/}.
+  
+}
+\value{
+  For regression model a vector of predicted values for given input instances. For classification
+  problem the parameter \code{type} controls what is returned. With default value \code{"both"} 
+  function returns a list with two components \code{class}
+  and \code{probabilities} containing predicted class values and probabilities for all class values, respectively.
+  With \code{type} set to  \code{"class"} or \code{"probability"} the function returns only the selected component 
+  as vector or matrix.   
+}
+
+\author{ Marko Robnik-Sikonja, Petr Savicky }
+
+\seealso{
+\code{\link{CORElearn}},
+\code{\link{CoreModel}},
+\code{\link{modelEval}},
+\code{\link{optionCore}}, 
+\code{\link{paramCoreIO}}.
+}
+
+\examples{
+# use iris data set
+
+# build random forests model with certain parameters
+modelRF <- CoreModel(Species ~ ., iris, model="rf", 
+              selectionEstimator="MDL",minNodeWeight=5,rfNoTrees=100)
+print(modelRF)
+
+# prediction with node distribution
+pred <- predict(modelRF, iris, rfPredictClass=FALSE, type="both")
+print(pred)
+
+}
+
+\keyword{ models }
+\keyword{ regression }
+\keyword{ nonlinear }
+\keyword{ tree }
+\keyword{ multivariate }
+\keyword{ loess }
+\keyword{ classif }

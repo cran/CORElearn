@@ -1,0 +1,109 @@
+\name{ordEval}
+\alias{ordEval}
+\title{ Evaluation of ordered attributes }
+\description{
+  The method evaluates the quality of ordered attributes
+   specified by the formula with ordEval algorithm.
+}
+\usage{
+ordEval(formula, data, file=NULL, rndFile=NULL, variant=c("allNear","attrDist1","classDist1"), ...)
+}
+\arguments{
+  \item{formula}{ Formula specifies the attributes to be evaluated and the target variable. }
+  \item{data}{ Data frame with evaluation data. }
+  \item{file}{ Name of file where evaluation results will be written to. }
+  \item{rndFile}{ Name of file where evaluation of random normalizing attributes will be written to. }
+  \item{variant}{ Name of the variant of ordEval algorithm. Can be any of \code{"allNear", "attrDist1"}, or \code{"classDist1"}. }
+  \item{\dots }{ Other options used also by other context-sensitive evaluation methods (e.g., ReliefF). }
+}
+\details{
+  Parameter \code{formula} is used as a mechanism to select features (attributes) 
+  and prediction variable (class). Only simple terms can be used and 
+  interaction expressed in formula syntax are not supported. The simplest way is
+  to specify just response variable as parameter: \code{class ~ .}.
+  In this case all the other columns in the data set are evaluated.
+  See example below.
+  
+  The output can be optionally written to files \code{file} and \code{rndFile},
+  in a format used by visualization methods in \code{\link{plotOrdEval}}.
+   
+  The variant of the algorithm actually used is controlled with \code{variant} parameter
+  which can have values "allNear", "attrDist1", and "classDist1". The default value
+  is "allNear" which takes all nearest neighbors into account in evaluation of attributes.
+  Variant "attrDist1" takes only  neighbors with attribute value at most 1 different from
+  current case into account (for each attribute separately). This makes sense when we want to 
+  see the thresholds of reinforcement, and therefore observe just small change up or down.   
+  The "classDist1" variant takes only  neighbors with class value at most 1 different from
+  current case into account. This makes sense if we want to observe strictly small
+  changes in upward/downward reinforcement and has little effect in practical applications.
+  
+  There are some additional parameters \bold{\dots } some of which are common with other context-sensitive evaluation methods (e.g., ReliefF). 
+  Their list and short description is available in \code{\link{optionCore}} (see subsection on ordEval algorithm and attribute evaluation therein).
+  
+  Evaluation of attributes without specifics of ordered attributes is covered in function \code{\link{attrEval}}.  
+}
+\value{
+The method returns a list with following components:
+\item{reinfPosAV}{a matrix of positive reinforcement for attributes' values, }
+\item{reinfNegAV}{a matrix of negative reinforcement for attributes' values, }
+\item{anchorAV}{a matrix of anchoring for attributes' values, }
+\item{noAV}{a matrix containing count for each value of each attribute, }
+\item{reinfPosAttr}{a vector of positive reinforcement for attributes, }
+\item{reinfNegAttr}{a matrix of negative reinforcement for attributes, }
+\item{anchorAttr}{a matrix of anchoring for attributes, }
+\item{noAVattr}{a vector containing count of valid values of each attribute, }
+\item{rndReinfPosAV}{a three dimensional array of statistics for random normalizing attributes'  positive reinforcement for attributes' values, }
+\item{rndReinfPosAV}{a three dimensional array of statistics for random normalizing attributes' negative reinforcement for attributes' values, }
+\item{rndAnchorAV}{a three dimensional array of statistics for random normalizing attributes' anchoring for attributes' values, }
+\item{rndReinfPosAttr}{a three dimensional array of statistics for random normalizing attributes'  positive reinforcement for attributes, }
+\item{rndReinfPosAttr}{a three dimensional array of statistics for random normalizing attributes' negative reinforcement for attributes, }
+\item{rndAnchorAttr}{a three dimensional array of statistics for random normalizing attributes' anchoring for attributes. }
+\item{attrNames}{the names of attributes}
+\item{valueNames}{the values of attributes}
+\item{noAttr}{number of attributes}
+\item{ordVal}{maximal number of attribute values}
+\item{variant}{the variant of the algorithm used}
+\item{file}{the file to store the results}
+\item{rndFile}{the file to store random normalizations}
+
+The statistics used are median, 1st quartile, 3rd quartile,  low and high percentile selected by 
+\code{ordEvalNormalizingPercentile}, mean, standard deviation, and expected probability according to value distribution.  
+With these statistics we can visualize significance of reinforcements using adapted box and whiskers plot.  
+}
+\examples{
+#prepare a data set
+dat <- ordDataGen(200)
+
+# evaluate ordered features with ordEval
+est <- ordEval(class ~ ., dat, ordEvalNoRandomNormalizers=100)
+print(est)
+printOrdEval(est)  
+plot(est)
+
+}
+\references{ 
+Marko Robnik-Sikonja, Koen Vanhoof: Evaluation of ordinal attributes at value level. 
+     \emph{Knowledge Discovery and Data Mining}, 14:225-243, 2007    
+
+Marko Robnik-Sikonja, Igor Kononenko: Theoretical and Empirical Analysis of ReliefF and RReliefF.
+    \emph{Machine Learning Journal}, 53:23-69, 2003
+    
+Some of the references are available also from \url{http://lkm.fri.uni-lj.si/rmarko/papers/}
+
+ }
+ 
+\author{ Marko Robnik-Sikonja }
+
+
+\keyword{ regression }
+\keyword{ nonlinear }
+\keyword{ classif }
+
+\seealso{
+\code{\link{plot.ordEval}},
+\code{\link{CORElearn}},
+\code{\link{CoreModel}},
+\code{\link{optionCore}}, 
+\code{\link{infoCore}}.
+}
+

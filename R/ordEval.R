@@ -1,0 +1,347 @@
+# ordEval.R
+# 
+# visualization of ordEval algorithm and data preparation for it
+#
+# Author: rmarko
+###############################################################################
+oeInst<-function(ord, noAttr, graphTitle = "", normalization=TRUE, instSelection=NULL)
+{
+    noStats = 8
+    noMethods = 3
+    noInst = length(ord)
+    xInit <- c(0, 0)
+    yInit <- c(1, noAttr+0.85)   
+    ylabName = "" ## "attributes"
+    subtitleName <- ""#"   impact"
+    boxHeight = 1.0
+    chExp = 1.0  ## char expansion for boxes
+    if (is.null(instSelection))
+        instSelection<-1:min(noInst,100)
+    
+    for (inst in instSelection){    
+        plot(xInit, yInit, type = "n", xlim = c(-1.2, 1), ylim = c(0.9, noAttr+0.9), xlab="",
+                ylab = ylabName, axes = FALSE)
+        par(fig=c(0.2/2.2,1,0,1),new=TRUE) ## to make more space for labels on left
+        mtext(text="downward      upward",side=1,line=2,adj=c(0.5,0.5))
+        lines(xInit,yInit)
+        ## plot title
+        if (graphTitle=="")
+            graphTitle <- "Impact on instance"
+        subtitleName <- paste("   ", ord[[inst]]$className,"=",ord[[inst]]$classValue,sep="")
+        title(main=graphTitle, sub=subtitleName)
+        ## x axis
+        axis(1, at = c(-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1), labels = c(1, 0.8, 0.6, 0.4, 0.2, 0, 0.2, 0.4, 0.6, 0.8, 1),cex.axis=0.8)
+        ## left y axis, attribute values    
+        leftLabel <- c()
+        for(iA in 1:noAttr) {
+            leftLabel <- c(leftLabel, paste(ord[[inst]]$attributeName[[iA]],"=",ord[[inst]]$valueName[[iA]],sep=""))
+        }
+        axis(2, at = boxHeight/4+c(1:noAttr), labels = leftLabel, las = 1, cex.axis = 0.6)
+        
+        for(iA in 1:noAttr) {
+            xDown <-  - ord[[inst]]$reinfPos[iA]
+            xUp <- ord[[inst]]$reinfNeg[iA]
+            y <- iA
+            if (xDown<0) {
+                rect(xDown, y, 0.0, y+0.45*boxHeight, col="lightblue")
+            }  
+            if (xUp>0) {
+                rect(0.0, y, xUp, y+0.45*boxHeight, col="orangered")
+            }     
+            if (normalization) {
+              ## box and whiskers for random down 
+              boxwhiskers(ord[[inst]]$rndReinfNeg[[iA]], y+0.50*boxHeight, y+0.70*boxHeight)
+              ## box and whiskers for random up
+              boxwhiskers(-ord[[inst]]$rndReinfPos[[iA]], y+0.50*boxHeight, y+0.70*boxHeight)
+          }
+        }
+    }
+    invisible()
+}
+
+
+avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), graphTitle = "", ylabLeft = "attribute values", ylabRight="number of values" ,
+        xlabel="reinforcement", attrIdx=0, equalUpDown=FALSE)
+{
+    
+    ci<-match.arg(ci)
+    noStats <- length(getStatNames())
+    
+    if (is.null(ylabLeft))
+        ylab <-"" 
+    else  ylab <- ylabLeft
+    if (is.null(xlabel)) {
+        xlab <-""
+        subtitleName <- ""        
+    }
+    else {
+        subtitleName <- xlabel
+        if (equalUpDown)
+            xlab <- "decrease to       increase to"
+        else
+            xlab <- "downward        upward"
+    }
+    # if equalUpDown=TRUE upward and downward reinforcements are shown on the same level
+    if (equalUpDown)
+        equalUD=1
+    else
+        equalUD=0
+    boxHeight <- 1.0
+    chExp <- 1.0  ## char expansion for boxes
+    ## for(iA in c(1,3,5,7)) {
+    attrSelection <- 1:oe$noAttr
+    if (attrIdx!=0)
+        attrSelection<-c(attrIdx)
+    for(iA in attrSelection) {
+        noAttrValues <- length(oe$valueNames[[iA]])
+        x <- c(0, 0)
+        y <- c(1, noAttrValues)
+        plot(x, y, type = "l", xlim = c(-1, 1), ylim = c(0.9, noAttrValues-equalUD+0.9), xlab = xlab,
+                ylab = ylab, axes = FALSE)
+        ## plot title
+        if (is.null(graphTitle))
+            titleName <-""
+        else if (graphTitle == "")
+            titleName <- paste("", sub('_', ' ', oe$attrNames[iA]))
+        else
+            titleName <-paste(sub('_', ' ', oe$attrNames[iA]),"\neffect on ", graphTitle)
+        title(main=titleName, sub=subtitleName)
+        
+        ## bottom x axis
+        axis(1, at = c(-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1), labels = c(1, 0.8, 0.6, 0.4, 0.2, 0, 0.2, 0.4, 0.6, 0.8, 1))
+        
+        # prepare left and right axis labels
+        if (equalUpDown) {
+            # left and right contain values
+            leftLabels <- oe$valueNames[[iA]][-length(oe$valueNames[[iA]])]
+            rightLabels <- oe$valueNames[[iA]][-1]
+        }
+        else {
+            # values on the left, number of values on the right-hand side 
+            leftLabels <- oe$valueNames[[iA]]
+            rightLabels <- oe$noAV[iA,]        
+        }
+        las <- 1 ## horizontal
+        cex.axis <- 1
+        maxAVchars <- max(nchar(leftLabels))
+        if (maxAVchars > 3) {
+            las <- 0
+            if (maxAVchars > 9)
+                cex.axis <- 0.5    
+        }   
+        ## left y axis, attribute values    
+        axis(2, at = boxHeight/4+c(1:(noAttrValues-equalUD)), labels = leftLabels, las = las, line = 1, cex.axis=cex.axis)
+        
+        ## right y axis, number of instances or attribute values
+        axis(4, at = boxHeight/4+c(1:(noAttrValues-equalUD)), line = -0.8, labels = rightLabels, las = las)
+        if (!is.null(ylabRight) && (equalUpDown==FALSE || (equalUpDown==TRUE  && ylabRight!="number of values"))) {
+            mtext(ylabRight, side=4, line = 1.35,cex=1.0)
+        }
+        
+        for(i in 1:(noAttrValues-equalUD)) {
+            xUp <-   oe$reinfNegAV[iA,i]
+            statsUp <- oe$rndReinfNegAV[iA,i,]
+            xDown <-  oe$reinfPosAV[iA,i+equalUD]
+            statsDown <- oe$rndReinfPosAV[iA,i+equalUD,]
+            y <- i
+
+            if (xDown>0) {
+                rect(-xDown, y, 0.0, y+0.45*boxHeight, col="lightblue")
+            } 
+            ## box and whiskesrs 
+            if (statsDown[["highPercentile"]] > 0) {
+                if (ci=="lower")
+                    statsDown[["highPercentile"]] <- 1
+                if (ci=="upper")
+                    statsDown[["lowPercentile"]] <- 0
+                boxwhiskers(-statsDown, y+0.50*boxHeight, y+0.70*boxHeight, ci)
+            }
+            if (xUp>0) {
+                rect(0.0, y, xUp, y+0.45*boxHeight, col="orangered")
+                #text(xUp/2, y+0.225*boxHeight, labels = format(xUp, digits=2), adj=c(0.5,0.5), cex=chExp, vfont=c("sans serif","plain"))
+            }                
+            ## box and whiskesrs 
+            if (statsUp[["highPercentile"]] > 0){
+                if (ci=="lower")
+                    statsUp[["highPercentile"]]<-1
+                if (ci=="upper")
+                    statsUp[["lowPercentile"]]<-0              
+                boxwhiskers(statsUp, y+0.50*boxHeight, y+0.70*boxHeight,ci)
+            }
+        }
+        par(lwd = 1)
+    }
+    invisible()
+}
+
+
+
+
+avVisObject<- function(oe, attrIdx=0, graphTitle="", xlabel = "attribute values")
+{
+    noAttr <- oe$noAttr
+    ordVal <- oe$ordVal
+     
+    yU<-matrix(nrow=noAttr,ncol=ordVal)
+    xU <- c(1:ordVal)
+    yD<-matrix(nrow=noAttr,ncol=ordVal)
+    xD <- c(1:ordVal)
+    for(iA in 1:noAttr) {
+        yU[iA,1] <- 0
+        for(i in 2:ordVal) {
+            ySlope <- oe$reinfPosAV[iA,i]
+            yU[iA,i] <- yU[iA,i-1] + ySlope
+        }
+        yD[iA,ordVal] <- 0
+        for(i in (ordVal-1):1) {
+            ySlope <- oe$reinfNegAV[iA,i]
+            yD[iA,i] <- yD[iA,i+1] - ySlope
+        }
+    }
+    yLimit <- c(min(yD,yU)-0.1, max(yU,yD) + 0.1)
+    attrSelection <- 1:noAttr
+    if (attrIdx!=0)
+        attrSelection<-c(attrIdx)
+    if (length(xlabel)==1) ## expand a single label to vector
+        xlabel[2:length(attrSelection)] <- xlabel[1]
+    if (length(graphTitle)==1) ## expand a single title to vector
+        graphTitle[2:length(attrSelection)] <- graphTitle[1]
+    
+    for(iA in attrSelection) {
+        par(lwd = 1)
+        x <- c(0.8, ordVal+0.2)
+        y <- c(0, 0)
+        plot(x, y, xlim = c(1, ordVal), ylim = yLimit, xlab = "", ylab = "cumulative reinforcement", type = "n", axes = FALSE)
+        if (graphTitle[iA]=="")
+            titleName <- paste("", gsub("_", " ", as.character(oe$attrNames[[iA]])))
+        else titleName<-graphTitle[iA]
+        title(titleName)
+        text((ordVal+1)/2.0, yLimit[1]-0.1, label = xlabel[iA], adj=c(0.5,1),xpd=TRUE)
+        lines(x, y, lwd = 2)
+        x <- c(1:ordVal)
+        y <- rep(-0.09, ordVal)
+        av <- oe$valueNames[[iA]]
+        text(x, y, label = av, adj = c(0.5,1))
+        axis(2)
+        lines(xU, yU[iA,], type = "o", pch = 15, col = "red")
+        lines(xD, yD[iA,], type = "o", pch = 15, col = "blue")
+        for(i in 1:(ordVal - 1)) {
+            arrows(xU[i], yU[iA,i], xU[i+1], yU[iA,i+1], col = "red", angle=9, length=0.12)
+            arrows(xD[i + 1], yD[iA,i+1], xD[i], yD[iA,i], col = "blue",angle=9, length=0.12)
+        }
+    }
+    invisible()
+    }
+
+
+attrNormBarObject<-function(oe, graphTitle = "All attributes", ci=c("two.sided","upper","lower","none"))
+{
+    ci = match.arg(ci)
+    noAttr <- oe$noAttr
+    ordVal <- oe$ordVal
+    noStats <- length(getStatNames())
+    
+    boxHeight <- 1.0
+    chExp <- 1.0  ## char expansion for boxes
+    
+    x <- c(0, 0)
+    y <- c(1, noAttr+0.85)   
+    ylabName <- "" ## "attributes"
+    plot(x, y, type = "l", xlim = c(-1, 1), ylim = c(0.9, noAttr+0.9), xlab = "decreasing        increasing",
+            ylab = ylabName, axes = FALSE)
+    ## plot title
+    subtitleName <- "reinforcement"
+    title(main=graphTitle, sub=subtitleName)
+    ## x axis
+    axis(1, at = c(-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1), labels = c(1,0.8, 0.6, 0.4, 0.2, 0, 0.2, 0.4, 0.6, 0.8, 1))
+    ## left y axis, attribute values
+    
+    attrSelection <- 1:noAttr
+    attrNames <- oe$attrNames
+    noAV <- oe$noAVattr
+    for(iA in attrSelection) {
+        if (nchar(attrNames[[iA]],type="chars") > 7) {
+            attrNames[[iA]] <-  paste(strsplit(attrNames[[iA]],split="_",fixed=TRUE)[[1]],sep="",collapse="\n")
+        }
+     }
+    axis(2, at = boxHeight/4+c(1:noAttr), labels = attrNames, las = 1, line = 1, cex.axis = 0.5)
+    ## right y axis, number of instances
+    #axis(4, at = boxHeight/4+c(1:noAttr), line = -0.8, labels = noAV, las = 1, cex.axis = 0.7)
+    #axisLabel4 <- "number of values" 
+    #mtext(axisLabel4, side=4, line = 1.3)
+    
+    for(iA in attrSelection) {
+        xUp <-   oe$reinfNegAttr[iA]
+        xDown <- -oe$reinfPosAttr[iA]
+        y <- iA
+        if (xDown<0) {
+            rect(xDown, y, 0.0, y+0.45*boxHeight, col="lightblue")
+        }  
+        ## box and whiskesrs for random down 
+        if (oe$rndReinfNegAttr[iA,"highPercentile"] > 0) {
+            stats <- oe$rndReinfNegAttr[iA,]
+            if (ci=="lower")
+                stats[["highPercentile"]]<-1
+            if (ci=="upper")
+                stats[["lowPercentile"]]<-0
+            
+             boxwhiskers(stats, y+0.50*boxHeight, y+0.70*boxHeight, ci)
+         }
+        if (xUp>0) {
+            rect(0.0, y, xUp, y+0.45*boxHeight, col="orangered")
+         }     
+        ## box and whiskesrs for random up
+        if (oe$rndReinfPosAttr[iA,"highPercentile"] > 0){
+            stats <- oe$rndReinfPosAttr[iA,]
+            if (ci=="lower")
+                stats[["highPercentile"]]<-1
+            if (ci=="upper")
+                stats[["lowPercentile"]]<-0
+            
+            boxwhiskers(-stats, y+0.50*boxHeight, y+0.70*boxHeight, ci)
+        }
+      }
+      invisible()
+}
+
+boxwhiskers<-function(stats, y1, y2, ci="two.sided")
+{
+    # names(stats) contains: c("median", "Q1", "Q3", "lowPercentile", "highPercentile", "mean", "stdDev", "exp")) 
+ 
+    if (ci=="none")
+        return()
+    
+    ## quartile box
+    rect(stats[["Q1"]], y1, stats[["Q3"]],  y2, col="lightgrey")
+    ## median
+    segments(stats[["median"]], y1, stats[["median"]], y2, lwd=2)
+    ##minimum line and whisker
+    midY = (y1+y2)/2.0
+    yLen = y2-y1
+     if (ci != "upper") {
+       segments(stats[["Q1"]], midY, stats[["lowPercentile"]], midY,lty="solid")       
+       segments(stats[["lowPercentile"]], y1+0.2*yLen, stats[["lowPercentile"]], y2-0.2*yLen)
+   }
+    else
+        segments(stats[["Q1"]], midY, stats[["lowPercentile"]], midY,lty="solid")  
+ 
+    ##maximum line and whisker    
+    if (ci != "lower") {
+        segments(stats[["Q3"]], midY, stats[["highPercentile"]], midY, lty="solid")
+        segments(stats[["highPercentile"]], y1+0.2*yLen, stats[["highPercentile"]], y2-0.2*yLen) 
+    }
+    else
+        segments(stats[["Q3"]], midY, stats[["highPercentile"]], midY, lty="solid")
+    
+        
+    #if (length(stats)==8) ## also expeceted is present
+    #   points(stats[[8]],midY,pch=20) 
+    
+}
+
+trimSpaces<-function(strng) {
+    s1=sub('^ +', '', strng)  ## trailing spaces only
+    s2=sub(' +$', '', s1)  ## trailing spaces only
+    s2
+}
+

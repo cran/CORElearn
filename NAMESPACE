@@ -1,0 +1,30 @@
+export(
+attrEval,
+infoCore,
+classDataGen,
+CoreModel,
+destroyModels,
+getCoreModel,
+modelEval,
+loadRF,
+optionCore,
+ordDataGen,
+ordEval,
+paramCoreIO,
+plotOrdEval,
+plot.ordEval,
+predict.CoreModel,
+printOrdEval,
+regDataGen,
+saveRF,
+testCore,
+testNA,
+versionCore,
+.Last.lib,
+calibrate,
+preparePlot
+)
+
+S3method(plot, ordEval)
+S3method(predict, CoreModel)
+

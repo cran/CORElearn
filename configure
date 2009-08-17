@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if ! diff src/platform_unix.h src/platform.h --brief;
+then
+	echo overwriting platform.h
+	cp -f src/platform_unix.h src/platform.h
+fi
+

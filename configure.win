@@ -1,0 +1,1 @@
+cp src/platform_win.h src/platform.h
