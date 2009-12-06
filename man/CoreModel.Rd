@@ -27,7 +27,7 @@ Regression models:
   \item{formula}{ Formula specifying the response and attribute variables. }
   \item{data}{ Data frame with training data. }
   \item{model}{ The type of model to be learned. }
-  \item{... }{ Options for building the model. See \code{\link{optionCore}}. }
+  \item{... }{ Options for building the model. See \code{\link{helpCore}}. }
   \item{costMatrix}{ Optional cost matrix. }
   \item{dataFromFiles}{ Logical value controlling whether the training data will be read directly from files.}
 }
@@ -58,7 +58,7 @@ Regression models:
    }
 
   There are many additional parameters \bold{\dots } available which are used by different models.
-  Their list and description is available by calling \code{\link{optionCore}}. Evaluation of attributes is covered
+  Their list and description is available by calling \code{\link{helpCore}}. Evaluation of attributes is covered
   in function \code{\link{attrEval}}.
 
   The optional parameter \bold{ costMatrix } can provide nonuniform cost matrix for classification problems. For regression
@@ -112,7 +112,7 @@ Majority of these references are available from \url{http://lkm.fri.uni-lj.si/rm
 \code{\link{predict.CoreModel}},
 \code{\link{modelEval}},
 \code{\link{attrEval}},
-\code{\link{optionCore}},
+\code{\link{helpCore}},
 \code{\link{paramCoreIO}}.
 }
 

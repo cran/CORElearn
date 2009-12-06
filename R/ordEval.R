@@ -4,7 +4,7 @@
 #
 # Author: rmarko
 ###############################################################################
-oeInst<-function(ord, noAttr, graphTitle = "", normalization=TRUE, instSelection=NULL)
+oeInst<-function(ord, noAttr, graphTitle = "", normalization=TRUE, instSelection=NULL, bw=FALSE)
 {
     noStats = 8
     noMethods = 3
@@ -17,6 +17,18 @@ oeInst<-function(ord, noAttr, graphTitle = "", normalization=TRUE, instSelection
     chExp = 1.0  ## char expansion for boxes
     if (is.null(instSelection))
         instSelection<-1:min(noInst,100)
+    if (bw) {
+        downColor <- gray(0.7)
+        downOverColor <- gray(0.9)
+        upColor <- gray(0.5)
+        upOverColor <- gray(0.3)        
+    }
+    else {
+        downColor <- "blue"
+        downOverColor <- "lightblue"
+        upColor <- "red"
+        upOverColor <- "orange"
+    }
     
     for (inst in instSelection){    
         plot(xInit, yInit, type = "n", xlim = c(-1.2, 1), ylim = c(0.9, noAttr+0.9), xlab="",
@@ -43,10 +55,10 @@ oeInst<-function(ord, noAttr, graphTitle = "", normalization=TRUE, instSelection
             xUp <- ord[[inst]]$reinfNeg[iA]
             y <- iA
             if (xDown<0) {
-                rect(xDown, y, 0.0, y+0.45*boxHeight, col="lightblue")
+                rect(xDown, y, 0.0, y+0.45*boxHeight, col=downColor)
             }  
             if (xUp>0) {
-                rect(0.0, y, xUp, y+0.45*boxHeight, col="orangered")
+                rect(0.0, y, xUp, y+0.45*boxHeight, col=upColor)
             }     
             if (normalization) {
               ## box and whiskers for random down 
@@ -60,11 +72,25 @@ oeInst<-function(ord, noAttr, graphTitle = "", normalization=TRUE, instSelection
 }
 
 
-avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), graphTitle = "", ylabLeft = "attribute values", ylabRight="number of values" ,
-        xlabel="reinforcement", attrIdx=0, equalUpDown=FALSE)
+avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), ciDisplay=c("box","color"), 
+        graphTitle = NULL, ylabLeft = "attribute values", ylabRight="number of values" ,
+        xlabel="reinforcement", attrIdx=0, equalUpDown=FALSE, bw=FALSE) 
 {
-    
     ci<-match.arg(ci)
+    ciDisplay<-match.arg(ciDisplay)
+    
+    if (bw) {
+        downColor <- gray(0.7)
+        downOverColor <- gray(0.9)
+        upColor <- gray(0.5)
+        upOverColor <- gray(0.3)        
+    }
+    else {
+        downColor <- "blue"
+        downOverColor <- "lightblue"
+        upColor <- "red"
+        upOverColor <- "orange"
+    }
     noStats <- length(getStatNames())
     
     if (is.null(ylabLeft))
@@ -100,9 +126,9 @@ avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), graphTit
                 ylab = ylab, axes = FALSE)
         ## plot title
         if (is.null(graphTitle))
-            titleName <-""
-        else if (graphTitle == "")
             titleName <- paste("", sub('_', ' ', oe$attrNames[iA]))
+        else if (graphTitle == "")
+            titleName <- ""
         else
             titleName <-paste(sub('_', ' ', oe$attrNames[iA]),"\neffect on ", graphTitle)
         title(main=titleName, sub=subtitleName)
@@ -146,7 +172,7 @@ avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), graphTit
             y <- i
 
             if (xDown>0) {
-                rect(-xDown, y, 0.0, y+0.45*boxHeight, col="lightblue")
+                rect(-xDown, y, 0.0, y+0.45*boxHeight, col=downColor)
             } 
             ## box and whiskesrs 
             if (statsDown[["highPercentile"]] > 0) {
@@ -154,10 +180,15 @@ avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), graphTit
                     statsDown[["highPercentile"]] <- 1
                 if (ci=="upper")
                     statsDown[["lowPercentile"]] <- 0
-                boxwhiskers(-statsDown, y+0.50*boxHeight, y+0.70*boxHeight, ci)
+                if (ciDisplay == "box")
+                   boxwhiskers(-statsDown, y+0.50*boxHeight, y+0.70*boxHeight, ci)
+                else if (ci != "none") {
+                    # change the color within upper limit of confidence interval 
+                    rect(max(-xDown, -statsDown[["highPercentile"]]), y, 0.0, y+0.45*boxHeight, col=downOverColor)                    
+                }                
             }
             if (xUp>0) {
-                rect(0.0, y, xUp, y+0.45*boxHeight, col="orangered")
+                rect(0.0, y, xUp, y+0.45*boxHeight, col=upColor)
                 #text(xUp/2, y+0.225*boxHeight, labels = format(xUp, digits=2), adj=c(0.5,0.5), cex=chExp, vfont=c("sans serif","plain"))
             }                
             ## box and whiskesrs 
@@ -166,7 +197,13 @@ avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), graphTit
                     statsUp[["highPercentile"]]<-1
                 if (ci=="upper")
                     statsUp[["lowPercentile"]]<-0              
-                boxwhiskers(statsUp, y+0.50*boxHeight, y+0.70*boxHeight,ci)
+                if (ciDisplay == "box"){
+                    boxwhiskers(statsUp, y+0.50*boxHeight, y+0.70*boxHeight,ci)
+                }
+                else if (ci != "none"){
+                    # change the color within upper limit of confidence interval 
+                    rect(min(xUp, statsUp[["highPercentile"]]), y, 0.0, y+0.45*boxHeight, col=upOverColor)                    
+                }                
             }
         }
         par(lwd = 1)
@@ -177,11 +214,24 @@ avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), graphTit
 
 
 
-avVisObject<- function(oe, attrIdx=0, graphTitle="", xlabel = "attribute values")
+avVisObject<- function(oe, attrIdx=0, graphTitle=NULL, xlabel = "attribute values", bw=FALSE)
 {
     noAttr <- oe$noAttr
     ordVal <- oe$ordVal
-     
+    
+    if (bw) {
+        downColor <- "black"
+        downOverColor <- gray(0.9)
+        upColor <- "black"
+        upOverColor <- gray(0.3)        
+    }
+    else {
+        downColor <- "blue"
+        downOverColor <- "lightblue"
+        upColor <- "red"
+        upOverColor <- "orange"
+    }
+    
     yU<-matrix(nrow=noAttr,ncol=ordVal)
     xU <- c(1:ordVal)
     yD<-matrix(nrow=noAttr,ncol=ordVal)
@@ -204,18 +254,21 @@ avVisObject<- function(oe, attrIdx=0, graphTitle="", xlabel = "attribute values"
         attrSelection<-c(attrIdx)
     if (length(xlabel)==1) ## expand a single label to vector
         xlabel[2:length(attrSelection)] <- xlabel[1]
-    if (length(graphTitle)==1) ## expand a single title to vector
-        graphTitle[2:length(attrSelection)] <- graphTitle[1]
     
     for(iA in attrSelection) {
         par(lwd = 1)
         x <- c(0.8, ordVal+0.2)
         y <- c(0, 0)
         plot(x, y, xlim = c(1, ordVal), ylim = yLimit, xlab = "", ylab = "cumulative reinforcement", type = "n", axes = FALSE)
-        if (graphTitle[iA]=="")
-            titleName <- paste("", gsub("_", " ", as.character(oe$attrNames[[iA]])))
-        else titleName<-graphTitle[iA]
-        title(titleName)
+        
+        if (is.null(graphTitle))
+            titleName <- paste("", sub('_', ' ', oe$attrNames[iA]))
+        else if (graphTitle == "")
+            titleName <- ""
+        else
+            titleName <-paste(sub('_', ' ', oe$attrNames[iA]),"\neffect on ", graphTitle)
+        title(main=titleName)
+
         text((ordVal+1)/2.0, yLimit[1]-0.1, label = xlabel[iA], adj=c(0.5,1),xpd=TRUE)
         lines(x, y, lwd = 2)
         x <- c(1:ordVal)
@@ -223,23 +276,37 @@ avVisObject<- function(oe, attrIdx=0, graphTitle="", xlabel = "attribute values"
         av <- oe$valueNames[[iA]]
         text(x, y, label = av, adj = c(0.5,1))
         axis(2)
-        lines(xU, yU[iA,], type = "o", pch = 15, col = "red")
-        lines(xD, yD[iA,], type = "o", pch = 15, col = "blue")
+        lines(xU, yU[iA,], type = "o", pch = 15, col = upColor)
+        lines(xD, yD[iA,], type = "o", pch = 15, col = downColor)
         for(i in 1:(ordVal - 1)) {
-            arrows(xU[i], yU[iA,i], xU[i+1], yU[iA,i+1], col = "red", angle=9, length=0.12)
-            arrows(xD[i + 1], yD[iA,i+1], xD[i], yD[iA,i], col = "blue",angle=9, length=0.12)
+            arrows(xU[i], yU[iA,i], xU[i+1], yU[iA,i+1], col = upColor, angle=9, length=0.12)
+            arrows(xD[i + 1], yD[iA,i+1], xD[i], yD[iA,i], col = downColor, angle=9, length=0.12)
         }
     }
     invisible()
     }
 
 
-attrNormBarObject<-function(oe, graphTitle = "All attributes", ci=c("two.sided","upper","lower","none"))
+attrNormBarObject<-function(oe, graphTitle = "OrdEval for all attributes", 
+        ci=c("two.sided","upper","lower","none"),ciDisplay=c("box","color"), bw=FALSE)
 {
     ci = match.arg(ci)
+    ciDisplay=match.arg(ciDisplay)
     noAttr <- oe$noAttr
     ordVal <- oe$ordVal
     noStats <- length(getStatNames())
+    if (bw) {
+        downColor <- gray(0.7)
+        downOverColor <- gray(0.9)
+        upColor <- gray(0.5)
+        upOverColor <- gray(0.3)        
+    }
+    else {
+        downColor <- "blue"
+        downOverColor <- "lightblue"
+        upColor <- "red"
+        upOverColor <- "orange"
+    }
     
     boxHeight <- 1.0
     chExp <- 1.0  ## char expansion for boxes
@@ -275,7 +342,7 @@ attrNormBarObject<-function(oe, graphTitle = "All attributes", ci=c("two.sided",
         xDown <- -oe$reinfPosAttr[iA]
         y <- iA
         if (xDown<0) {
-            rect(xDown, y, 0.0, y+0.45*boxHeight, col="lightblue")
+            rect(xDown, y, 0.0, y+0.45*boxHeight, col=downColor)
         }  
         ## box and whiskesrs for random down 
         if (oe$rndReinfNegAttr[iA,"highPercentile"] > 0) {
@@ -284,11 +351,16 @@ attrNormBarObject<-function(oe, graphTitle = "All attributes", ci=c("two.sided",
                 stats[["highPercentile"]]<-1
             if (ci=="upper")
                 stats[["lowPercentile"]]<-0
-            
-             boxwhiskers(stats, y+0.50*boxHeight, y+0.70*boxHeight, ci)
+            if (ciDisplay == "box"){                
+              boxwhiskers(stats, y+0.50*boxHeight, y+0.70*boxHeight, ci)
+            }
+            else if (ci != "none") {
+                # change the color within upper limit of confidence interval 
+                rect(max(xDown, -stats[["highPercentile"]]), y, 0.0, y+0.45*boxHeight, col=downOverColor)                    
+            }                
          }
         if (xUp>0) {
-            rect(0.0, y, xUp, y+0.45*boxHeight, col="orangered")
+            rect(0.0, y, xUp, y+0.45*boxHeight, col=upColor)
          }     
         ## box and whiskesrs for random up
         if (oe$rndReinfPosAttr[iA,"highPercentile"] > 0){
@@ -298,7 +370,14 @@ attrNormBarObject<-function(oe, graphTitle = "All attributes", ci=c("two.sided",
             if (ci=="upper")
                 stats[["lowPercentile"]]<-0
             
-            boxwhiskers(-stats, y+0.50*boxHeight, y+0.70*boxHeight, ci)
+            if (ciDisplay == "box"){              
+               boxwhiskers(-stats, y+0.50*boxHeight, y+0.70*boxHeight, ci)
+            }
+            else if (ci != "none") {
+                # change the color within upper limit of confidence interval 
+                rect(min(xUp, stats[["highPercentile"]]), y, 0.0, y+0.45*boxHeight, col=upOverColor)                    
+            }                
+        
         }
       }
       invisible()

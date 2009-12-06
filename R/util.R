@@ -1,4 +1,4 @@
-prepare.Data <- function(data,dependent,class.lev=NULL,discreteOrdered=FALSE)
+prepare.Data <- function(data,dependent,class.lev=NULL,discreteOrdered=FALSE,skipNAcolumn=TRUE,skipEqualColumn=TRUE)
 {
     if (dependent) { # shell we fill in the column with the dependent data 
 		if (inherits(data[[1]],"ordered")) {
@@ -26,13 +26,20 @@ prepare.Data <- function(data,dependent,class.lev=NULL,discreteOrdered=FALSE)
 	for (i in seq(along=data)) {
         # check validity of columns
         if (length(data[[i]][is.na(data[[i]])])==nrow(data)) {
-            if (i > 1)
-               warning(sprintf("Variable %s has all values equal to NA.",names(data)[i]))
+            if (i > 1) {
+                warning(sprintf("Variable %s has all values equal to NA.",names(data)[i]))
+                if (skipNAcolumn) {
+                  next
+                }
+          }
         }
         else {
           sc <- sort(data[[i]],na.last=NA)
-          if (sc[1]==sc[length(sc)]) { # all equal
-            warning(sprintf("Variable %s has all values equal.",names(data)[i]))
+          if (nrow(data) > 1 && (length(sc) <= 1 || sc[1]==sc[length(sc)]) ) { # all equal
+              warning(sprintf("Variable %s has all values equal.",names(data)[i]))
+              if (skipEqualColumn) {
+                  next
+              }
           }
         }
 		if (inherits(data[[i]],"character") || (!inherits(data[[i]],"factor") && discreteOrdered==TRUE)) {
@@ -57,7 +64,9 @@ prepare.Data <- function(data,dependent,class.lev=NULL,discreteOrdered=FALSE)
 	if (length(discnumvalues) != ncol(discdata)) stop("internal problem 1 in prepare dataa"); # for debugging only
 	if (length(discmap) != ncol(discdata)) stop("internal problem 2 in prepare data"); # for debugging only
 	if (length(nummap) != ncol(numdata)) stop("internal problem 3 in prepare data"); # for debugging only
-	#if (ncol(data) != ncol(discdata) + ncol(numdata)) stop("internal problem 4 in prepare data"); # for debugging only
+    if (nrow(data) != nrow(numdata)) stop("internal problem 4 in prepare data"); # for debugging only
+    if (nrow(data) != nrow(discdata)) stop("internal problem 5 in prepare data"); # for debugging only
+    #if (ncol(data) != ncol(discdata) + ncol(numdata)) stop("internal problem 4 in prepare data"); # for debugging only
 	list(discnumvalues=discnumvalues,disccharvalues=disccharvalues,discdata=discdata,discmap=discmap,
             numdata=numdata,nummap=nummap,discValues=discValues, noInst=nrow(data));
 }
@@ -631,17 +640,20 @@ preparePlot<-function(fileName="Rplot", ...)
         interactive = TRUE
     else if (tolower(fileType[2])=="pdf")
         pdf(file = fileName, paper="default", ...)
-    else if (tolower(fileType[2])=="ps") {
-    #    if (!oneFile) 
-    #      fileName<-paste(fileType[1],"%03d.ps")
+    else if (tolower(fileType[2])=="ps") 
         postscript(file = fileName, paper="default", horizontal=FALSE, encoding="ISOLatin1.enc",...)
-        #postscript(file = fileName, title = titleName, paper="a4", width=30, height=400, onefile=oneFile, horizontal=FALSE, encoding="ISOLatin1.enc")
-    }
-    else if (tolower(fileType[2])=="emf" && .Platform$OS.type == "windows") {
-    #    if (!oneFile) 
-    #        fileName<-paste(fileType[1],"%03d.emf")
+    else if (tolower(fileType[2])=="emf" && .Platform$OS.type == "windows") 
         win.metafile(file = fileName,...)
-    }
+    else if (tolower(fileType[2])=="jpg")
+        jpeg(filename = fileName, ...)
+    else if (tolower(fileType[2])=="tif")
+        tiff(filename = fileName, ...)
+    else if (tolower(fileType[2])=="bmp")
+        bmp(filename = fileName, ...)
+    else if (tolower(fileType[2])=="png")
+        png(filename = fileName, ...)
+    else if (tolower(fileType[2])=="tiff")
+        bitmap(file = fileName, type="tiff24nc", ...)
     else interactive = TRUE
     if(interactive && dev.cur() == 1) # opens the default screen device on this platform if no device is open 
         dev.new() 

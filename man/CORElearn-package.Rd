@@ -37,7 +37,7 @@ Feature evaluation algorithms are various variants of Relief algorithms (ReliefF
 cost-sensitive ReliefF, ..), gain ratio, gini-index, MDL, DKM, information gain, MSE, MAE, ....
 \item \code{\link{ordEval}} evaluates ordinal attributes with ordEval algorithm and visualizes them with \code{\link{plot.ordEval}}, 
 \item \code{\link{infoCore}}  outputs certain information about CORElearn methods,
-\item \code{\link{optionCore}} prints short description of a given parameter,
+\item \code{\link{helpCore}} prints short description of a given parameter,
 \item \code{\link{paramCoreIO}} reads/writes parameters for given model from/to file, 
 \item \code{\link{versionCore}} outputs version of the package from underlying C++ library.
 }
@@ -80,7 +80,7 @@ Majority of these references are available also from \url{http://lkm.fri.uni-lj.
 \code{\link{attrEval}},
 \code{\link{ordEval}},
 \code{\link{plot.ordEval}},
-\code{\link{optionCore}}, 
+\code{\link{helpCore}}, 
 \code{\link{paramCoreIO}},
 \code{\link{infoCore}},
 \code{\link{versionCore}},

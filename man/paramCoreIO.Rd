@@ -35,7 +35,7 @@ paramCoreIO(model, fileName, io=c("read","write"))
 
 \seealso{
 \code{\link{CORElearn}},
-\code{\link{optionCore}}.
+\code{\link{helpCore}}.
 }
 
 \examples{

@@ -16,7 +16,7 @@
   \item{costMatrix}{ Optional cost matrix can provide nonuniform costs for classification problems. }
   \item{dataFromFiles }{Value TRUE specifies that the data for prediction shall be read directly from files.} 
   \item{type}{ Controls what will be return value in case of classification. } 
-  \item{... }{ Other model dependent options for prediction. See \code{\link{optionCore}}. }
+  \item{... }{ Other model dependent options for prediction. See \code{\link{helpCore}}. }
   }
 \details{
    The function uses the \code{object} structure as returned by \code{\link{CoreModel}} and
@@ -51,7 +51,7 @@
 \code{\link{CORElearn}},
 \code{\link{CoreModel}},
 \code{\link{modelEval}},
-\code{\link{optionCore}}, 
+\code{\link{helpCore}}, 
 \code{\link{paramCoreIO}}.
 }
 

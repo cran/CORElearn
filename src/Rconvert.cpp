@@ -187,8 +187,13 @@ void dataStore::dataFromR(int noInst, marray<int> &discreteData,
 		nData->create(noInst, noNumeric) ;
 
 	for (i=0; i< noInst ; i++) {
-		for (j=0; j < noDiscrete ; j++)
+		for (j=0; j < noDiscrete ; j++) {
 			(*dData)(i, j)=discreteData[i + j*noInst];
+			if ((*dData)(i, j)<0 || (*dData)(i, j)> AttrDesc[DiscIdx[j]].NoValues) {
+				merror("Invalid data detected for attribute", AttrDesc[DiscIdx[j]].AttributeName ) ;
+				(*dData)(i, j) = NAdisc ;
+			}
+		}
 		for (j=0; j < noNumeric ; j++) {
 			(*nData)(i, j)=numericData[i + j*noInst];
              #if defined(DEBUG)

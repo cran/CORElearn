@@ -11,7 +11,7 @@
 \usage{
     plotOrdEval(file, rndFile, ...) 
     
-    \method{plot}{ordEval}(x, graphType=c("avBar", "attrBar", "avSlope"),  ...)
+    \method{plot}{ordEval}(x, graphType=c("avBar", "attrBar", "avSlope"), ...)
     
     printOrdEval(x)
 }
@@ -47,14 +47,21 @@
       
     There are some additional optional parameters \bold{\dots } which are important to all or for some graph types.
     \itemize{
-    \item \code{ci} The type of the confidence interval in "avBar" and "attrBar" graph types. Can be \code{"two.sided", "upper",} \code{"lower"}, or \code{"none"}. 
-      Together with \code{ordEvalNormalizingPercentile} parameter in \code{\link{ordEval}}, \code{ci}
-       controls the type and length of confidence intervals for each value.    
+    \item \code{ci} The type of the confidence interval in "avBar" and "attrBar" graph types. Can be \code{"two.sided"},
+         \code{"upper"}, \code{"lower"}, or \code{"none"}. 
+      Together with \code{ordEvalNormalizingPercentile} parameter in \code{\link{ordEval}}, \code{ci}, and \code{ciDisplay}
+       controls the type, length and display of of confidence intervals for each value.    
+    \item \code{ciDisplay} The way how confidence intervals are displayed. Can be \code{"box"} or \code{"color"}. The value
+         \code{"box"} displays confidence interval as box and whiskers plot above the actual value with whiskers representing 
+         confidence percentiles.
+         The value \code{"color"} displays only the upper limit of confidence interval, namely the value 
+         (represented with a length of the bar) beyond the confidence interval is displayed with more intensive color or shade. 
     \item \code{graphTitle} specifies text to incorporate into the title.
     \item \code{attrIdx} displays plot for a single attribute with specified index.
     \item \code{xlabel}  label of lower horizontal axis. 
     \item \code{ylabLeft} label of left vertical axis.
     \item \code{ylabRight} label of right vertical axis
+    \item \code{bw} if set to TRUE produces black and white graph.
     }   
      
 }
@@ -91,7 +98,7 @@
 
 \seealso{
     \code{\link{ordEval}},
-    \code{\link{optionCore}},
+    \code{\link{helpCore}},
     \code{\link{preparePlot}},
     \code{\link{CORElearn}}
      

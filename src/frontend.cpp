@@ -3,7 +3,7 @@
 *      Project:  CORElearn - a system for machine learning and predictive analytics
 *
 *      Authors:    Marko Robnik-Sikonja, Petr Savicky
-*      Date:    october 2007 -
+*      Date:    October 2007 -
 *      Based on code form older systems CORE, DIRE, and CORElearn from 1993-
 *
 *
@@ -13,7 +13,7 @@
 *
 *   Name:      Command window frontend
 *
-*   Description:    provides command-line as well as texttual menu acces to
+*   Description:    provides command-line as well as textual menu access to
 *                   most of the functionality
 *
 *********************************************************************/
@@ -40,16 +40,15 @@
 #include "menu.h"     // functions for menu handling
 #include "dataStore.h"  // frame for decision trees
 #include "ftree.h"    // decision tree with feature construction
-#include "regtree.h"
+#include "regtree.h"  //regression trees
 #include "rndforest.h"  // random forests
-#include "utils.h"    // various utillities eg. computing of std. dev.
+#include "utils.h"    // various utilities e.g., computing of standard deviation
 #include "frontend.h"      // header for this file
-#include "estimator.h"    // various utillities eg. computing of std. dev.
-#include "estimatorReg.h"    // various utillities eg. computing of std. dev.
-#include "utils.h"
-#include "options.h"
-#include "printUtil.h"
-#include "Rfront.h"
+#include "estimator.h"    // attribute evaluation in classification
+#include "estimatorReg.h"     // attribute evaluation in regression
+#include "options.h"   // parameters and program options
+#include "printUtil.h"  // utilities for textual display of results
+#include "Rfront.h"     // front end for R interface
 
 
 
@@ -67,7 +66,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 0.9.22, built on " __DATE__ " at " __TIME__
+" version 0.9.24, built on " __DATE__ " at " __TIME__
 #if defined(DEBUG)
 " (debug mode)"
 #endif

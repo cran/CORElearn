@@ -1,7 +1,7 @@
 .onLoad <- function(lib, pkg) {
 # .First.lib <- function(lib, pkg) {
 	library.dynam("CORElearn", pkg, lib)
-	initCore(128) 
+	initCore(1024) 
 }
 
 .Last.lib <- function(libpath) {
@@ -9,7 +9,7 @@
 	library.dynam.unload("CORElearn", libpath)
 }
 
-initCore <- function(maxModels=100)
+initCore <- function(maxModels=1024)
 {
 	tmp <- .C("initCore",
 			as.integer(maxModels), ## maximal number of models

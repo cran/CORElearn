@@ -1,12 +1,13 @@
-\name{optionCore}
-\alias{optionCore}
+\name{helpCore}
+\alias{helpCore}
+\alias{help.Core}
 \title{ Description of parameters. }
 \description{
   For given parameter name function prints its type, default value, and short description.
-  If no \code{name} is given descriptions for all available options are printed out.
+  If no \code{name} is given descriptions for all available parameters are printed out.
 }
 \usage{
-optionCore(name=NULL) 
+helpCore(name=NULL) 
 }
 
 \arguments{
@@ -226,9 +227,9 @@ Besides parameters in this section one can apply majority of parameters for cont
 
 \examples{
 # single parameter
-optionCore("modelTypeReg")
+helpCore("modelTypeReg")
 
 #description of all parameters
-optionCore()
+helpCore()
 }
 

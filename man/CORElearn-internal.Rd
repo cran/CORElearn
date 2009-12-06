@@ -52,7 +52,7 @@ Marko Robnik-Sikonja
 \code{\link{attrEval}},
 \code{\link{ordEval}},
 \code{\link{plot.ordEval}},
-\code{\link{optionCore}}, 
+\code{\link{helpCore}}, 
 \code{\link{paramCoreIO}},
 \code{\link{infoCore}},
 \code{\link{versionCore}}.

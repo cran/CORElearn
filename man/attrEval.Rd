@@ -111,7 +111,7 @@
    }        
    
   There are some additional parameters \bold{\dots } available which are used by specific evaluation heuristics.
-  Their list and short description is available by calling \code{\link{optionCore}}. See Section on attribute evaluation.
+  Their list and short description is available by calling \code{\link{helpCore}}. See Section on attribute evaluation.
   
   Evaluation and visualization of ordered attributes is covered in function \code{\link{ordEval}}.  
 }
@@ -155,7 +155,7 @@ Some of these references are available also from \url{http://lkm.fri.uni-lj.si/r
 \code{\link{CORElearn}},
 \code{\link{CoreModel}},
 \code{\link{ordEval}},
-\code{\link{optionCore}}, 
+\code{\link{helpCore}}, 
 \code{\link{infoCore}}.
 }
 

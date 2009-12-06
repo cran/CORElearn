@@ -51,9 +51,9 @@ inline double log2(double x) { return double( log(x) / 0.69314718055994528622) ;
 inline long int sqr(int x) { return long(x)*long(x) ; }
 inline double sqr(double x) { return x*x ; }
 //inline int abs(int x) { return (x>=0 ? x : -x) ; }
-#if !defined(MICROSOFT)
-inline double abs(double x) { return (x>=0 ? x : -x) ; }
-#endif
+//#if !defined(MICROSOFT)
+//inline double abs(double x) { return (x>=0 ? x : -x) ; }
+//#endif
 inline double sign(double x) { if (x>0) return 1.0; else if (x<0) return -1.0; else return 0.0; }
 int posCharStr(const char Chr, const char* Str) ;
 int posLastCharStr(const char Chr, const char* Str);

@@ -21,7 +21,7 @@ destroyModels <-function(model=NULL)
     }
     invisible(NULL) 
 }
-optionCore <- function(name=NULL) {
+helpCore <- function(name=NULL) {
   #optData <- optionData()  
   optdat <- optionData()$All
   if (is.null(name)) {
@@ -67,7 +67,7 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
     		## create and fill uniform costs matrix
     		costMatrix <- 1 - diag(noClasses);
     	}
-    	aux <- prepare.Data(dat,dependent=TRUE);
+    	aux <- prepare.Data(dat,dependent=TRUE,skipNAcolumn=TRUE,skipEqualColumn=TRUE);
     	discnumvalues <- aux$discnumvalues;
     	discdata <- aux$discdata;
     	numdata <- aux$numdata;
@@ -240,7 +240,7 @@ attrEval <- function(formula, data, costMatrix = NULL, estimator, ...)
 		## create and fill uniform costs matrix
 		costMatrix <- 1 - diag(noClasses);
 	}
-	aux <- prepare.Data(dat,dependent=TRUE);
+	aux <- prepare.Data(dat,dependent=TRUE,skipNAcolumn=TRUE,skipEqualColumn=TRUE);
 	discnumvalues <- aux$discnumvalues;
 	discdata <- aux$discdata;
 	discmap <- aux$discmap;
@@ -249,7 +249,7 @@ attrEval <- function(formula, data, costMatrix = NULL, estimator, ...)
     options <- prepare.Options(...);
 	checkOptionsValues(options) ;
 	optRemain <- checkEstimatorOptions(estimator, options, isRegression) ;
-	if (length(optRemain) > 0) warning("Unused options:", paste(names(optRemain), collapse=", "));
+    if (length(optRemain) > 0) warning("Unused options:", paste(names(optRemain), collapse=", "));
     if (isRegression) {
     	tmp <- .C("estimateCoreReg",
             noInst= aux$noInst,
@@ -272,7 +272,7 @@ attrEval <- function(formula, data, costMatrix = NULL, estimator, ...)
     }
     else {
         tmp <- .C("estimateCore",
-            noInst = nrow(dat),
+            noInst = aux$noInst,
             noDiscrete = ncol(discdata),
             noDiscreteValues = as.integer(discnumvalues),
             discreteData = as.integer(discdata), # vector of length noInst*noDiscrete, columnwise
@@ -307,7 +307,7 @@ ordEval <- function(formula, data, file=NULL, rndFile=NULL, variant=c("allNear",
 		dat[[1]] <- factor(dat[[1]]);
 	}
 	class.lev <- levels(dat[[1]]);
-	aux <- prepare.Data(dat, dependent=TRUE, discreteOrdered=TRUE);
+	aux <- prepare.Data(dat, dependent=TRUE, discreteOrdered=TRUE,skipNAcolumn=TRUE,skipEqualColumn=TRUE);
 	discnumvalues <- aux$discnumvalues;
 	discdata <- aux$discdata;
 	discmap <- aux$discmap;

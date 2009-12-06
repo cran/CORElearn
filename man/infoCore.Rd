@@ -36,7 +36,7 @@ infoCore(what=c("attrEval","attrEvalReg"))
 
 \seealso{
 \code{\link{attrEval}},
-\code{\link{optionCore}},
+\code{\link{helpCore}},
 \code{\link{CoreModel}}.
 }
 \examples{

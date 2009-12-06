@@ -38,7 +38,7 @@ ordEval(formula, data, file=NULL, rndFile=NULL, variant=c("allNear","attrDist1",
   changes in upward/downward reinforcement and has little effect in practical applications.
   
   There are some additional parameters \bold{\dots } some of which are common with other context-sensitive evaluation methods (e.g., ReliefF). 
-  Their list and short description is available in \code{\link{optionCore}} (see subsection on ordEval algorithm and attribute evaluation therein).
+  Their list and short description is available in \code{\link{helpCore}} (see subsection on ordEval algorithm and attribute evaluation therein).
   
   Evaluation of attributes without specifics of ordered attributes is covered in function \code{\link{attrEval}}.  
 }
@@ -103,7 +103,7 @@ Some of the references are available also from \url{http://lkm.fri.uni-lj.si/rma
 \code{\link{plot.ordEval}},
 \code{\link{CORElearn}},
 \code{\link{CoreModel}},
-\code{\link{optionCore}}, 
+\code{\link{helpCore}}, 
 \code{\link{infoCore}}.
 }
 
