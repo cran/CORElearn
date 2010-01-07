@@ -7,11 +7,11 @@ void versionCore(char **version) ;
 void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		int *discData, int *noNumeric, double *numData, double *costMx,
 		char **dscAttrNames, char **dscValNames, char ** nmAttrNames,
-		int *noOptions, char **optName, char **optValue, int *dataFromFiles,
+		int *noOptions, char **optName, char **optValue,
 		int *modelID, int *noClasses, double *priorClassProb, double *avgPrediction
 ) ;
 void destroyOneCoreModel(int* modelID) ;
-void predictWithCoreModel(int *modelID, int *dataFromFiles, int *noInst, int *discData,
+void predictWithCoreModel(int *modelID, int *noInst, int *discData,
 		double *numData, double *costMx, int *returnPred, double *returnProb,
 		double *returnPredReg, int *noOptions, char **optName, char **optValue) ;
 void destroyCore() ;
@@ -19,11 +19,13 @@ void simRcall() ;
 void availableEstimatorsCore(char **estBrief) ;
 void estimateCore(int *noInst, int *noDiscrete,
 		int *noDiscVal, int *discData, int *noNumeric, double *numData, double *costMx,
-		int *noOptions, char **optName, char **optValue,
+		char **dscAttrNames, char **dscValNames, char ** nmAttrNames,
+        int *noOptions, char **optName, char **optValue,
 		int *selectedEstimator, double *discEst, double *numEst) ;
 void estimateCoreReg(int *noInst, int *noDiscrete,
 		int *noDiscVal, int *discData, int *noNumeric, double *numData,
-		int *noOptions, char **optName, char **optValue,
+		char **dscAttrNames, char **dscValNames, char ** nmAttrNames,
+        int *noOptions, char **optName, char **optValue,
 		int *selectedEstimator, double *discEst, double *numEst) ;
 void ordEvalCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 		char **dscAttrNames, char **dscValNames,
@@ -34,11 +36,12 @@ void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
 		double *predictedPr, double *costMx, int *noClasses, double *priorClProbability,
 		double *accuracy, double *avgCost,
 		double *infScore, double *auc, int *predictionMx, double *sensitivity,
-		double *specificity, double *brier, double *kappa) ;
-void modelEvaluateReg(int *modelID, int *noInst, double *truePred,
+		double *specificity, double *brier, double *kappa, double *precision, double *Gmean) ;
+void modelEvaluateReg(int *noInst, double *truePred,
 		double *pred, double *avgPrediction, double *MSE, double *RMSE, double *MAE, double *RMAE) ;
 void calibrate(int *calMethod, int *noInst, int *correctCl, double *predictedPr, double *wght, int *noBins,
 		       int *noIntervals, double *interval, double *calProb);
+void rfAttrEval(int *modelID, double *estOut) ;
 
 }
 

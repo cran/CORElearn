@@ -270,7 +270,7 @@ void featureTree::outDomainSummary(FILE *to) const
 void featureTree::test(marray<int> &DSet, int SetSize, double &Accuracy,
            double &avgCost, double &Inf, double &Auc,
 		   mmatrix<int> &PredictionMatrix, double &kappa, double &sensitivity, double &specificity,
-		   double &brier, FILE *probabilityFile){
+		   double &brier, double &precision, double &Gmean, FILE *probabilityFile){
 
    Accuracy = avgCost = Inf = Auc = sensitivity = specificity = -1.0 ;
    if (SetSize == 0) {
@@ -311,7 +311,7 @@ void featureTree::test(marray<int> &DSet, int SetSize, double &Accuracy,
    marray<double> priorClProb(noClasses+1, 0) ;
    for (int c=1 ; c <=noClasses ; c++)
 	   priorClProb[c] = AttrDesc[0].valueProbability[c];
-   modelEval(SetSize, trueClass, probDist, noClasses, priorClProb, CostMatrix, Accuracy, avgCost, Inf, Auc,  PredictionMatrix, kappa, sensitivity, specificity, brier) ;
+   modelEval(SetSize, trueClass, probDist, noClasses, priorClProb, CostMatrix, Accuracy, avgCost, Inf, Auc,  PredictionMatrix, kappa, sensitivity, specificity, brier, precision, Gmean) ;
 }
 
 

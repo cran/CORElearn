@@ -462,7 +462,7 @@ void featureTree::varImportance(marray<double> &varEval) {
     double varMargin ; // dummy placeholder
 	for (int iA = 1 ; iA <= noAttr ; iA++) {
 		if (AttrDesc[iA].continuous) {
-  	        // save original values of instances and reschuffle it
+  	        // save original values of instances and reshuffle it
 			NumData.outColumn(AttrDesc[iA].tablePlace, contOrig) ;
 			contTemp.copy(contOrig) ;
 			contTemp.shuffle() ;
@@ -1248,7 +1248,7 @@ booleanT featureTree::readForest(char *fileName) {
     dscFromR(noDiscrete, discNoValues, noNumeric, mFALSE, discAttrNames, discValNames, numAttrNames) ;
     isRegression=mFALSE ;
 	forest.create(opt->rfNoTrees) ;
-    opt->rfAttrEvaluate = mFALSE ; // there is no in and out-of-baf set
+    opt->rfAttrEvaluate = mFALSE ; // there is no in and out-of-bag set
 	opt->rfkNearestEqual = 0 ; // instances are not stored
 
 	for (i=0 ; i < opt->rfNoTrees ; i++) {

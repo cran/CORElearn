@@ -21,7 +21,7 @@ Regression models:
 \usage{
   CoreModel(formula, data,
        model=c("rf","rfNear","tree","knn","knnKernel","bayes","regTree"),
-       ..., costMatrix=NULL, dataFromFiles=FALSE)
+       ..., costMatrix=NULL)
 }
 \arguments{
   \item{formula}{ Formula specifying the response and attribute variables. }
@@ -29,7 +29,6 @@ Regression models:
   \item{model}{ The type of model to be learned. }
   \item{... }{ Options for building the model. See \code{\link{helpCore}}. }
   \item{costMatrix}{ Optional cost matrix. }
-  \item{dataFromFiles}{ Logical value controlling whether the training data will be read directly from files.}
 }
 \details{
   Parameter \bold{formula} is used as a mechanism to select features (attributes)
@@ -64,11 +63,6 @@ Regression models:
   The optional parameter \bold{ costMatrix } can provide nonuniform cost matrix for classification problems. For regression
   problem this parameter is ignored. The format of the matrix is costMatrix(true class, predicted class).
   By default uniform costs are assumed, i.e.,  costMatrix(i, i) = 0, and costMatrix(i, j) = 1, for i not equal to j.
-
-   The optional logical parameter \bold{ dataFromFiles } can be set to \code{TRUE} in case of very large
-   data sets not fitting into \R. In this case training data is read directly from files, ignoring \code{data} parameter.
-   Supported data formats are C4.5 (M5) and native format of CORElearn. Its description is available from
-   \url{http://lkm.fri.uni-lj.si/rmarko/software/}.
 }
 \value{
   The created model is not returned as a structure. It is stored internally
@@ -84,7 +78,6 @@ Regression models:
     \item{terms}{ description of prediction variables and response, }
     \item{class.lev}{ class values for classification problem, null for regression problem, }
     \item{model}{ the type of model used, see parameter \code{model}, }
-    \item{dataFromFiles}{ was data read directly from file, see parameter \code{dataFromFiles}, }
     \item{formula}{ the \code{formula} parameter passed. }
  }
 \references{

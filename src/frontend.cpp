@@ -66,7 +66,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 0.9.24, built on " __DATE__ " at " __TIME__
+" version 0.9.25, built on " __DATE__ " at " __TIME__
 #if defined(DEBUG)
 " (debug mode)"
 #endif
@@ -689,15 +689,15 @@ void singleTree(featureTree* const Tree) {
        mmatrix<int> PMx(PMxSize,PMxSize) ;
        int Leaves = Tree->noLeaves() ;
        int freedom = Tree->degreesOfFreedom() ;
-       double Accuracy, Kappa, Inf, Cost, Auc, Brier, Sens, Spec ;
+       double Accuracy, Kappa, Inf, Cost, Auc, Brier, Sens, Spec, precision, Gmean ;
 	   FILE *distrFile = prepareDistrFile(Tree->opt->splitIdx, Tree->opt) ;
  	   if (distrFile != NULL) {
 	  	 fprintf(distrFile, "# Training instances \n") ;
-         Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier,distrFile);
+         Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile);
  	   }
  	   if (distrFile != NULL)
 	 	 fprintf(distrFile, "# Testing instances \n") ;
-       Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, distrFile) ;
+       Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile) ;
        if (distrFile != NULL)
           fclose(distrFile) ;
 
@@ -816,6 +816,8 @@ void allSplitsTree(featureTree* const Tree) {
    marray<double> Kappa(Tree->opt->numberOfSplits) ;
    marray<int> Leaves(Tree->opt->numberOfSplits) ;
    marray<int> freedom(Tree->opt->numberOfSplits) ;
+   marray<double> precision(Tree->opt->numberOfSplits) ;
+   marray<double> Gmean(Tree->opt->numberOfSplits) ;
 
    int sizePMx = Tree->noClasses +1;
    mmatrix<int> PMx(sizePMx, sizePMx) ;
@@ -834,11 +836,11 @@ void allSplitsTree(featureTree* const Tree) {
 
 		 if (distrFile != NULL) {
 			fprintf(distrFile, "# Training instances \n") ;
-            Tree->test(Tree->DTraining, Tree->NoTrainCases,  Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i],distrFile) ;
+            Tree->test(Tree->DTraining, Tree->NoTrainCases,  Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], distrFile) ;
 		 }
 		 if (distrFile != NULL)
 			fprintf(distrFile, "# ing instances \n") ;
-         Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], distrFile );
+         Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], distrFile );
 
          if (distrFile != NULL)
             fclose(distrFile) ;
@@ -1018,7 +1020,7 @@ void singleRF(featureTree* const Tree) {
        int PMxSize = Tree->noClasses+1 ;
        mmatrix<int> PMx(PMxSize,PMxSize) ;
 
-	   double Accuracy, Inf, Cost, Auc, Sens, Spec, Brier, Kappa ;
+	   double Accuracy, Inf, Cost, Auc, Sens, Spec, Brier, Kappa, precision, Gmean ;
 
 	   FILE *distrFile = prepareDistrFile(Tree->opt->splitIdx, Tree->opt) ;
 
@@ -1027,11 +1029,11 @@ void singleRF(featureTree* const Tree) {
 
 	   if (distrFile != NULL) {
 	  	 fprintf(distrFile, "# Training instances \n") ;
-	     Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, distrFile);
+	     Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile);
 	   }
  	   if (distrFile != NULL)
 	  	 fprintf(distrFile, "# testing instances \n") ;
-       Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, distrFile) ;
+       Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile) ;
        if (distrFile != NULL)
           fclose(distrFile) ;
 
@@ -1119,6 +1121,8 @@ void allSplitsRF(featureTree* const Tree) {
    marray<double> oobAccuracy(Tree->opt->numberOfSplits) ;
    marray<double> oobMargin(Tree->opt->numberOfSplits) ;
    marray<double> oobCorrelation(Tree->opt->numberOfSplits) ;
+   marray<double> precision(Tree->opt->numberOfSplits) ;
+   marray<double> Gmean(Tree->opt->numberOfSplits) ;
    marray<marray<double> > attrEval(Tree->opt->numberOfSplits+1) ;
    attrEval[0].create(Tree->noAttr+1, 0.0) ; // for averages
    attrEval.setFilled(Tree->opt->numberOfSplits+1) ;
@@ -1140,11 +1144,11 @@ void allSplitsRF(featureTree* const Tree) {
  	     distrFile = prepareDistrFile(i, Tree->opt) ;
  	     if (distrFile != NULL) {
 	  	   fprintf(distrFile, "# Training instances \n") ;
-           Tree->test(Tree->DTraining, Tree->NoTrainCases,  Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], distrFile) ;
+           Tree->test(Tree->DTraining, Tree->NoTrainCases,  Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], distrFile) ;
  	     }
  	     if (distrFile != NULL)
 	  	    fprintf(distrFile, "# Testing instances \n") ;
-         Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], distrFile);
+         Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], distrFile);
 
  	     if (distrFile != NULL)
             fclose(distrFile) ;
@@ -1648,12 +1652,12 @@ void loadRF(featureTree* const Tree) {
 		printf("Random forest successfully loaded from %s", path) ;
 	else
 		printf("Loading random forest failed from file %s", path) ;
-	double Accuracy, Inf, Cost, Auc, Sens, Spec, Brier, Kappa ;
+	double Accuracy, Inf, Cost, Auc, Sens, Spec, Brier, Kappa, precision, Gmean ;
 
 	FILE *distrFile = NULL;
 	int PMxSize = Tree->noClasses+1 ;
 	mmatrix<int> PMx(PMxSize,PMxSize) ;
 
-	Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, distrFile);
+	Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile);
 
 }

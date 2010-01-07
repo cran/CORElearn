@@ -7,7 +7,7 @@
   computes  some statistics evaluating the quality of the model.
 }
 \usage{
-modelEval(model, correctClass, predictedClass, predictedProb=NULL, costMatrix=NULL, priorClProb = NULL, avgTrainPrediction = NULL) 
+modelEval(model, correctClass, predictedClass, predictedProb=NULL, costMatrix=NULL, priorClProb = NULL, avgTrainPrediction = NULL, beta = 1) 
 }
 
 \arguments{
@@ -18,6 +18,7 @@ modelEval(model, correctClass, predictedClass, predictedProb=NULL, costMatrix=NU
   \item{costMatrix}{ Optional cost matrix can provide nonuniform costs for classification problems. }
   \item{priorClProb}{ If \code{model=NULL} a vector of prior class probabilities shell be provided in case of classification. }
   \item{avgTrainPrediction}{ If \code{model=NULL} mean of prediction values on training set shell be provided in case of regression. }
+  \item{beta}{For two class problems \code{beta} controls the relative importance of precision and recall in F-measure.}
   }
 \details{
    The function uses the \code{model} structure as returned by \code{\link{CoreModel}},
@@ -46,6 +47,10 @@ modelEval(model, correctClass, predictedClass, predictedProb=NULL, costMatrix=NU
   \item{specificity}{specificity for two class problems}
   \item{brierScore}{Brier score of predicted probabilities}
   \item{kappa}{Kappa statistics measuring randomness of the predictions}
+  \item{precision}{precision for two class problems}
+  \item{recall}{recall for two class problems (the same as sensitivity) }
+  \item{F-measure}{F-measure giving a weighted score of precision and recall for two class problems}
+  \item{G-mean}{geometric mean of positive and negative accuracy}
  For regression problem the returned list has components
  \item{MSE}{Mean Squared Error}
  \item{RMSE}{Relative Mean Squared Error} 

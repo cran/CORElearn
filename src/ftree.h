@@ -95,7 +95,7 @@ public:
    int constructTree(void);
    void test(marray<int> &DSet, int SetSize, double &Accuracy, double &avgCost, double &Inf,
              double &Auc, mmatrix<int> &PredictionMatrix, double &kappa, double &sensitivity, double &specificity,
-			 double &brier, FILE *probabilityFile) ;
+			 double &brier, double &precision, double &Gmean, FILE *probabilityFile) ;
    void outDomainSummary(FILE *to) const ;
    void printResultsHead(FILE *to) const ;
    void printResultLine(FILE *to, int idx, int Leaves, int freedom,

@@ -1,4 +1,4 @@
-prepare.Data <- function(data,dependent,class.lev=NULL,discreteOrdered=FALSE,skipNAcolumn=TRUE,skipEqualColumn=TRUE)
+prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrdered=FALSE, skipNAcolumn=TRUE, skipEqualColumn=TRUE)
 {
     if (dependent) { # shell we fill in the column with the dependent data 
 		if (inherits(data[[1]],"ordered")) {
@@ -10,10 +10,14 @@ prepare.Data <- function(data,dependent,class.lev=NULL,discreteOrdered=FALSE,ski
 		data <- data[!is.na(data[[1]]),]
 	} 
     else {
-        if (is.null(class.lev))  ## regression
-           data <- cbind(prediction=double(length=nrow(data)),data)
-        else
+        if (is.null(class.lev))  {## regression
+           predictionColumn <- double(length=nrow(data))
+           predictionColumn<-NA
+           data <- cbind(prediction=predictionColumn,data)
+       }
+       else {
 		   data <- cbind(prediction=factor(NA,levels=class.lev),data);
+       }
 	}
     col.names <- names(data)
 	discnumvalues <- integer(0);
@@ -23,22 +27,33 @@ prepare.Data <- function(data,dependent,class.lev=NULL,discreteOrdered=FALSE,ski
 	numdata <- matrix(nrow=nrow(data),ncol=0);
 	discmap <- integer(0);
 	nummap <- integer(0);
+    skipmap <- integer(0)
 	for (i in seq(along=data)) {
         # check validity of columns
         if (length(data[[i]][is.na(data[[i]])])==nrow(data)) {
             if (i > 1) {
-                warning(sprintf("Variable %s has all values equal to NA.",names(data)[i]))
                 if (skipNAcolumn) {
+                  skipmap <- c(skipmap,i) 
+                  warning(sprintf("Variable %s has all values equal to NA and has been skipped.",names(data)[i]))  
+                  formulaIn <- update.formula(formulaIn, paste(". ~ . - ",names(data)[i],sep=""))
                   next
+                }
+                else {
+                    warning(sprintf("Variable %s has all values equal to NA.",names(data)[i]))                  
                 }
           }
         }
         else {
           sc <- sort(data[[i]],na.last=NA)
           if (nrow(data) > 1 && (length(sc) <= 1 || sc[1]==sc[length(sc)]) ) { # all equal
-              warning(sprintf("Variable %s has all values equal.",names(data)[i]))
-              if (skipEqualColumn) {
+               if (skipEqualColumn) {
+                  skipmap <- c(skipmap,i)  
+                  warning(sprintf("Variable %s has all values equal to NA and has beeen skipped.",names(data)[i]))
+                  formulaIn <- update.formula(formulaIn, paste(". ~ . - ",names(data)[i],sep=""))
                   next
+              }
+              else {
+                  warning(sprintf("Variable %s has all values equal to NA.",names(data)[i]))
               }
           }
         }
@@ -51,9 +66,10 @@ prepare.Data <- function(data,dependent,class.lev=NULL,discreteOrdered=FALSE,ski
 			column <- matrix(column,ncol=1,dimnames=list(NULL,col.names[i]))
 			discnumvalues <- c(discnumvalues,length(levels(data[[i]])));
 			disccharvalues <- c(disccharvalues,paste(levels(data[[i]]),collapse="\x1F"));
-            discValues[[i]] <- levels(data[[i]])
-			discdata <- cbind(discdata,column);
+            discdata <- cbind(discdata,column);
 			discmap <- c(discmap,i);
+            discValues[[length(discmap)]] <- levels(data[[i]])
+            
 		} else {
 			column <- matrix(as.double(data[[i]]),ncol=1,dimnames=list(NULL,col.names[i]))
 			numdata <- cbind(numdata,column);
@@ -68,7 +84,8 @@ prepare.Data <- function(data,dependent,class.lev=NULL,discreteOrdered=FALSE,ski
     if (nrow(data) != nrow(discdata)) stop("internal problem 5 in prepare data"); # for debugging only
     #if (ncol(data) != ncol(discdata) + ncol(numdata)) stop("internal problem 4 in prepare data"); # for debugging only
 	list(discnumvalues=discnumvalues,disccharvalues=disccharvalues,discdata=discdata,discmap=discmap,
-            numdata=numdata,nummap=nummap,discValues=discValues, noInst=nrow(data));
+            numdata=numdata,nummap=nummap,discValues=discValues, noInst=nrow(data),skipmap=skipmap, 
+            formulaOut=formulaIn);
 }
 get.formula <- function(class.name)
 {

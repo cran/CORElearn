@@ -113,6 +113,8 @@
   There are some additional parameters \bold{\dots } available which are used by specific evaluation heuristics.
   Their list and short description is available by calling \code{\link{helpCore}}. See Section on attribute evaluation.
   
+  The attributes can also be evaluated via random forest out-of-bag set with function \code{\link{rfAttrEval}}.
+  
   Evaluation and visualization of ordered attributes is covered in function \code{\link{ordEval}}.  
 }
 \value{
@@ -154,6 +156,7 @@ Some of these references are available also from \url{http://lkm.fri.uni-lj.si/r
 \seealso{
 \code{\link{CORElearn}},
 \code{\link{CoreModel}},
+\code{\link{rfAttrEval}},
 \code{\link{ordEval}},
 \code{\link{helpCore}}, 
 \code{\link{infoCore}}.

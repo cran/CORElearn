@@ -557,11 +557,25 @@ long int longRound(double x)
 //                         binom
 //                         ------
 //
-//           simple implementation of binom value
+//           simple implementation of binomial coefficient
 //
 //
 //************************************************************
-long int binom(int N, int selector)
+long long binom(int n, int k) {
+    if (k > n)
+        return 0;
+
+    if (k > n/2)
+        k = n-k; // Take advantage of symmetry
+
+    long double b = 1.0;
+    for (int i = 1; i <= k; i++)
+         b *= (n-k+i) / i;
+
+    return (int)(b + 0.5); // avoid rounding error
+}
+ /*
+ long int binom(int N, int selector)
 {
 
   long int value = 1 ;
@@ -573,7 +587,7 @@ long int binom(int N, int selector)
      value /= j ;
   return value ;
 }
-
+*/
 
 
 //************************************************************
@@ -911,6 +925,19 @@ void randSeed(long seed) {
 	mrg32k5aSeed(seed) ;
 }
 
+void testRand(int *n, double *x)
+{
+	int i;
+#if defined(R_PORT)
+	GetRNGstate();
+#endif
+	for (i=0; i<*n; i++)
+		x[i] = unifrand();
+#if defined(R_PORT)
+	PutRNGstate();
+#endif
+}
+
 booleanT haveCachedNormal = mFALSE ;
 double cachedNormal ;
 
@@ -1098,7 +1125,8 @@ void modelEval(int SetSize, marray<int> &trueClass,
 		marray<marray<double> > &probDist, int noClasses, marray<double> &priorProbability,
 		mmatrix<double> &CostMatrix, double &Accuracy, double &avgCost,
 		double &Inf, double &Auc, mmatrix<int> &PredictionMatrix, double &kappa,
-		double &sensitivity, double &specificity, double &brier) {
+		double &sensitivity, double &specificity, double &brier,
+		double &precision, double &Gmean) {
 
 	int correct = 0;
 	int i, j, c, cMin, cPredicted, cTrue;
@@ -1164,12 +1192,16 @@ void modelEval(int SetSize, marray<int> &trueClass,
 	Accuracy = double(correct)/double(SetSize);
 	Inf = infi/double(SetSize);
 	avgCost = Cost/double(SetSize);
-	sensitivity = specificity = 0 ;
+	sensitivity = specificity = precision = Gmean = 0 ;
 	if (noClasses == 2) {
 		if (PredictionMatrix(1,0) > 0)
-			sensitivity = double(PredictionMatrix(1,1))/double(PredictionMatrix(1,0));
+			sensitivity = double(PredictionMatrix(1,1))/double(PredictionMatrix(1,0)); // the same as recall
 		if (PredictionMatrix(2,0) > 0)
 			specificity = double(PredictionMatrix(2,2))/double(PredictionMatrix(2,0));
+		if (PredictionMatrix(0,1) > 0)
+			precision = double(PredictionMatrix(1,1))/double(PredictionMatrix(0,1));
+		if (PredictionMatrix(1,0) > 0 && PredictionMatrix(2,0) > 0)
+			Gmean = sqrt(double(PredictionMatrix(1,1))/double(PredictionMatrix(1,0)) * double(PredictionMatrix(2,2))/double(PredictionMatrix(2,0)));
 	}
 	brier /= double(SetSize);
 
@@ -1258,8 +1290,8 @@ void modelEvalReg(int SetSize, marray<double> &truePrediction,
       }
       else
       {
-         merror("regressionTree::test", "all values are the same, learning makes no sense.") ;
-         RSE = RAE = -1.0 ;
+         //merror("regressionTree::test", "all values are the same, learning makes no sense.") ;
+         RSE = RAE = 0.0 ;
          SE = sqrt(SE/double(SetSize)) ;
          AE = AE/double(SetSize) ;
       }

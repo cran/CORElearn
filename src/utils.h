@@ -71,7 +71,7 @@ double mdlIntEncode(double number) ;
 char* fgetStrIgnoreTill(FILE *from, char *Str, char Ignore, char *SkipChars) ;
 char* sgetStrIgnoreTill(char *stringFrom, char *Str, char Ignore) ;
 
-long int binom(int N, int selector) ;
+long long binom(int N, int selector) ;
 
 int intRound(double x) ;
 long int longRound(double x) ;
@@ -99,6 +99,7 @@ void mrg32k5aSeed(long seed) ;
 double randBetween(double From, double To) ;
 int randBetween(int from, int to) ;
 void randSeed(long seed) ;
+void testRand(int *n, double *x);
 double randNormal(double mean, double stddev) ;
 
 void printLine(FILE *to, const char *what, int times) ;
@@ -112,7 +113,7 @@ void modelEval(int SetSize, marray<int> &trueClass,
 		marray<marray<double> > &probDist, int noClasses, marray<double> &priorProbability,
 		mmatrix<double> &CostMatrix, double &Accuracy, double &avgCost,
 		double &Inf, double &Auc, mmatrix<int> &PredictionMatrix, double &kappa,
-		double &sensitivity, double &specificity, double &brier) ;
+		double &sensitivity, double &specificity, double &brier, double &precision, double &Gmean)  ;
 void modelEvalReg(int SetSize, marray<double> &truePrediction,
       marray<double> &prediction, double avgPredicted, double &SE, double &RSE,double &AE, double &RAE) ;
 void costMxFromR(int noClasses, marray<double> &costs, mmatrix<double> &CostMatrix) ;

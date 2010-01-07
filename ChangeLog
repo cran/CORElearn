@@ -1,4 +1,5 @@
-CORElearn-0.9.24, 2009-09-25: improvements in plot.ordEval, and additional checks of input data 
+CORElearn-0.9.25, 2010-01-07: added rfAttrEval, feature evaluation with random forest, bug fixes 
+CORElearn-0.9.24, 2009-12-06: improvements in plot.ordEval, and additional checks of input data 
 CORElearn-0.9.23, 2009-09-25: improvements in plot.ordEval, repairing minor bugs, documentation, 
                                function optionCore renamed to helpCore 
 CORElearn-0.9.22, 2009-09-20: repairing minor inter-platform inconsistencies in documentation

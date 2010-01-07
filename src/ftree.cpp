@@ -529,7 +529,7 @@ booleanT featureTree::buildConstruct(estimation &Estimator, binnode* Node, int c
 
       // copy this step caches into global cache
 
-      // prepare space if neccessary
+      // prepare space if necessary
       if (CachedConstructs.filled() + opt->noCachedInNode > CachedConstructs.len())
         CachedConstructs.enlarge(Mmax(CachedConstructs.len() *2, CachedConstructs.len()+2*opt->noCachedInNode)) ;
 

@@ -505,7 +505,7 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
   
 		   binPartition Generator(NoValues) ;
            noPartitions = 0 ;
-		   adjustTables(0,  firstFreeDiscSlot + addedAttr + Mmin(Generator.noPositions(), long(fTree->opt->discretizationSample))) ;
+		   adjustTables(0,  firstFreeDiscSlot + addedAttr + Mmin(Generator.noPositions(), (long long)(fTree->opt->discretizationSample))) ;
            discFrom[estIdx] = firstFreeDiscSlot + addedAttr ;
  		   while (Generator.increment() )
 		   {

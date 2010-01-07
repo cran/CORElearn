@@ -42,6 +42,8 @@ cost-sensitive ReliefF, ..), gain ratio, gini-index, MDL, DKM, information gain,
 \item \code{\link{versionCore}} outputs version of the package from underlying C++ library.
 }
 Some of the internal structures of the C++ part are described in \code{\link{CORElearn-internal}}.
+
+For an automatically generated list of functions use \code{help(package=CORElearn)}.
 }
 \author{
 Marko Robnik-Sikonja, Petr Savicky

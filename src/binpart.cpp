@@ -69,17 +69,8 @@ booleanT binPartition::increment(void)
 }
 
 
-long int binPartition::noPositions(void)
+long long binPartition::noPositions(void)
 {
-   // estimate for number of positions
-   long int number = 0 ;
-   int i  ;
-   for (i=1 ; i <= (N-1)/2 ; i++)
-     number += binom(N,i) ;
-   
-   if (N % 2 == 0) // even N
-     number += binom(N, i)/2 ;
-  
-   return number ;
+   return pow(2,N-1) ;
 }
 

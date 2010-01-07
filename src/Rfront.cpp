@@ -62,12 +62,24 @@ void testNA(int *t, double *x, int *a) {
 		*x = NAcont;
 	} else if (*t == 2) {
 		y = 0.0;
-		*x = y/y;
+		*x = y / y;
 	}
 	//u.d = *x;
 	//printf("%08x  %08x", u.i.p1, u.i.p0); // OK for little endian
 	a[0] = isNAcont(*x);
 	a[1] = isNaN(*x);
+}
+
+void testRPORT(int *a) {
+#if defined(R_PORT)
+	*a = 1;
+#else
+	*a = 0;
+#endif
+}
+
+void testCoreRand(int *n, double *x) {
+	testRand(n, x);
 }
 
 // library version
@@ -79,10 +91,8 @@ void versionCore(char **version) {
 void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		int *discData, int *noNumeric, double *numData, double *costMx,
 		char **dscAttrNames, char **dscValNames, char ** nmAttrNames,
-		int *noOptions, char **optName, char **optValue, int *dataFromFiles,
-		int *modelID, int *noClasses, double *priorClassProb, double *avgPrediction
-)
-{
+		int *noOptions, char **optName, char **optValue, int *modelID,
+		int *noClasses, double *priorClassProb, double *avgPrediction) {
 #if defined(R_PORT)
 	GetRNGstate();
 #endif
@@ -92,7 +102,7 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 	discreteData.wrap(*noDiscrete * (*noInst), discData);
 	marray<double> numericData, costMatrix, priorClProb;
 	numericData.wrap(*noNumeric * (*noInst), numData);
-	priorClProb.wrap(256, priorClassProb) ;
+	priorClProb.wrap(256, priorClassProb);
 	marray<char*> optionsName, optionsValue;
 	optionsName.wrap(*noOptions, optName);
 	optionsValue.wrap(*noOptions, optValue);
@@ -152,32 +162,15 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 	}
 	data->opt = opt;
 
-	// read data directly from disk
-	if (*dataFromFiles) {
-		if (!data->readProblem(mTRUE, mFALSE)) {
-			delete allModels[*modelID];
-			allModels[*modelID] = 0;
-			*modelID = -1;
-			goto cleanUp;
-		}
-		if (isRegression != data->isRegression) {
-			merror("Incompatible prediction data and action %s\n", opt->action);
-			delete allModels[*modelID];
-			allModels[*modelID] = 0;
-			*modelID = -1;
-			goto cleanUp;
-		}
-	} else {
-		// data is passed from R
-		data->isRegression = isRegression;
-		// prepare data, first description than matrixes
-		// the data structures are defined in dataStore class
-		data->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, isRegression,
-				discAttrNames, discValNames, numAttrNames);
-		data->dataFromR(*noInst, discreteData, numericData, mTRUE);
-		costMatrix.wrap(data->noClasses * data->noClasses, costMx);
-		data->costsFromR(costMatrix);
-	}
+	// data is passed from R
+	data->isRegression = isRegression;
+	// prepare data, first description than matrixes
+	// the data structures are defined in dataStore class
+	data->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, isRegression,
+			discAttrNames, discValNames, numAttrNames);
+	data->dataFromR(*noInst, discreteData, numericData, mTRUE);
+	costMatrix.wrap(data->noClasses * data->noClasses, costMx);
+	data->costsFromR(costMatrix);
 
 	// prepare data for training/testing
 	data->opt->splitSelection = ALL_TRAINING;
@@ -185,10 +178,10 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 	data->setDataSplit(data->opt->splitIdx);
 
 	// copy some data to output
-	*noClasses = data->noClasses ;
-    if (! data->isRegression)
-    	for (int c=1 ; c<=*noClasses ; c++)
-    	   priorClProb[c-1] = data->AttrDesc[0].valueProbability[c];
+	*noClasses = data->noClasses;
+	if (!data->isRegression)
+		for (int c = 1; c <= *noClasses; c++)
+			priorClProb[c - 1] = data->AttrDesc[0].valueProbability[c];
 
 	if (strcmp(data->opt->action, "tree") == 0) {
 		dT->learnRF = mFALSE;
@@ -231,20 +224,18 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 	}
 
 	if (data->isRegression)
-		*avgPrediction = rT->rootAverage ;
+		*avgPrediction = rT->rootAverage;
 	// for some models we can destroy the data here
 	if ((strcmp(data->opt->action, "tree") == 0 && (data->opt->modelType == 1
 			|| data->opt->modelType == 4))
-			|| strcmp(data->opt->action, "bayes") == 0 || (strcmp(
-			data->opt->action, "rf") == 0 && data->opt->rfkNearestEqual == 0)) {
+			|| strcmp(data->opt->action, "bayes") == 0)
 		data->clearData(mTRUE);
-	}
 
 	// unwrap arrays
 	cleanUp: noDiscreteValues.unWrap(dummy);
 	discreteData.unWrap(dummy);
 	numericData.unWrap(dummy);
-	priorClProb.unWrap(dummy) ;
+	priorClProb.unWrap(dummy);
 
 	costMatrix.unWrap(dummy);
 	optionsName.unWrap(dummy);
@@ -275,10 +266,9 @@ void destroyOneCoreModel(int* modelID) {
 }
 
 // return class value and its probability for given data with selected model
-void predictWithCoreModel(int *modelID, int *dataFromFiles, int *noInst,
-		int *discData, double *numData, double *costMx, int *returnPred,
-		double *returnProb, double *returnPredReg, int *noOptions,
-		char **optName, char **optValue) {
+void predictWithCoreModel(int *modelID, int *noInst, int *discData,
+		double *numData, double *costMx, int *returnPred, double *returnProb,
+		double *returnPredReg, int *noOptions, char **optName, char **optValue) {
 	// is modelID valid
 	if (*modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
 		return;
@@ -301,15 +291,10 @@ void predictWithCoreModel(int *modelID, int *dataFromFiles, int *noInst,
 	// read options
 	data->opt->optionsFromStrings(*noOptions, optionsName, optionsValue);
 
-	if (*dataFromFiles) {
-		if (!data->readProblem(mFALSE, mFALSE)) {
-			return;
-		}
-	} else {
-		// prepare prediction data, which should have the same description as training one
-		data->dataFromR(*noInst, discreteData, numericData, mFALSE);
-		data->costsFromR(costMatrix);
-	}
+	// prepare prediction data, which should have the same description as training one
+	data->dataFromR(*noInst, discreteData, numericData, mFALSE);
+	data->costsFromR(costMatrix);
+
 	if (data->isRegression)
 		((regressionTree*) data)->predictRreg(returnPredictedReg);
 	else
@@ -361,7 +346,8 @@ void availableEstimatorsCore(char **estBrief) {
 }
 
 void estimateCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
-		int *noNumeric, double *numData, double *costMx, int *noOptions,
+		int *noNumeric, double *numData, double *costMx, char **dscAttrNames,
+		char **dscValNames, char ** nmAttrNames, int *noOptions,
 		char **optName, char **optValue, int *selectedEstimator,
 		double *discEst, double *numEst) {
 #if defined(R_PORT)
@@ -379,6 +365,19 @@ void estimateCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 	marray<double> discreteEst, numericEst;
 	numericEst.wrap(*noNumeric, numEst);
 	discreteEst.wrap(*noDiscrete, discEst);
+	marray<char *> discAttrNames, discValNames, numAttrNames;
+	if (dscAttrNames && dscAttrNames[0]) {
+		discAttrNames.wrap(*noDiscrete, dscAttrNames);
+		discValNames.wrap(*noDiscrete, dscValNames);
+	} else {
+		discAttrNames.create(*noDiscrete, 0);
+		discValNames.create(*noDiscrete, 0);
+	}
+	if (nmAttrNames && nmAttrNames[0]) {
+		numAttrNames.wrap(*noNumeric, nmAttrNames);
+	} else {
+		numAttrNames.create(*noNumeric, 0);
+	}
 
 	int dummy, i;
 	featureTree *dT = new featureTree;
@@ -390,8 +389,7 @@ void estimateCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 	dT->opt->estOn[*selectedEstimator] = mTRUE;
 
 	// prepare data, first description than matrixes
-	marray<char *> discAttrNames(*noDiscrete, 0), discValNames(*noDiscrete, 0),
-			numAttrNames(*noNumeric, 0);
+	//marray<char *> discAttrNames(*noDiscrete, 0), discValNames(*noDiscrete, 0), numAttrNames(*noNumeric, 0);
 	dT->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, mFALSE,
 			discAttrNames, discValNames, numAttrNames);
 	dT->dataFromR(*noInst, discreteData, numericData, mTRUE);
@@ -423,16 +421,25 @@ void estimateCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 	optionsValue.unWrap(dummy);
 	numericEst.unWrap(dummy);
 	discreteEst.unWrap(dummy);
+	if (dscAttrNames && dscAttrNames[0]) {
+		discAttrNames.unWrap(dummy);
+		discValNames.unWrap(dummy);
+	}
+	if (nmAttrNames && nmAttrNames[0])
+		numAttrNames.unWrap(dummy);
+
 	delete dT;
+
 #if defined(R_PORT)
 	PutRNGstate();
 #endif
 }
 
 void estimateCoreReg(int *noInst, int *noDiscrete, int *noDiscVal,
-		int *discData, int *noNumeric, double *numData, int *noOptions,
-		char **optName, char **optValue, int *selectedEstimator,
-		double *discEst, double *numEst) {
+		int *discData, int *noNumeric, double *numData, char **dscAttrNames,
+		char **dscValNames, char **nmAttrNames, int *noOptions, char **optName,
+		char **optValue, int *selectedEstimator, double *discEst,
+		double *numEst) {
 #if defined(R_PORT)
 	GetRNGstate();
 #endif
@@ -448,6 +455,19 @@ void estimateCoreReg(int *noInst, int *noDiscrete, int *noDiscVal,
 	marray<double> discreteEst, numericEst;
 	numericEst.wrap(*noNumeric, numEst);
 	discreteEst.wrap(*noDiscrete, discEst);
+	marray<char *> discAttrNames, discValNames, numAttrNames;
+	if (dscAttrNames && dscAttrNames[0]) {
+		discAttrNames.wrap(*noDiscrete, dscAttrNames);
+		discValNames.wrap(*noDiscrete, dscValNames);
+	} else {
+		discAttrNames.create(*noDiscrete, 0);
+		discValNames.create(*noDiscrete, 0);
+	}
+	if (nmAttrNames && nmAttrNames[0]) {
+		numAttrNames.wrap(*noNumeric, nmAttrNames);
+	} else {
+		numAttrNames.create(*noNumeric, 0);
+	}
 
 	int dummy, i;
 	regressionTree *rT = new regressionTree;
@@ -459,8 +479,7 @@ void estimateCoreReg(int *noInst, int *noDiscrete, int *noDiscVal,
 	rT->opt->estOnReg[*selectedEstimator] = mTRUE;
 
 	// prepare data, first description than matrixes
-	marray<char *> discAttrNames(*noDiscrete, 0), discValNames(*noDiscrete, 0),
-			numAttrNames(*noNumeric, 0);
+	//marray<char *> discAttrNames(*noDiscrete, 0), discValNames(*noDiscrete, 0), numAttrNames(*noNumeric, 0);
 	rT->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, mTRUE,
 			discAttrNames, discValNames, numAttrNames);
 	rT->dataFromR(*noInst, discreteData, numericData, mTRUE);
@@ -489,10 +508,35 @@ void estimateCoreReg(int *noInst, int *noDiscrete, int *noDiscVal,
 	optionsValue.unWrap(dummy);
 	numericEst.unWrap(dummy);
 	discreteEst.unWrap(dummy);
+	if (dscAttrNames && dscAttrNames[0]) {
+		discAttrNames.unWrap(dummy);
+		discValNames.unWrap(dummy);
+	}
+	if (nmAttrNames && nmAttrNames[0])
+		numAttrNames.unWrap(dummy);
+
 	delete rT;
+
 #if defined(R_PORT)
 	PutRNGstate();
 #endif
+}
+
+void rfAttrEval(int *modelID, double *estOut) {
+	// is modelID valid
+	if (*modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
+		return;
+	featureTree *dT = (featureTree*) allModels[*modelID]; // working Model
+	dT->learnRF = mTRUE;
+
+	marray<double> attrEst;
+	attrEst.wrap(dT->noAttr + 1, estOut);
+
+	dT->varImportance(attrEst);
+
+	int dummy;
+	attrEst.unWrap(dummy);
+
 }
 
 void ordEvalCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
@@ -699,7 +743,7 @@ void calibrate(int *calMethod, int *noInst, int *correctCl,
 		y[i].key = predictedProb[i];
 		y[i].weight = weight[i];
 	}
-	y.setFilled(*noInst) ;
+	y.setFilled(*noInst);
 	switch (*calMethod) {
 	case 1:
 		cal.isoRegCal(y);
@@ -729,26 +773,26 @@ void calibrate(int *calMethod, int *noInst, int *correctCl,
 }
 
 void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
-		double *predictedPr, double *costMx, int *noClasses, double *priorClProbability,
-		double *accuracy, double *avgCost,
+		double *predictedPr, double *costMx, int *noClasses,
+		double *priorClProbability, double *accuracy, double *avgCost,
 		double *infScore, double *auc, int *predictionMx, double *sensitivity,
-		double *specificity, double *brier, double *kappa) {
+		double *specificity, double *brier, double *kappa, double *precision, double *Gmean) {
 	// wrap arrays
 	marray<int> correctClass, predictedClass, predictionMatrix;
 	correctClass.wrap(*noInst, correctCl);
 	predictedClass.wrap(*noInst, predictedCl);
 	predictionMatrix.wrap(*noClasses * *noClasses, predictionMx);
-	marray<double> predictedProb, costMatrix, priorClProb ;
+	marray<double> predictedProb, costMatrix, priorClProb;
 	predictedProb.wrap(*noInst * *noClasses, predictedPr);
 	costMatrix.wrap(*noClasses * *noClasses, costMx);
-	priorClProb.wrap(*noClasses, priorClProbability) ;
-	mmatrix<double> CostMatrix ;
+	priorClProb.wrap(*noClasses, priorClProbability);
+	mmatrix<double> CostMatrix;
 	costMxFromR(*noClasses, costMatrix, CostMatrix);
 	int i, j, dummy;
 
-	marray<double> priorClassProb(*noClasses+1, 0);
+	marray<double> priorClassProb(*noClasses + 1, 0);
 	for (i = 1; i <= *noClasses; i++)
-       priorClassProb[i] = priorClProb[i-1] ;
+		priorClassProb[i] = priorClProb[i - 1];
 
 	marray<marray<double> > probDist(*noInst);
 	for (i = 0; i < *noInst; i++) {
@@ -758,9 +802,9 @@ void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
 	}
 	mmatrix<int> predMx(*noClasses + 1, *noClasses + 1, 0);
 
-	modelEval(*noInst, correctClass, probDist, *noClasses, priorClassProb, CostMatrix,
-			*accuracy, *avgCost,
-			*infScore, *auc, predMx, *kappa, *sensitivity, *specificity, *brier);
+	modelEval(*noInst, correctClass, probDist, *noClasses, priorClassProb,
+			CostMatrix, *accuracy, *avgCost, *infScore, *auc, predMx, *kappa,
+			*sensitivity, *specificity, *brier, *precision, *Gmean);
 
 	for (i = 1; i <= *noClasses; i++)
 		for (j = 1; j <= *noClasses; j++)
@@ -772,18 +816,20 @@ void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
 	predictionMatrix.unWrap(dummy);
 	predictedProb.unWrap(dummy);
 	costMatrix.unWrap(dummy);
-	priorClProb.unWrap(dummy) ;
+	priorClProb.unWrap(dummy);
 }
 
-void modelEvaluateReg(int *modelID, int *noInst, double *truePred,
-		double *pred, double *avgPrediction, double *MSE, double *RMSE, double *MAE, double *RMAE) {
+void modelEvaluateReg(int *noInst, double *truePred, double *pred,
+		double *avgPrediction, double *MSE, double *RMSE, double *MAE,
+		double *RMAE) {
 
 	// wrap arrays
 	marray<double> truePrediction, prediction;
 	prediction.wrap(*noInst, pred);
 	truePrediction.wrap(*noInst, truePred);
 
-	modelEvalReg(*noInst, truePrediction, prediction, *avgPrediction, *MSE, *RMSE, *MAE,*RMAE);
+	modelEvalReg(*noInst, truePrediction, prediction, *avgPrediction, *MSE,
+			*RMSE, *MAE, *RMAE);
 
 	//unwrap arrays
 	int dummy;
@@ -872,7 +918,7 @@ void simRcall() {
 	for (i = 0; i < noInst; i++) {
 		discData[i] = 1 + i % 2;
 		discData[noInst + i] = 1 + i % 3;
-		discData[2* noInst + i] = 1 + i % 4;
+		discData[2 * noInst + i] = 1 + i % 4;
 		numData[i] = 1.0 + 0.1 * i;
 		numData[noInst + i] = 2.0 + 0.1 * i;
 	}
@@ -884,21 +930,21 @@ void simRcall() {
 				costMx[i + j * noClasses] = 1.0;
 	int modelID;
 	int noOptions = 4;
-	int dataFromFiles = 0;
-	double avgPrediction=0, *priorClProb = new double[noClasses] ;
+	double avgPrediction = 0, *priorClProb = new double[noClasses];
 	char const* optionsName[] = { "action", "domainName", "rfNoTrees",
 			"rfPredictClass" };
 	char const* optionsVal[] = { "rf", "test", "100", "N" };
 	buildCoreModel(&noInst, &noDisc, noDiscreteValues, discData, &noNumeric,
 			numData, costMx, 0, 0, 0, &noOptions, (char**) optionsName,
-			(char**) optionsVal, &dataFromFiles, &modelID, &noClasses, priorClProb, &avgPrediction);
+			(char**) optionsVal, &modelID, &noClasses, priorClProb,
+			&avgPrediction);
 	int noPredict = noInst;
 	int *pred = new int[noPredict];
 	double *prob = new double[noPredict * noDiscreteValues[0]];
 	double *regPred = new double[noPredict];
-	predictWithCoreModel(&modelID, &dataFromFiles, &noPredict, discData,
-			numData, costMx, pred, prob, regPred, &noOptions,
-			(char**) optionsName, (char**) optionsVal);
+	predictWithCoreModel(&modelID, &noPredict, discData, numData, costMx, pred,
+			prob, regPred, &noOptions, (char**) optionsName,
+			(char**) optionsVal);
 
 	for (i = 0; i < noPredict; i++) {
 		printf("%d  %d  ", i + 1, pred[i]);
@@ -908,18 +954,19 @@ void simRcall() {
 	}
 	destroyOneCoreModel(&modelID);
 
-	int correctCl[] = {0,0,0,0,0,1,1,1,1,1} ;
-	double predictedPr[] = {0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9} ;
-	double weight[] = {1,1,1,1,1,1,1,1,1,1};
-	int calMethod = 3, noBins = 5, noIntervals=0 ;
-	noInst = 10 ;
+	int correctCl[] = { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1 };
+	double predictedPr[] = { 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
+	double weight[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+	int calMethod = 3, noBins = 5, noIntervals = 0;
+	noInst = 10;
 	double *interval = new double[noInst];
 	double *calProb = new double[noInst];
-	calibrate(&calMethod, &noInst, correctCl, predictedPr, weight, &noBins, &noIntervals, interval, calProb) ;
+	calibrate(&calMethod, &noInst, correctCl, predictedPr, weight, &noBins,
+			&noIntervals, interval, calProb);
 
-	delete [] interval ;
-	delete [] calProb ;
-	delete [] priorClProb ;
+	delete[] interval;
+	delete[] calProb;
+	delete[] priorClProb;
 }
 
 } //extern "C"
