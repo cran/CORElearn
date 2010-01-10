@@ -95,8 +95,8 @@ int regressionTree::predictRreg(marray<double> &predicted) {
 char attrValSeparatorsFromR[] = "\x1F" ;
 
 int dataStore::dscFromR(int noDiscreteAttr, marray<int> &noDiscreteValues,
-		int noNumericAttr, booleanT isRegression,
-        marray<char* > &discAttrNames, marray<char* > &discValNames, marray<char* >  &numAttrNames) {
+		int noNumericAttr, marray<char* > &discAttrNames,
+		marray<char* > &discValNames, marray<char* >  &numAttrNames) {
 
 	int iA, iV;
 	NoOriginalAttr = noAttr = noDiscreteAttr + noNumericAttr -1;
@@ -169,35 +169,35 @@ void dataStore::dataFromR(int noInst, marray<int> &discreteData,
 		marray<double> &numericData, booleanT isTrain) {
 	int i, j;
 
-	mmatrix<int> *dData;
-	mmatrix<double> *nData;
+	mmatrix<int> *dscData;
+	mmatrix<double> *numData;
 
 	if (isTrain) { // fill the first set of data
 		NoCases= noInst ;
-		dData = &DiscData ;
-		nData = &NumData ;
+		dscData = &DiscData ;
+		numData = &NumData ;
 	} else {
 		NoPredict = noInst ;
-		dData = &DiscPredictData ;
-		nData = &NumPredictData ;
+		dscData = &DiscPredictData ;
+		numData = &NumPredictData ;
 	}
 	if (noDiscrete)
-		dData->create(noInst, noDiscrete) ;
+		dscData->create(noInst, noDiscrete) ;
 	if (noNumeric)
-		nData->create(noInst, noNumeric) ;
+		numData->create(noInst, noNumeric) ;
 
 	for (i=0; i< noInst ; i++) {
 		for (j=0; j < noDiscrete ; j++) {
-			(*dData)(i, j)=discreteData[i + j*noInst];
-			if ((*dData)(i, j)<0 || (*dData)(i, j)> AttrDesc[DiscIdx[j]].NoValues) {
+			(*dscData)(i, j)=discreteData[i + j*noInst];
+			if ((*dscData)(i, j)<0 || (*dscData)(i, j)> AttrDesc[DiscIdx[j]].NoValues) {
 				merror("Invalid data detected for attribute", AttrDesc[DiscIdx[j]].AttributeName ) ;
-				(*dData)(i, j) = NAdisc ;
+				(*dscData)(i, j) = NAdisc ;
 			}
 		}
 		for (j=0; j < noNumeric ; j++) {
-			(*nData)(i, j)=numericData[i + j*noInst];
+			(*numData)(i, j)=numericData[i + j*noInst];
              #if defined(DEBUG)
-			   if (! isNAcont((*nData)(i, j)) && isNaN((*nData)(i, j)))
+			   if (! isNAcont((*numData)(i, j)) && isNaN((*numData)(i, j)))
 				   merror("Invalid data, NaN present, which are not NA","");
              #endif
 		}

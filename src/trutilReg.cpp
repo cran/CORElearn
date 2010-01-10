@@ -425,7 +425,7 @@ double regressionTree::discretizeGreedy(int ContAttrIdx, estimationReg &Estimato
       return - FLT_MAX ;
    }
    sortedAttr.setFilled(OKvalues) ;
-   sortedAttr.sort(ascSortComp) ;
+   sortedAttr.qsortAsc() ;
 
    // eliminate duplicates
    int unique = 0 ;

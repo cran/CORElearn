@@ -336,7 +336,7 @@ void estimationReg::MSE(int contAttrFrom, int contAttrTo,
       }
       totalWeight = RightWeight ;
       sortedMean.setFilled(OKvalues) ;
-      sortedMean.sort(ascSortComp) ;
+      sortedMean.qsortAsc() ;
       bestEstimate = FLT_MAX ;
       LeftWeight = LeftSquares = LeftValues = 0.0 ;
       int upper = OKvalues-1 ;
@@ -389,7 +389,7 @@ void estimationReg::MSE(int contAttrFrom, int contAttrTo,
       }
       totalWeight = RightWeight ;
       sortedAttr.setFilled(OKvalues) ;
-      sortedAttr.sort(ascSortComp) ;
+      sortedAttr.qsortAsc() ;
       bestEstimate = FLT_MAX ;
       LeftWeight = LeftSquares = LeftValues = 0.0 ;
       j=0 ;
@@ -831,7 +831,7 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
          OKvalues ++ ;
       }
       sortedAttr.setFilled(OKvalues) ;
-      sortedAttr.sort(ascSortComp) ;
+      sortedAttr.qsortAsc() ;
 
       marray<int> uniqueIdx(OKvalues) ;
       int noUnique, lastUnique ;

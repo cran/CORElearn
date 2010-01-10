@@ -71,6 +71,6 @@ booleanT binPartition::increment(void)
 
 long long binPartition::noPositions(void)
 {
-   return pow(2,N-1) ;
+   return pow((double)2.0,(double)(N-1)) ;
 }
 

@@ -85,7 +85,7 @@ public:
    int writeData(const char* DataFileName) const ;
    void countAV(marray<marray<int> > &noAV) const;
    void countNA(marray<int> &noNA) const ;
-   int dscFromR(int noDiscreteAttr, marray<int> &noDiscreteValues, int noNumericAttr, booleanT isRegression,
+   int dscFromR(int noDiscreteAttr, marray<int> &noDiscreteValues, int noNumericAttr,
            marray<char* > &discAttrNames, marray<char* > &discValNames, marray<char* >  &numAttrNames) ;
    void dataFromR(int noInst, marray<int> &discreteData, marray<double> &numericData, booleanT isTrain) ;
    void costsFromR(marray<double> &costs) ;

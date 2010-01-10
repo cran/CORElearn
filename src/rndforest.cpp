@@ -149,7 +149,7 @@ int featureTree::buildForest(void) {
 //               evaluates trees computed so far
 //
 //************************************************************
-double featureTree::oobInplaceEvaluate(binnode *root, marray<int> &dSet, marray<booleanT> &oobSet, mmatrix<int> &oob) {
+double featureTree::oobInplaceEvaluate(binnode *rootNode, marray<int> &dSet, marray<booleanT> &oobSet, mmatrix<int> &oob) {
 // for data set dSet, oobSet[i] contains indicator wheather dSet[i] is an out of bag instance
    int i, j, max, oobCorrect=0, valid=0  ;
    marray<double> probDist(noClasses+1) ;
@@ -157,7 +157,7 @@ double featureTree::oobInplaceEvaluate(binnode *root, marray<int> &dSet, marray<
 	  if (oobSet[i]) {
 	    // update with current tree
 		probDist.init(0.0) ;
-        max = rfTreeCheck(root,dSet[i], probDist) ; // prediction
+        max = rfTreeCheck(rootNode,dSet[i], probDist) ; // prediction
         // prediction with majority class (disregarding costs)
         //max=1;
         //for (j=2 ; j<=noClasses ; j++)
@@ -1245,9 +1245,9 @@ booleanT featureTree::readForest(char *fileName) {
     fscanf(fin, " ) , trees = list(") ;
 	marray<char * > discAttrNames(noDiscrete, 0), discValNames(noDiscrete, 0), numAttrNames(noNumeric,0) ;
 
-    dscFromR(noDiscrete, discNoValues, noNumeric, mFALSE, discAttrNames, discValNames, numAttrNames) ;
-    isRegression=mFALSE ;
-	forest.create(opt->rfNoTrees) ;
+	isRegression=mFALSE ;
+	dscFromR(noDiscrete, discNoValues, noNumeric, discAttrNames, discValNames, numAttrNames) ;
+   	forest.create(opt->rfNoTrees) ;
     opt->rfAttrEvaluate = mFALSE ; // there is no in and out-of-bag set
 	opt->rfkNearestEqual = 0 ; // instances are not stored
 
@@ -1281,9 +1281,9 @@ binnode* featureTree::readTree(FILE* fin, int treeIdx) {
 	   merror("rfInterface::readTree", "invalid tree index") ;
 	   return 0 ;
    }
-   binnode *root = readNode(fin) ;
+   binnode *rootNode = readNode(fin) ;
    fscanf(fin," ) )") ;
-   return root ;
+   return rootNode ;
 }
 
 binnode* featureTree::readNode(FILE* fin) {

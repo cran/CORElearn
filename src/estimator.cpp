@@ -426,7 +426,7 @@ double estimation::CVmodified(int contAttrFrom, int contAttrTo,
         distSort.addEnd(tempSort) ;
       }
 
-      distSort.sort(ascSortComp) ;
+      distSort.qsortAsc() ;
 
       for (iDisc=discAttrFrom ; iDisc < discAttrTo ; iDisc++)
       {
@@ -543,7 +543,7 @@ double estimation::impuritySplit(construct &nodeConstruct, double &bestEstimatio
    }
    double priorImpurity = (this->*fImpurity)(OKvalues, noClassAttrVal, 2) ;
    sortedAttr.setFilled(OKvalues) ;
-   sortedAttr.sort(ascSortComp) ;
+   sortedAttr.qsortAsc() ;
    // initially we move one instance from right to left
    noClassAttrVal(DiscValues(sortedAttr[0].value, 0),1)++ ;
    noClassAttrVal(DiscValues(sortedAttr[0].value, 0),2)-- ;
@@ -629,7 +629,7 @@ double estimation::impuritySplitSample(construct &nodeConstruct, double &bestEst
    }
    double priorImpurity = (this->*fImpurity)(OKvalues, noClassAttrVal, 2) ;
    sortedAttr.setFilled(OKvalues) ;
-   sortedAttr.sort(ascSortComp) ;
+   sortedAttr.qsortAsc() ;
    // initially we move one instance from right to left
    noClassAttrVal(DiscValues(sortedAttr[0].value, 0),1)++ ;
    noClassAttrVal(DiscValues(sortedAttr[0].value, 0),2)-- ;
@@ -708,12 +708,12 @@ booleanT estimation::isMyopic(int selectedEstimator) {
 		return mFALSE;
 }
 
-double estimation::infGainImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::infGainImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
    double tempP, Hc = 0.0 ;
    for (int classIdx=1 ; classIdx <= noClasses ;classIdx++)	   {
 	      if (noClassAttrVal(classIdx, valIdx) > 0)
 	      {
-	         tempP = ((double)noClassAttrVal(classIdx, valIdx)) / weight ;
+	         tempP = ((double)noClassAttrVal(classIdx, valIdx)) / weightNode ;
 	         Hc -= tempP * log2(tempP) ;
 	      }
    }
@@ -738,10 +738,10 @@ double estimation::accuracyOnDistribution(marray<double> &dist) {
 
 
 // computation of gain ratio
-double estimation::gainRatio(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::gainRatio(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double tempP, Ha=0.0, Hc_a=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
-	   tempP = ((double)attrVal[valIdx])/ weight ;
+	   tempP = ((double)attrVal[valIdx])/ weightNode ;
 	   Ha -=  tempP * log2(tempP);
 	   if (attrVal[valIdx] >0)
           Hc_a += tempP * (this->*fImpurity)(attrVal[valIdx], noClassAttrVal, valIdx) ;
@@ -752,10 +752,10 @@ double estimation::gainRatio(double priorImpurity, int weight, marray<int> &attr
 }
 
 // computation of Informaion gain
-double estimation::infGain(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::infGain(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double tempP, Hc_a=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
-	   tempP = double(attrVal[valIdx])/ weight ;
+	   tempP = double(attrVal[valIdx])/ weightNode ;
 	   if (attrVal[valIdx] >0)
        Hc_a += tempP * (this->*fImpurity)(attrVal[valIdx], noClassAttrVal, valIdx) ;
     }
@@ -763,7 +763,7 @@ double estimation::infGain(double priorImpurity, int weight, marray<int> &attrVa
 }
 
 // computation of uniform Informaion gain
-double estimation::infEqual(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::infEqual(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double Hc_a=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
 		if (attrVal[valIdx] >0)
@@ -773,30 +773,30 @@ double estimation::infEqual(double priorImpurity, int weight, marray<int> &attrV
 }
 
 // computation of accuracy
-double estimation::accuracyGain(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::accuracyGain(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double tempP, acc=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
-	   tempP = double(attrVal[valIdx])/ weight ;
+	   tempP = double(attrVal[valIdx])/ weightNode ;
 	   if (attrVal[valIdx] >0)
          acc += tempP * (this->*fImpurity)(attrVal[valIdx], noClassAttrVal, valIdx) ;
     }
     return (priorImpurity - acc)  ;
 }
 
-double estimation::accuracyImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::accuracyImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
    int maxClassIdx = 1 ;
    for (int classIdx=2 ; classIdx <= noClasses ;classIdx++)
 	      if (noClassAttrVal(classIdx, valIdx) > noClassAttrVal(maxClassIdx, valIdx))
 	    	  maxClassIdx = classIdx ;
-   return double(noClassAttrVal(maxClassIdx, valIdx))/weight ;
+   return double(noClassAttrVal(maxClassIdx, valIdx))/weightNode ;
 }
 
-double estimation::DKMImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::DKMImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
       int maxClassIdx = 1 ;
       for (int classIdx=2 ; classIdx <= noClasses ;classIdx++)
    	      if (noClassAttrVal(classIdx, valIdx) > noClassAttrVal(maxClassIdx, valIdx))
    	    	  maxClassIdx = classIdx ;
-      double q = double(noClassAttrVal(maxClassIdx, valIdx))/weight ;
+      double q = double(noClassAttrVal(maxClassIdx, valIdx))/weightNode ;
       return  2.0 * sqrt(q*(1.0-q)) ;
 }
 double estimation::DKMonDistribution(marray<double> &dist) {
@@ -808,17 +808,17 @@ double estimation::DKMonDistribution(marray<double> &dist) {
 }
 
 // computation of DKM
-double estimation::DKMgain(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::DKMgain(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double tempP, dkm=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
-	   tempP = double(attrVal[valIdx])/ weight ;
+	   tempP = double(attrVal[valIdx])/ weightNode ;
 	   if (attrVal[valIdx] >0)
           dkm += tempP * (this->*fImpurity)(attrVal[valIdx], noClassAttrVal, valIdx) ;
     }
     return (priorImpurity - dkm)  ;
 }
 
-double estimation::EqualDKM(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::EqualDKM(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  dkm=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
 		if (attrVal[valIdx] >0)
@@ -827,7 +827,7 @@ double estimation::EqualDKM(double priorImpurity, int weight, marray<int> &attrV
     return -dkm  ;
 }
 // top level estimator for uniform priors, calling appropriate distribution function
-double estimation::gainUniform(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::gainUniform(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double pvj, gain=0.0  ;
 	int i,valIdx;
 	// compute unconditional class probabilities
@@ -859,10 +859,10 @@ double estimation::gainUniform(double priorImpurity, int weight, marray<int> &at
 
 
 
-double estimation::giniImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::giniImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
       double pc2 = 0.0 ;
       for (int classIdx=1 ; classIdx <= noClasses ;classIdx++)
-          pc2 += sqr(double(noClassAttrVal(classIdx,valIdx))/weight) ;
+          pc2 += sqr(double(noClassAttrVal(classIdx,valIdx))/weightNode) ;
       return  pc2 ; // the actual impurity is 1- pc2, but this is handled in gain function giniGain
 }
 
@@ -873,17 +873,17 @@ double estimation::giniOnDistribution(marray<double> &dist) {
       return  1-pc2 ; // the actual impurity is 1- pc2, but this is handled in the calling function
 }
 
-double estimation::giniGain(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::giniGain(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double tempP, gini=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
-	   tempP = double(attrVal[valIdx])/ weight ;
+	   tempP = double(attrVal[valIdx])/ weightNode ;
 	   if (attrVal[valIdx] >0)
          gini += tempP * (this->*fImpurity)(attrVal[valIdx], noClassAttrVal, valIdx) ;
     }
     return (gini - priorImpurity )  ;
 }
 
-double estimation::giniEqual(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::giniEqual(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double gini=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
 		if (attrVal[valIdx] > 0)
@@ -894,24 +894,24 @@ double estimation::giniEqual(double priorImpurity, int weight, marray<int> &attr
 
 
 
-double estimation::zeroImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::zeroImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
   return 0.0 ;
 }
 
 // for two class problem
 // extended to multi-class problem by all pairs of classes difference
-//double estimation::hellingerImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+//double estimation::hellingerImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
 //     double hi = 0.0 ;
 //     int i, j ;
 //     for (i=1 ; i <= noClasses ;i++)
 //    	 for (j=i+1 ; j <= noClasses ;j++)
-//           hi += sqr(sqrt(double(noClassAttrVal(i,valIdx))/weight) - sqrt(double(noClassAttrVal(j,valIdx))/weight)) ;
+//           hi += sqr(sqrt(double(noClassAttrVal(i,valIdx))/weightNode) - sqrt(double(noClassAttrVal(j,valIdx))/weightNode)) ;
 //     return  hi ;
 //}
 
 // for two class problem
 // extended to multi-class problem by all pairs of classes difference
-double estimation::EuclidHellingerImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::EuclidHellingerImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
 	double da, t ;
 	switch (fTree->opt->multiclassEvaluation) {
 	case 1: // average over all-pairs
@@ -932,9 +932,9 @@ double estimation::EuclidHellingerImpurity(int weight, mmatrix<int> &noClassAttr
 				for (j=i+1 ; j <= noClasses ;j++) {
 					if (noClassAttrVal(j,valIdx)>0) {
 						if (preparedEstimator == estImpurityEuclid)
-							t =  sqr(double(noClassAttrVal(i,valIdx))/weight - double(noClassAttrVal(j,valIdx))/weight ) ;
+							t =  sqr(double(noClassAttrVal(i,valIdx))/weightNode - double(noClassAttrVal(j,valIdx))/weightNode ) ;
 						else if (preparedEstimator == estImpurityHellinger)
-							t= sqr(sqrt(double(noClassAttrVal(i,valIdx))/weight) - sqrt(double(noClassAttrVal(j,valIdx))/weight)) ;
+							t= sqr(sqrt(double(noClassAttrVal(i,valIdx))/weightNode) - sqrt(double(noClassAttrVal(j,valIdx))/weightNode)) ;
 						else {
 							merror("estimation::EuclidHellingerImpurity","invalid estimator detected") ;
 							t = -1.0 ;
@@ -964,9 +964,9 @@ double estimation::EuclidHellingerImpurity(int weight, mmatrix<int> &noClassAttr
 						noClassAttrVal(0,valIdx) += noClassAttrVal(j, valIdx) ;
 				if (noClassAttrVal(0,valIdx)>0) {
 					if (preparedEstimator==estImpurityEuclid)
-						t =  sqr(double(noClassAttrVal(i,valIdx))/weight - double(noClassAttrVal(0,valIdx))/weight ) ;
+						t =  sqr(double(noClassAttrVal(i,valIdx))/weightNode - double(noClassAttrVal(0,valIdx))/weightNode ) ;
 					else if (preparedEstimator == estImpurityHellinger)
-						t= sqr(sqrt(double(noClassAttrVal(i,valIdx))/weight) - sqrt(double(noClassAttrVal(0,valIdx))/weight)) ;
+						t= sqr(sqrt(double(noClassAttrVal(i,valIdx))/weightNode) - sqrt(double(noClassAttrVal(0,valIdx))/weightNode)) ;
 					else {
 						merror("estimation::EuclidHellingerImpurity","invalid estimator detected") ;
 						t = -1.0 ;
@@ -999,7 +999,7 @@ double estimation::EuclidHellingerImpurity(int weight, mmatrix<int> &noClassAttr
 
 // variant of distribution distance between two classes in each split
 // extended to multi-class problem by  summing over all all pairs of classes
-double estimation::distanceImpGain(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::distanceImpGain(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  h=0.0  ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
 		if (attrVal[valIdx] >0)
@@ -1010,7 +1010,7 @@ double estimation::distanceImpGain(double priorImpurity, int weight, marray<int>
 
 // variant of distribution distance between different splits
 // extended to multi-split problem by  averaging over all pairs of attribute splits
-double estimation::EqualHellinger(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::EqualHellinger(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  h=0.0,hi  ;
 	int c, vi,vj ;
 	int noComb = 0 ;
@@ -1032,7 +1032,7 @@ double estimation::EqualHellinger(double priorImpurity, int weight, marray<int> 
 }
 
 
-double estimation::MDLimpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::MDLimpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
  	  marray<double> Multinom(noClasses) ;
  	  // encoding number of examples in each class
       for (int classIdx=1 ; classIdx <= noClasses ;classIdx++)
@@ -1042,25 +1042,25 @@ double estimation::MDLimpurity(int weight, mmatrix<int> &noClassAttrVal, int val
 
       // encoding prior decoder
       Multinom[0] = noClasses  -1 ;
-      Multinom[1] = weight ;
+      Multinom[1] = weightNode ;
       Multinom.setFilled(2) ;
       MDL += multinomLog2(Multinom) ;
 
       return MDL;
 }
 
-double estimation::MDLgain(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::MDLgain(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double mdl=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++)
        mdl +=  (this->*fImpurity)(attrVal[valIdx], noClassAttrVal, valIdx) ;
-    return (priorImpurity - mdl)/weight ;
+    return (priorImpurity - mdl)/weightNode ;
 }
 
-double estimation::ReliefMyopicFast(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::ReliefMyopicFast(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	// prior impurity is sum of p_c^2
 	double tempP, giniPost=0.0, pEqualA = 0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
- 	   tempP = double(attrVal[valIdx])/ weight ;
+ 	   tempP = double(attrVal[valIdx])/ weightNode ;
  	   pEqualA += sqr(tempP) ;
        giniPost +=  sqr(tempP) * (this->*fImpurity)(attrVal[valIdx], noClassAttrVal, valIdx) ;
     }
@@ -1069,11 +1069,11 @@ double estimation::ReliefMyopicFast(double priorImpurity, int weight, marray<int
 }
 
 
-double estimation::DKMcostImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::DKMcostImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
       marray<double> pC(noClasses+1, 0) ;  // store class probabilities
       int i, j ;
       for (i=1 ; i <= noClasses ;i++)
-    	  pC[i] = double(noClassAttrVal(i, valIdx))/weight ;
+    	  pC[i] = double(noClassAttrVal(i, valIdx))/weightNode ;
       marray<double> eC(noClasses+1, 0) ; //expected cost
       double denom, eCsum = 0.0 ;
       for (i=1 ; i<=noClasses ; i++) {
@@ -1088,7 +1088,7 @@ double estimation::DKMcostImpurity(int weight, mmatrix<int> &noClassAttrVal, int
         eCsum +=  pC[i] * eC[i] ;
       }
       double q = -1.0 ;
-      marray<double> pC1(noClasses+1, 0) ; // weighted probability
+      marray<double> pC1(noClasses+1, 0) ; // weightNodeed probability
       for (i=1 ; i <= noClasses ;i++)   {
          pC1[i] = pC[i] * eC[i] / eCsum ;
          if (pC1[i] > q)
@@ -1097,12 +1097,12 @@ double estimation::DKMcostImpurity(int weight, mmatrix<int> &noClassAttrVal, int
       return  2.0 * sqrt(q*(1.0-q)) ;
 }
 
-double estimation::infGainCostImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::infGainCostImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
    int i, j;
 	// probabilities of the classes
    marray<double> pC(noClasses+1, double(0)) ;
    for (i=1 ; i <= noClasses ;i++)
-      pC[i] = double(noClassAttrVal(i,valIdx)) / weight ;
+      pC[i] = double(noClassAttrVal(i,valIdx)) / weightNode ;
 
    marray<double> eC(noClasses+1, 0) ;
    double denom, eCsum = 0.0 ;
@@ -1168,7 +1168,7 @@ double estimation::stepAUC(int c1, int c2, mmatrix<int> &noClassAttrVal) {
 }
 
 
-double estimation::distMulticlassEvaluation(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::distMulticlassEvaluation(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  d=0.0, di  ;
 	int i,j,valIdx,noComb=0 ;
 	switch (fTree->opt->multiclassEvaluation) {
@@ -1258,7 +1258,7 @@ double estimation::distMulticlassEvaluation(double priorImpurity, int weight, ma
 // variant of distribution distance between conditional probabilities in different splits
 //  this is a variant of Chieslak & Chawla, 2008
 // extended to multi-class problem by  averaging over all all pairs of classes
-double estimation::DistHellinger(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::DistHellinger(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  h=0.0, hi  ;
 	int i,j,valIdx,noComb=0 ;
 	// compute unconditional class probabilities
@@ -1287,7 +1287,7 @@ double estimation::DistHellinger(double priorImpurity, int weight, marray<int> &
 
 // Euclidean distance of distribution
 // extended to multi-class problem by  averaging over all pairs of classes
-double estimation::DistEuclid(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::DistEuclid(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  d=0.0, di  ;
 	int i,j,valIdx,noComb=0 ;
 	// compute unconditional class probabilities
@@ -1317,7 +1317,7 @@ double estimation::DistEuclid(double priorImpurity, int weight, marray<int> &att
 
 // AUC distance of distribution
 // extended to multi-class problem by  averaging over all pairs of classes
-double estimation::DistAUC(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::DistAUC(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  d=0.0, di  ;
 	int i,j,u,v,valIdx,noComb=0 ;
 	// compute unconditional class probabilities
@@ -1349,7 +1349,7 @@ double estimation::DistAUC(double priorImpurity, int weight, marray<int> &attrVa
 
 // cosine of angle distance
 // extended to multi-class problem by  averaging over all pairs of classes
-double estimation::DistAngle(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::DistAngle(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  d=0.0, di, sumSqr  ;
 	int i,j,valIdx,noComb=0 ;
 	marray<double> sum(noClasses+1, 0.0);
@@ -1384,15 +1384,15 @@ double estimation::DistAngle(double priorImpurity, int weight, marray<int> &attr
 }
 
 
-double estimation::BhattacharyyaImpurity(int weight, mmatrix<int> &noClassAttrVal, int valIdx) {
+double estimation::BhattacharyyaImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
      double hi = 0.0 ;
      int i, j ;
      for (i=1 ; i <= noClasses ;i++)
     	 for (j=i+1 ; j <= noClasses ;j++)
-           hi += sqrt(double(noClassAttrVal(i,valIdx))/weight * double(noClassAttrVal(j,valIdx))/weight) ;
+           hi += sqrt(double(noClassAttrVal(i,valIdx))/weightNode * double(noClassAttrVal(j,valIdx))/weightNode) ;
      return  hi ;
 }
-double estimation::BhattacharyyaImpFast(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::BhattacharyyaImpFast(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  h=0.0  ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
 		if (attrVal[valIdx] > 0.0)
@@ -1403,7 +1403,7 @@ double estimation::BhattacharyyaImpFast(double priorImpurity, int weight, marray
 
 // variant of distribution distance between different splits
 // extended to multi-split problem by  averaging over all all pairs of attribute splits
-double estimation::BhattacharyyaFast(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::BhattacharyyaFast(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  h=0.0,hi  ;
 	int c, vi,vj ;
 	int noComb = 0 ;
@@ -1425,7 +1425,7 @@ double estimation::BhattacharyyaFast(double priorImpurity, int weight, marray<in
 
 // variant of distribution distance between conditional probabilities in different splits
 // extended to multiclass problem by  averaging over all all pairs of classes
-double estimation::BhattacharyyaCond(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+double estimation::BhattacharyyaCond(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  h=0.0, hi  ;
 	int i,j,valIdx,noComb=0 ;
 	// compute unconditional class probabilities

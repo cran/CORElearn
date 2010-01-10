@@ -195,7 +195,7 @@ void estimationReg::binarizeBreiman(constructReg &nodeConstruct, double &bestEst
    }
    double totalWeight = RightWeight ;
    sortedMean.setFilled(OKvalues) ;
-   sortedMean.sort(ascSortComp) ;
+   sortedMean.qsortAsc() ;
    double estimate, pLeft, variance ;
    bestEstimation = FLT_MAX ;
    int bestIdx = -1 ;
@@ -271,7 +271,7 @@ double estimationReg::bestSplitGeneral(int selectedEstimator, constructReg &node
       return - FLT_MAX ; // smaller than any value, so all examples will go into one branch
    }
    sortedAttr.setFilled(OKvalues) ;
-   sortedAttr.sort(ascSortComp) ;
+   sortedAttr.qsortAsc() ;
    
    int lastUnique = 0 ;
    for (i=1 ; i < OKvalues ; i++)
@@ -392,7 +392,7 @@ double estimationReg::bestMSEsplit(constructReg &nodeConstruct, double &bestEsti
 
    double totalWeight = RightWeight ;
    sortedAttr.setFilled(OKvalues) ;
-   sortedAttr.sort(ascSortComp) ;
+   sortedAttr.qsortAsc() ;
    bestEstimation = FLT_MAX ;
    int bestIdx = -1 ;
    double estimate, pLeft, variance ;
@@ -560,7 +560,7 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
 		  continue ;
 	   }
 	   sortedAttr.setFilled(OKvalues) ;
-	   sortedAttr.sort(ascSortComp) ;
+	   sortedAttr.qsortAsc() ;
    
 	   int lastUnique = 0 ;
 	   for (i=1 ; i < OKvalues ; i++)

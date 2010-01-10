@@ -197,7 +197,7 @@ double estimation::bestSplitGeneral(construct &nodeConstruct, double &bestEstima
       return - FLT_MAX ; // smaller than any value, so all examples will go into one branch
    }
    sortedAttr.setFilled(OKvalues) ;
-   sortedAttr.sort(ascSortComp) ;
+   sortedAttr.qsortAsc() ;
 
    // select only unique values
    int lastUnique = 0 ;
@@ -314,7 +314,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
       return - FLT_MAX ;
    }
    sortedAttr.setFilled(OKvalues) ;
-   sortedAttr.sort(ascSortComp) ;
+   sortedAttr.qsortAsc() ;
 
    // eliminate duplicates
    int unique = 0 ;
@@ -682,7 +682,7 @@ void estimation::estBinarized(int selectedEstimator, int contAttrFrom, int contA
 		  continue ;
 	   }
 	   sortedAttr.setFilled(OKvalues) ;
-	   sortedAttr.sort(ascSortComp) ;
+	   sortedAttr.qsortAsc() ;
 
 	   int lastUnique = 0 ;
 	   for (i=1 ; i < OKvalues ; i++)
@@ -810,7 +810,7 @@ void estimation::discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marr
       return  ;
    }
    sortedAttr.setFilled(OKvalues) ;
-   sortedAttr.sort(ascSortComp) ;
+   sortedAttr.qsortAsc() ;
 
    // eliminate and count duplicates
    int unique = 0 ;

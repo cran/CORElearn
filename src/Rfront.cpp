@@ -166,7 +166,7 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 	data->isRegression = isRegression;
 	// prepare data, first description than matrixes
 	// the data structures are defined in dataStore class
-	data->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, isRegression,
+	data->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric,
 			discAttrNames, discValNames, numAttrNames);
 	data->dataFromR(*noInst, discreteData, numericData, mTRUE);
 	costMatrix.wrap(data->noClasses * data->noClasses, costMx);
@@ -390,8 +390,8 @@ void estimateCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 
 	// prepare data, first description than matrixes
 	//marray<char *> discAttrNames(*noDiscrete, 0), discValNames(*noDiscrete, 0), numAttrNames(*noNumeric, 0);
-	dT->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, mFALSE,
-			discAttrNames, discValNames, numAttrNames);
+	dT->isRegression = mFALSE;
+	dT->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, discAttrNames, discValNames, numAttrNames);
 	dT->dataFromR(*noInst, discreteData, numericData, mTRUE);
 	costMatrix.wrap(dT->noClasses * dT->noClasses, costMx);
 	dT->costsFromR(costMatrix);
@@ -480,8 +480,8 @@ void estimateCoreReg(int *noInst, int *noDiscrete, int *noDiscVal,
 
 	// prepare data, first description than matrixes
 	//marray<char *> discAttrNames(*noDiscrete, 0), discValNames(*noDiscrete, 0), numAttrNames(*noNumeric, 0);
-	rT->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, mTRUE,
-			discAttrNames, discValNames, numAttrNames);
+	rT->isRegression = mTRUE ;
+	rT->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, discAttrNames, discValNames, numAttrNames);
 	rT->dataFromR(*noInst, discreteData, numericData, mTRUE);
 	// prepare data for training/testing
 	rT->opt->splitSelection = ALL_TRAINING;
@@ -588,8 +588,8 @@ void ordEvalCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 	// prepare data, first description than matrixes
 	marray<double> numericData;
 	marray<char *> numAttrNames(0, 0);
-	dT->dscFromR(*noDiscrete, noDiscreteValues, 0, mFALSE, discAttrNames,
-			discValNames, numAttrNames);
+	dT->isRegression = mFALSE ;
+	dT->dscFromR(*noDiscrete, noDiscreteValues, 0, discAttrNames, discValNames, numAttrNames);
 	dT->dataFromR(*noInst, discreteData, numericData, mTRUE);
 	// prepare data for training/testing
 	dT->opt->splitSelection = ALL_TRAINING;

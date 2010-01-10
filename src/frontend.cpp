@@ -66,7 +66,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 0.9.25, built on " __DATE__ " at " __TIME__
+" version 0.9.26, built on " __DATE__ " at " __TIME__
 #if defined(DEBUG)
 " (debug mode)"
 #endif

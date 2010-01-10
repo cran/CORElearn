@@ -43,7 +43,7 @@ cost-sensitive ReliefF, ..), gain ratio, gini-index, MDL, DKM, information gain,
 }
 Some of the internal structures of the C++ part are described in \code{\link{CORElearn-internal}}.
 
-For an automatically generated list of functions use \code{help(package=CORElearn)}.
+For an automatically generated list of functions use \code{help(package=CORElearn)} or \code{library(help=CORElearn)}.
 }
 \author{
 Marko Robnik-Sikonja, Petr Savicky

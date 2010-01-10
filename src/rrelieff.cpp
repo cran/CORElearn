@@ -1571,7 +1571,7 @@ double estimationReg::ConceptVariation(int contAttrFrom, int contAttrTo,
    discUpper = Mmax(noDiscrete, discAttrTo) ;
    numUpper = Mmax(noNumeric, contAttrTo) ;
 
-   double weightSum, weight, sigma, ConVar = 0.0 , distance, denominator ;
+   double wghtSum, wght, sigma, ConVar = 0.0 , distance, denominator ;
    int current, m ;
 
    marray<int> sampleIdx(NoIterations) ;
@@ -1581,7 +1581,7 @@ double estimationReg::ConceptVariation(int contAttrFrom, int contAttrTo,
    {
       current =  sampleIdx[iterIdx] ;
 
-     weightSum = 0.0 ;
+     wghtSum = 0.0 ;
      sigma = 0.0 ;
      for (m=0 ; m < NoIterations ; m++)
      {
@@ -1591,16 +1591,16 @@ double estimationReg::ConceptVariation(int contAttrFrom, int contAttrTo,
         distance = caseDist(current, m) ;
         denominator = NoUsed - distance ;
         if (denominator > epsilon)
-          weight = 1.0 / pow(2.0, alpha * distance/denominator) ;
+          wght = 1.0 / pow(2.0, alpha * distance/denominator) ;
         else
-          weight = 0.0 ;
+          wght = 0.0 ;
 
-        weightSum += weight ;
+        wghtSum += wght ;
 
-        sigma += weight * this->CAdiff(0, current, m) ;
+        sigma += wght * this->CAdiff(0, current, m) ;
      }
 
-     ConVar += sigma/weightSum ;
+     ConVar += sigma/wghtSum ;
 
   }
 
@@ -1635,7 +1635,7 @@ double estimationReg::CVmodified(int contAttrFrom, int contAttrTo,
    double ConVar = 0.0, incConVar ;
    int current, i, iDisc, iCont, k ;
    sortRec tempSort ;
-   marray<sortRec> distSort(TrainSize) ;
+   marray<sortRec> distanceSort(TrainSize) ;
 
    marray<int> sampleIdx(NoIterations) ;
    randomizedSample(sampleIdx, NoIterations, TrainSize) ;
@@ -1648,26 +1648,26 @@ double estimationReg::CVmodified(int contAttrFrom, int contAttrTo,
       // computeDistances(current) ;
 
       //  sort all the examples with descending distance
-      distSort.clear() ;
+      distanceSort.clear() ;
       for (i=0 ; i < TrainSize; i++)
       {
         if (i==current)  // we skip current example
           continue ;
         tempSort.key =  caseDist(current, i) ;
         tempSort.value = i ;
-        distSort.addEnd(tempSort) ;
+        distanceSort.addEnd(tempSort) ;
       }
 
-      distSort.sort(ascSortComp) ;
+      distanceSort.qsortAsc() ;
 
       for (iDisc=discAttrFrom ; iDisc < discAttrTo ; iDisc++)
       {
          incConVar = 0.0 ;
          k = 0 ;
-         for (i=0 ; i < distSort.filled() ; i++)
-            if (DAdiff(iDisc,current, distSort[i].value) > 0)
+         for (i=0 ; i < distanceSort.filled() ; i++)
+            if (DAdiff(iDisc,current, distanceSort[i].value) > 0)
             {
-                incConVar += CAdiff(0,current,distSort[i].value) ;
+                incConVar += CAdiff(0,current,distanceSort[i].value) ;
                 k++ ;
                 if (k >= kNearestEqual)
                   break ;
@@ -1679,10 +1679,10 @@ double estimationReg::CVmodified(int contAttrFrom, int contAttrTo,
       {
          incConVar = 0.0 ;
          k = 0 ;
-         for (i=0 ; i < distSort.filled() ; i++)
-            if (CAdiff(iCont, current, distSort[i].value) > 0)
+         for (i=0 ; i < distanceSort.filled() ; i++)
+            if (CAdiff(iCont, current, distanceSort[i].value) > 0)
             {
-                incConVar += CAdiff(0,current,distSort[i].value) ;
+                incConVar += CAdiff(0,current,distanceSort[i].value) ;
                 k++ ;
                 if (k >= kNearestEqual)
                    break ;
