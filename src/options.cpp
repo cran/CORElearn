@@ -14,6 +14,7 @@
 #include <stdio.h>      // converting strings to doubleing point
 #include <stdlib.h>
 #include <time.h>
+#include <omp.h>
 
 #include "general.h"
 
@@ -42,25 +43,127 @@ extern estDsc estNameReg[] ;
 char keySeparators[] = "=" ;
 char commentSeparators[] = "#%" ;
 
+void Options::copy(const Options &cp) {
+
+	   optionFile = cp.optionFile ;
+	   action = cp.action ;
+
+	   // data options
+	   domainName = cp.domainName ;
+	   dataDirectory = cp.dataDirectory ;
+	   resultsDirectory = cp.resultsDirectory ;
+	   NAstring = cp.NAstring ;
+	   splitIdx =cp.splitIdx ;
+	   numberOfSplits = cp.splitIdx;
+	   splitSelection = cp.splitSelection;
+	   trainProportion = cp.trainProportion;
+	   rndSeedSplit = cp.rndSeedSplit;
+
+	   // building options
+	   minInstanceWeight = cp.minInstanceWeight;
+	   minReliefEstimate =cp.minReliefEstimate;
+	   selectionEstimator = cp.selectionEstimator ;
+	   constructionEstimator =cp.constructionEstimator;
+	   selectionEstimatorReg = cp.selectionEstimatorReg ;
+	   constructionEstimatorReg = cp.constructionEstimatorReg;
+
+	   // attribute evaluation
+	   attrEvaluationInstances  = cp.attrEvaluationInstances;
+	   binaryEvaluation = cp.binaryEvaluation;
+	   binaryEvaluateNumericAttributes =cp.binaryEvaluateNumericAttributes;
+	   multiclassEvaluation = cp.multiclassEvaluation;
+	   estOnReg.copy(cp.estOnReg);
+	   estOn.copy(cp.estOn);
+
+	   // ReliefF
+	   ReliefIterations = cp.ReliefIterations;
+	   kNearestEqual = cp.kNearestEqual ;
+	   kNearestExpRank =cp.kNearestExpRank ;
+	   quotientExpRankDistance =cp.quotientExpRankDistance;
+	   numAttrProportionEqual = cp.numAttrProportionEqual ;
+	   numAttrProportionDifferent = cp.numAttrProportionDifferent;
+
+	   // ordEval
+	   ordEvalNoRandomNormalizers =cp.ordEvalNoRandomNormalizers;
+	   ordEvalBootstrapNormalize =cp.ordEvalBootstrapNormalize;
+	   ordEvalNormalizingPercentile = cp.ordEvalNormalizingPercentile;
+	   attrWeights.copy(cp.attrWeights);
+
+	   // stopping options
+	   minNodeWeight = cp.minNodeWeight;
+	   relMinNodeWeight = cp.relMinNodeWeight;
+	   majorClassProportion =cp.majorClassProportion;
+	   rootStdDevProportion = cp.rootStdDevProportion;
+
+	   //  models in trees
+	   modelType = cp.modelType ;
+	   modelTypeReg = cp.modelTypeReg;
+	   kInNN = cp.kInNN ;
+	   nnKernelWidth = cp.nnKernelWidth;
+
+	   // constructive induction
+	   constructionMode = cp.constructionMode;
+	   constructionDepth =cp.constructionDepth;
+	   beamSize = cp.beamSize ;
+	   maxConstructSize = cp.maxConstructSize;
+	   noCachedInNode = cp.noCachedInNode;
+
+	   // discretization
+	   discretizationLookahead = cp.discretizationLookahead;
+	   discretizationSample = cp.discretizationSample;
+	   bayesDiscretization = cp.bayesDiscretization;
+	   bayesEqFreqIntervals = cp.bayesEqFreqIntervals;
+
+	   // pruning
+	   selectedPruner = cp.selectedPruner;
+	   selectedPrunerReg = cp.selectedPrunerReg;
+	   mEstPruning = cp.mEstPruning ;
+	   mEstPrediction = cp.mEstPrediction;
+	   mdlModelPrecision = cp.mdlModelPrecision;
+	   mdlErrorPrecision = cp.mdlErrorPrecision;
+	   alphaErrorComplexity = cp.alphaErrorComplexity;
+
+	   // random forest options
+	   rfNoTrees = cp.rfNoTrees ;
+	   rfNoSelAttr = cp.rfNoSelAttr;
+	   rfMultipleEst = cp.rfMultipleEst;
+	   rfkNearestEqual = cp.rfkNearestEqual;
+	   rfPropWeightedTrees = cp.rfPropWeightedTrees;
+	   rfPredictClass = cp.rfPredictClass;
+	   rfRandomBinarization = cp.rfRandomBinarization;
+	   rfAttrEvaluate = cp.rfAttrEvaluate;
+	   rfSampleProp = cp.rfSampleProp;
+	   rfNoTerminals = cp.rfNoTerminals;
+	   rfRegType = cp.rfRegType;
+	   rfRegLambda = cp.rfRegLambda;
+	   rfRndSeed = cp.rfRndSeed;
+
+	   // miscellaneous
+	   maxThreads = cp.maxThreads ;
+	   printTreeInDot = cp.printTreeInDot;
+	   outProbDistr = cp.outProbDistr;
+	   defaultEditor = cp.defaultEditor ;
+}
+
 
 void Options::setDefault(void) {
-    optionFile[0] = '\0' ;
-	strcpy(action, "none") ;
-    domainName[0] = '\0' ;
+    optionFile.destroy() ;
+	action = "none" ;
+    domainName.destroy() ;
     splitIdx = 0 ;
-    strcpy(dataDirectory, "data") ;
-    strcpy(resultsDirectory, "results") ;
-    strcat(dataDirectory, strDirSeparator) ;  // we attach separator: / or backslash
-    strcat(resultsDirectory, strDirSeparator) ;
-    strcpy(NAstring,"?") ;
+    dataDirectory = "data" ;
+    dataDirectory.append(strDirSeparator) ;  // we attach separator: / or backslash
+    resultsDirectory = "results" ;
+    resultsDirectory.append(strDirSeparator) ;
+    NAstring = "?" ;
     numberOfSplits = 10 ;
 	splitSelection = CROSS_VALIDATION ;
     trainProportion = 0.9 ;
     rndSeedSplit = -1 ;
 
     attrEvaluationInstances = 0 ; // means all
-    binaryAttributes = mFALSE ;
-    binarySplitNumericAttributes = mTRUE ;
+    binaryEvaluation = mFALSE ;
+    binaryEvaluateNumericAttributes = mTRUE ;
 	multiclassEvaluation = 1 ; // average of all pairs
 
     ReliefIterations = 0 ; // means all
@@ -133,14 +236,14 @@ void Options::setDefault(void) {
     rfRegLambda = 0.0 ; // lambda for regularization
     rfRndSeed = -1 ; // random seed for random forest
 
-
+    maxThreads = 0 ; // allow openMP system to set defaults
     printTreeInDot = mFALSE ;
     outProbDistr = mFALSE ;
     #if defined(UNIX)
-       strcpy(defaultEditor, "vi") ;
+       defaultEditor = "vim" ;
     #endif
     #if defined(MICROSOFT)
-       strcpy(defaultEditor, "notepad.exe" ) ;
+       defaultEditor = "notepad.exe"  ;
     #endif
 }
 
@@ -169,7 +272,7 @@ void Options::processOptions(void)
    if (tempStr != NULL)
       strcpy(CommandStr, tempStr) ;
    else
-      strcpy(CommandStr, defaultEditor) ;
+      strcpy(CommandStr, defaultEditor.getConstValue()) ;
 #if defined(MICROSOFT)
 #if defined(MINGW)
 #undef intptr_t
@@ -307,7 +410,7 @@ int Options::optionsFromStrings(int noOptions, marray<char* > &optionsName, marr
 //      writes parameters for feature tree to given file
 //
 //************************************************************
-int Options::writeConfig(char* ConfigName)
+int Options::writeConfig(char* ConfigName) const
 {
     FILE *to ;
     if ((to=fopen(ConfigName,"w"))==NULL)
@@ -329,7 +432,7 @@ int Options::writeConfig(char* ConfigName)
 
 
 
-void Options::outConfig(FILE *to)
+void Options::outConfig(FILE *to) const
 {
     fprintf(to, "# Options file for %s\n", VersionString) ;
 	fprintf(to, "# Note the conventions:\n");
@@ -343,13 +446,13 @@ void Options::outConfig(FILE *to)
     fprintf(to, "# ---------- File and data options ----------\n") ;
 
     // Domain name
-	fprintf(to,"domainName=%s  # domain name\n",domainName ) ;
+	fprintf(to,"domainName=%s  # domain name\n",domainName.getConstValue() ) ;
 
     // Data directory
-	fprintf(to,"dataDirectory=%.*s  # data directory\n", strlen(dataDirectory)-1, dataDirectory) ;
+	fprintf(to,"dataDirectory=%.*s  # data directory\n", dataDirectory.len()-1, dataDirectory.getConstValue()) ;
 
     // Results directory
-	fprintf(to,"resultsDirectory=%.*s  # results directory\n", strlen(resultsDirectory)-1, resultsDirectory) ;
+	fprintf(to,"resultsDirectory=%.*s  # results directory\n", resultsDirectory.len()-1, resultsDirectory.getConstValue()) ;
 
     // Definiton of train/test data splits
     fprintf(to,"# Types of supported splits to training/testing data:  \n") ;
@@ -364,7 +467,7 @@ void Options::outConfig(FILE *to)
 	fprintf(to,"trainProportion=%f  # the proportion of training instances in case of random split to train/test\n", trainProportion) ;
 
     // random seed for split
-	fprintf(to,"rndSeedSplit=%ld  # random seed for data split determination (0-take from clock)\n", rndSeedSplit) ;
+	fprintf(to,"rndSeedSplit=%d  # random seed for data split determination (0-take from clock)\n", rndSeedSplit) ;
 
     // Split index
 	fprintf(to,"splitIdx=%d  # in case of work on single split, the index of that split\n", splitIdx) ;
@@ -375,10 +478,10 @@ void Options::outConfig(FILE *to)
     fprintf(to, "# ---------- Estimation of attributes options ----------\n") ;
 
     // Treat all attributes as binary
-	fprintf(to,"binaryAttributes=%s  # treat attributes as binary\n", (binaryAttributes ? "Y" : "N")) ;
+	fprintf(to,"binaryEvaluation=%s  # treat attributes as binary\n", (binaryEvaluation ? "Y" : "N")) ;
 
     // Treat numerical attribute splits as binary in applicable measures
-	fprintf(to,"binarySplitNumericAttributes=%s  # treat numerical attributes' splits as binary\n", (binarySplitNumericAttributes ? "Y" : "N")) ;
+	fprintf(to,"binaryEvaluateNumericAttributes=%s  # treat numerical attributes' splits as binary\n", (binaryEvaluateNumericAttributes ? "Y" : "N")) ;
 
     // multi-class extension for two-class-only evaluation measures
 	fprintf(to,"multiclassEvaluation=%d  # multi-class extension for two-class-only evaluation measures (1-average of all-pairs, 2-best of all-pairs, 3-average of one-against-all, 4-best of one-against-all)\n", multiclassEvaluation) ;
@@ -432,7 +535,7 @@ void Options::outConfig(FILE *to)
 //	fprintf(to,"ordEvalConfidenceInterval=%d  # type of confidence interval for ordEval random normalization\n",(int)oeCI) ;
 
 	// the alpha for confidence interval
-	fprintf(to,"ordEvalNormalizingPercentile=%lf  # the percentile defining the length of confidence interval obtained with random normalization", ordEvalNormalizingPercentile) ;
+	fprintf(to,"ordEvalNormalizingPercentile=%f  # the percentile defining the length of confidence interval obtained with random normalization", ordEvalNormalizingPercentile) ;
 
 	// attribute weights
 	fprintf(to, " # weights of the attributes in the distance measure, 0 means no weighting, the format is: a;w_1,w_2,...w_a\n") ;
@@ -604,13 +707,16 @@ void Options::outConfig(FILE *to)
 	fprintf(to,"rfRegLambda=%f  # regularization parameter lambda\n",rfRegLambda) ;
 
     // random seed for forest
-	fprintf(to,"rfRndSeed=%ld  # random seed for random forest (0-take from clock)\n", rfRndSeed) ;
+	fprintf(to,"rfRndSeed=%d  # random seed for random forest (0-take from clock)\n", rfRndSeed) ;
 
 
     fprintf(to, "# ---------- Other  options ----------\n") ;
 
 	// m - estimate for prediction
 	fprintf(to,"mEstPrediction=%f  # m-estimate for prediction\n",mEstPrediction) ;
+
+	// maxThreads - maximal number of active threads
+	fprintf(to,"maxThreads=%d  # maximal number of active threads (0-allow openMP to set defaults)\n",maxThreads) ;
 
     // print tree also in dot format
 	fprintf(to,"printTreeInDot=%s  # print tree also in dot format\n", (printTreeInDot ? "Y" : "N")) ;
@@ -619,10 +725,10 @@ void Options::outConfig(FILE *to)
 	fprintf(to,"outProbDistr=%s  # output class probability distribution for predicted instances\n", (outProbDistr ? "Y" : "N")) ;
 
 	// Editor for options
-	fprintf(to,"defaultEditor=%s  # editor for options file\n",defaultEditor) ;
+	fprintf(to,"defaultEditor=%s  # editor for options file\n",defaultEditor.getConstValue()) ;
 
     // Missing values indicator
-	fprintf(to,"NAstring=%s  # string indicating missing value",NAstring) ;
+	fprintf(to,"NAstring=%s  # string indicating missing value",NAstring.getConstValue()) ;
 
  }
 
@@ -661,7 +767,7 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	//data options
 
 	if (strcmp(keyword, "action")==0 || strcmp(keyword, "a")==0) {
-		strcpy(action, key) ;
+		action = key ;
 	}
 	else if (strcmp(keyword, "optionFile")==0 || strcmp(keyword, "o")==0) {
 		printf("\nReading configuration file %s . . .", key) ;
@@ -672,25 +778,21 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
 	else if (strcmp(keyword, "domainName")==0) {
 		// domain name
-		strcpy(domainName, key) ;
+		domainName = key ;
 	}
 	else if (strcmp(keyword, "dataDirectory")==0) {
         // data directory
-        strcpy(dataDirectory,key) ;
-        temp = (int)strlen(dataDirectory) ;
-       if (dataDirectory[temp-1] != DirSeparator) {
-          dataDirectory[temp] = DirSeparator ;
-          dataDirectory[temp+1] = '\0' ;
-       }
+        dataDirectory = key ;
+        char last = dataDirectory[dataDirectory.len()-1] ;
+        if (last != DirSeparator)
+          dataDirectory.append(strDirSeparator) ;
 	}
 	else if (strcmp(keyword, "resultsDirectory")==0) {
        // Results directory
-       strcpy(resultsDirectory, key) ;
-       temp = (int)strlen(resultsDirectory) ;
-       if (resultsDirectory[temp-1] != DirSeparator) {
-          resultsDirectory[temp] = DirSeparator ;
-          resultsDirectory[temp+1] = '\0' ;
-       }
+       resultsDirectory = key ;
+       char last = resultsDirectory[resultsDirectory.len()-1] ;
+       if (last != DirSeparator)
+          resultsDirectory.append(strDirSeparator) ;
 	}
 	else if (strcmp(keyword, "splitSelection")==0) {
        // Definiton of train/test data splits
@@ -718,9 +820,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
 	else if (strcmp(keyword, "rndSeedSplit")==0) {
        // Random seed for data splits
-       sscanf(key,"%ld", &rndSeedSplit) ;
+       sscanf(key,"%d", &rndSeedSplit) ;
        if (rndSeedSplit == 0)
-           rndSeedSplit = -(long)time(NULL) ;
+           rndSeedSplit = (int) -time(NULL) ;
 	}
 	else if (strcmp(keyword, "splitIdx")==0) {
        // Split index
@@ -732,23 +834,23 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
 
 	// Estimator options
-	else if (strcmp(keyword, "binaryAttributes")==0) {
+	else if (strcmp(keyword, "binaryEvaluation")==0) {
 	   // Treat all attributes as binary
        if (key[0] == 'y' || key[0] == 'Y')
-          binaryAttributes = mTRUE ;
+          binaryEvaluation = mTRUE ;
        else if (key[0] == 'n' || key[0] == 'N')
-           binaryAttributes = mFALSE ;
+           binaryEvaluation = mFALSE ;
        else
-		   merror("binaryAttributes (treat attributes as binary) should be on or off (Y or N)", "") ;
+		   merror("binaryEvaluation (treat attributes as binary) should be on or off (Y or N)", "") ;
 	}
-    else if (strcmp(keyword, "binarySplitNumericAttributes")==0) {
+    else if (strcmp(keyword, "binaryEvaluateNumericAttributes")==0) {
 	    // Treat numeric attribute splits as binary in applicable measures
         if (key[0] == 'y' || key[0] == 'Y')
-           binarySplitNumericAttributes = mTRUE ;
+           binaryEvaluateNumericAttributes = mTRUE ;
         else if (key[0] == 'n' || key[0] == 'N')
-           binarySplitNumericAttributes = mFALSE ;
+           binaryEvaluateNumericAttributes = mFALSE ;
         else
-			merror("binarySplitNumericAttributes (treat numerical attributes' splits as binary) should be on or off (Y or N)", "") ;
+			merror("binaryEvaluateNumericAttributes (treat numerical attributes' splits as binary) should be on or off (Y or N)", "") ;
 	}
     else if (strcmp(keyword, "attrEvaluationInstances")==0) {
        // number of examples  for attribute estimations
@@ -867,13 +969,13 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
           merror("ordEvalNoRandomNormalizers (number of randomly shuffled attributes to be used for normalization of each attribute in ordEval algorithm) should be nonnegative", "") ;
 	}
 	else if (strcmp(keyword, "ordEvalBootstrapNormalize")==0) {
-	   // Treat all attributes as binary
+	   // type of normalization: bootstrap or permutation based sampling
        if (key[0] == 'y' || key[0] == 'Y')
     	   ordEvalBootstrapNormalize = mTRUE ;
        else if (key[0] == 'n' || key[0] == 'N')
     	   ordEvalBootstrapNormalize = mFALSE ;
        else
-		   merror("ordEvalBootstrapNormalize (bootstrap or permutation for random normalization) should be on or off (Y or N)", "") ;
+		   merror("ordEvalBootstrapNormalize (choice for normalization with bootstrap sampling - otherwise  permutation based sampling) should be on or off (Y or N)", "") ;
 	}
 //	else if (strcmp(keyword, "ordEvalConfidenceInterval")==0) {
 //       // type of confidence interval for ordEval normalization
@@ -886,10 +988,10 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	else if (strcmp(keyword, "ordEvalNormalizingPercentile")==0) {
        // the length of confidence interval obtained with random normlization
        sscanf(key,"%lf", &dtemp) ;
-       if (dtemp >= 0 && dtemp <= 1.0)
+       if (dtemp > 0 && dtemp < 0.5)
           ordEvalNormalizingPercentile = dtemp ;
        else
-          merror("ordEvalNormalizingPercentile (the percentile defining the confidence interval obtained with random normalization in ordEval) should be between 0 and 1", "") ;
+          merror("ordEvalNormalizingPercentile (the percentile defining the confidence interval obtained with random normalization in ordEval) should be between 0 and 0.5", "") ;
 	}
 	else if (strcmp(keyword, "attrWeights")==0) {
        // weights of the attributes in the distance measure
@@ -913,7 +1015,7 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 		   }
 	   }
 	}
-	// stoping options
+	// stopping options
 
     else if (strcmp(keyword, "minNodeWeight")==0) {
        // Minimal weight of a node to split
@@ -1256,7 +1358,7 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "rfRndSeed")==0) {
        // Random seed for random forests
-       sscanf(key,"%ld", &rfRndSeed) ;
+       sscanf(key,"%d", &rfRndSeed) ;
        if (rfRndSeed == 0)
           rfRndSeed = -(long)time(NULL) ;
 	}
@@ -1271,6 +1373,21 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
       else
         merror("mEstPrediction (m-estimate for prediction) should be nonnegative","") ;
 	}
+    else if (strcmp(keyword, "maxThreads")==0) {
+        // maximal number of active threads
+        sscanf(key,"%d", &temp) ;
+        if (temp >= 0) {
+           maxThreads = temp ;
+           #if defined(_OPENMP)
+           if (maxThreads > 0)
+        	   omp_set_num_threads(maxThreads);
+           else if (maxThreads == 0)
+        	   omp_set_num_threads(omp_get_num_procs()) ;
+           #endif
+        }
+        else
+     	   merror("maxThreads (maximal number of active threads) should be nonnegative","") ;
+    }
     else if (strcmp(keyword, "printTreeInDot")==0) {
  	  // print tree in dot format as well
 	  if (key[0] == 'y' || key[0] == 'Y')
@@ -1292,12 +1409,12 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
     else if (strcmp(keyword, "defaultEditor")==0) {
       //  default editor
       if (strlen(key) > 0)
-		 strcpy(defaultEditor, key) ;
+		 defaultEditor = key ;
 	}
     else if (strcmp(keyword, "NAstring")==0) {
 	  //  missing value indicator
       if (strlen(key) > 0)
-		strcpy(NAstring, key) ;
+		NAstring = key ;
 	}
 	else {
   	   merror("unrecognized option", keyword) ;

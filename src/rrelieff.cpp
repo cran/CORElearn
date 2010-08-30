@@ -29,6 +29,8 @@ estimationReg::estimationReg(regressionTree *fTreeParent, marray<int> &inDTrain,
    // copy essential values
    //-------------------------------------------------------------
    fTree = fTreeParent ;
+   eopt.copy( *(fTree -> opt)) ;
+
    currentNumSize = noNumeric = fTree->noNumeric ;
    currentDiscSize = noDiscrete = fTree->noDiscrete ;
 
@@ -38,7 +40,7 @@ estimationReg::estimationReg(regressionTree *fTreeParent, marray<int> &inDTrain,
    marray<int> DTrain ;
    int i, j ;
    // will we use all exmples or just a subsample
-   if (inTrainSize <= fTree->opt->attrEvaluationInstances || fTree->opt->attrEvaluationInstances == 0)
+   if (inTrainSize <= eopt.attrEvaluationInstances || eopt.attrEvaluationInstances == 0)
    {
       TrainSize = inTrainSize ;
       DTrain.copy(inDTrain) ;
@@ -49,36 +51,16 @@ estimationReg::estimationReg(regressionTree *fTreeParent, marray<int> &inDTrain,
        //-------------------------------------------------------------
        // randomly select attrEvaluationInstances
        //-------------------------------------------------------------
-       TrainSize = fTree->opt->attrEvaluationInstances ;
+       TrainSize = eopt.attrEvaluationInstances ;
        DTrain.create(TrainSize) ;
        weight.create(TrainSize) ;
-       marray<int> selected(fTree->opt->attrEvaluationInstances) ;
-       randomizedSample(selected, fTree->opt->attrEvaluationInstances, inTrainSize) ;
-       for (i=0; i < fTree->opt->attrEvaluationInstances ; i++)
+       marray<int> selected(eopt.attrEvaluationInstances) ;
+       randomizedSample(selected, eopt.attrEvaluationInstances, inTrainSize) ;
+       for (i=0; i < eopt.attrEvaluationInstances ; i++)
        {
                DTrain[i] = inDTrain[selected[i]] ;
                weight[i] = inpDTrain[selected[i]]  ;
         }
-
-//       int edge = int(double(fTree->opt->attrEvaluationInstances) / double(inTrainSize) * RAND_MAX) ;
-//       marray<int> selected(inTrainSize) ;
-//       for (i=0 ; i < inTrainSize ; i++)
-//         if (rand() <= edge)
-//           selected.addEnd(i) ;
-//
-//       TrainSize = selected.filled() ;
-//       DTrain.create(TrainSize) ;
-//       weight.create(TrainSize) ;
-//
-//       for (i=0, j=0 ; i < inTrainSize ; i++)
-//       {
-//           if (i == selected[j])
-//           {
-//               DTrain[j] = inDTrain[i] ;
-//               weight[j] = inpDTrain[i]  ;
-//               j++ ;
-//           }
-//       }
    }
 
    OriginalDTrain.copy(DTrain) ;
@@ -142,19 +124,18 @@ estimationReg::estimationReg(regressionTree *fTreeParent, marray<int> &inDTrain,
    //-------------------------------------------------------------
    // set number of iterations in main reliefF loop
    //-------------------------------------------------------------
-   if (fTree->opt->ReliefIterations == 0 ||
-       fTree->opt->ReliefIterations > TrainSize)
+   if (eopt.ReliefIterations == 0 ||  eopt.ReliefIterations > TrainSize)
        NoIterations = TrainSize ;
    else
-      NoIterations = fTree->opt->ReliefIterations ;
+      NoIterations = eopt.ReliefIterations ;
 
    //-------------------------------------------------------------
    // set k
    //-------------------------------------------------------------
-   if (fTree->opt->kNearestEqual <= 0)
+   if (eopt.kNearestEqual <= 0)
      kNearestEqual = TrainSize-1 ;
    else
-     kNearestEqual = Mmin(fTree->opt->kNearestEqual, TrainSize-1) ;
+     kNearestEqual = Mmin(eopt.kNearestEqual, TrainSize-1) ;
 
 
    //-------------------------------------------------------------
@@ -239,10 +220,10 @@ estimationReg::estimationReg(regressionTree *fTreeParent, marray<int> &inDTrain,
    //-------------------------------------------------------------
    //  k nearest with distance density and standard deviation for distance density
    //-------------------------------------------------------------
-   if (fTree->opt->kNearestExpRank <= 0)
+   if (eopt.kNearestExpRank <= 0)
      kDensity = TrainSize - 1 ;
    else
-     kDensity = Mmin(fTree->opt->kNearestExpRank, TrainSize-1) ;
+     kDensity = Mmin(eopt.kNearestExpRank, TrainSize-1) ;
 
    //-------------------------------------------------------------
    // structure for sorting/selecting cases by distance
@@ -255,7 +236,7 @@ estimationReg::estimationReg(regressionTree *fTreeParent, marray<int> &inDTrain,
    //-------------------------------------------------------------
    //varianceDistanceDensity = sqr(double(kDensity) / fTree->quotientExpRankDistance) ;
    //varianceDistanceDensity = sqr(fTree->quotientExpRankDistance) / sqrt(-log(0.9)) ;
-   varianceDistanceDensity = sqr(fTree->opt->quotientExpRankDistance) ;
+   varianceDistanceDensity = sqr(eopt.quotientExpRankDistance) ;
 
    //-------------------------------------------------------------
    // prepare for construction with MDL

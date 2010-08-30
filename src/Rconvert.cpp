@@ -214,11 +214,11 @@ void dataStore::costsFromR(marray<double> &costs) {
 }
 
 
+#if defined(R_PORT)
+
 /*****************************************************************/
 /**                      exportSizes                            **/
 /*****************************************************************/
-#if defined(R_PORT)
-
 SEXP featureTree::exportSizes(void)
 {
 	SEXP out;
@@ -228,6 +228,25 @@ SEXP featureTree::exportSizes(void)
 		for (i=0 ; i < opt->rfNoTrees; i++)
 			//rfWriteTree(fout,2,i) ;
 			INTEGER(out)[i] = getSize(forest[i].t.root);
+		UNPROTECT(1);
+		return(out);
+	}
+	return(NULL);
+}
+
+
+/*****************************************************************/
+/**                  exportSumOverLeaves                        **/
+/*****************************************************************/
+SEXP featureTree::exportSumOverLeaves(void)
+{
+	SEXP out;
+	int i ;
+	if (forest.defined()) {
+		PROTECT(out = allocVector(INTSXP, opt->rfNoTrees));
+		for (i=0 ; i < opt->rfNoTrees; i++)
+			//rfWriteTree(fout,2,i) ;
+			INTEGER(out)[i] = getSumOverLeaves(forest[i].t.root, 0);
 		UNPROTECT(1);
 		return(out);
 	}
@@ -430,7 +449,7 @@ SEXP featureTree::RFtree2R(binnode *branch){
 
 				// attr
 				PROTECT(aux = allocVector(INTSXP, 1));
-				INTEGER(aux)[0] = branch->Construct.root->attrIdx+1;
+				INTEGER(aux)[0] = branch->Construct.root->attrIdx;
 				SET_VECTOR_ELT(out, 1, aux);
 
 

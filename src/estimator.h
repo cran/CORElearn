@@ -18,7 +18,8 @@ friend class construct ;
 friend class expr ;
 friend class rf ;
 
-    featureTree *fTree ;
+    const featureTree *fTree ;
+    Options eopt ;
     mmatrix<int> DiscValues ;
     mmatrix<double> NumValues ;
 //    marray<double> contDiffA, discDiffA ;
@@ -52,7 +53,7 @@ friend class rf ;
     PfImpurityGain fImpurityGain ;
     PfImpurityDistr fImpurityUniform ;
     PfDistStep fDistStep ;
-    int preparedEstimator, activeEstimator ;
+    int preparedEstimator ; //, activeEstimator ;
 
     double CAdiff(int AttrNo, int I1, int I2) ;
     double DAdiff(int AttrNo, int I1, int I2) ;
@@ -113,6 +114,7 @@ friend class rf ;
     double BhattacharyyaFast(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal);
     double BhattacharyyaCond(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal);
     double gainUniform(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal) ;
+    double accUniform(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal);
     double stepHellinger(int c1, int c2, mmatrix<int> &noClassAttrVal) ;
     double stepEuclid(int c1, int c2, mmatrix<int> &noClassAttrVal) ;
     double stepAngle(int c1, int c2, mmatrix<int> &noClassAttrVal) ;
@@ -126,9 +128,7 @@ friend class rf ;
 public:
     marray<double> NumEstimation, DiscEstimation ;
     marray<double> splitPoint ;
-    //marray<marray<booleanT> > leftValues;
-    // marray<int> OriginalDTrain ;
-    estimation(featureTree *fTreeParent, marray<int> &DTrain,
+    estimation(const featureTree *fTreeParent, marray<int> &DTrain,
                 marray<double> &pDTrain, int TrainSize) ;
     ~estimation() { }
     void initialize(marray<int> &inDTrain, marray<double> &inpDTrain, int inTrainSize) ;
@@ -136,7 +136,7 @@ public:
     int estimate(int selectedEstimator, int contAttrFrom, int contAttrTo,
                          int discAttrFrom, int discAttrTo, attributeCount &bestType) ;
     int estimateConstruct(int selectedEstimator, int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo, attributeCount &bestType) ;
-	int estimateSelected(marray<booleanT> &mask, attributeCount &bestType) ;
+    int estimateSelected(marray<int> &rankList, int noSelected, attributeCount &bestType) ;
     void ReliefF(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo, int distanceType) ;
     void ReliefFbestK(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo, int distanceType) ;
     void Relief(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;
@@ -166,8 +166,8 @@ public:
     void adjustTables(int newContSize, int newDiscSize) ;
     void prepareContAttr(int attrIdx) ;
     void prepareDiscAttr(int attrIdx, int noValues) ;
- 	void binarizeGeneral(construct &nodeConstruct, double &bestEstimation, int firstFreeDiscSlot) ;
-    double bestSplitGeneral(construct &nodeConstruct, double &bestEstimation, int firstFreeDiscSlot) ;
+ 	void binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot) ;
+    double bestSplitGeneral(construct &nodeConstruct, int firstFreeDiscSlot) ;
     double impuritySplit(construct &nodeConstruct, double &bestEstimation) ;
     double impuritySplitSample(construct &nodeConstruct, double &bestEstimation);
     double discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int firstFreeDiscSlot) ;
@@ -177,6 +177,11 @@ public:
     void discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marray<double> &Bounds) ;
     double estImpurityDisc(int discidx) ;
     double distMulticlassEvaluation(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal);
+
+    void prepareDistanceFactors(int distanceType, marray<marray<sortRec> > &distanceArray,
+    		 marray<marray<sortRec> > &diffSorted, mmatrix<double> &DiscDistance, mmatrix<double> &NumDistance ) ;
+    void computeDistances(int Example, mmatrix<double> &DiscDistance, mmatrix<double> &NumDistance);
+    double CaseDistance(int I1, mmatrix<double> &DiscDistance, mmatrix<double> &NumDistance) ;
 
 /*    void ordAvReliefF(int discAttrFrom, int discAttrTo,
 	        marray<marray<double> > &resultCpAp, marray<marray<double> > &resultCpAn,
@@ -228,7 +233,7 @@ public:
     void ordAVdAeqNormAttrDiff1(int discAttrFrom, int discAttrTo, oeDistanceType distanceType,
     	        marray<marray<double> > &reinfPos, marray<marray<double> > &reinfNeg, marray<marray<double> > &anchor,
     	        mmatrix<marray<double> > &reinfPosRnd, mmatrix<marray<double> > &reinfNegRnd, mmatrix<marray<double> > &anchorRnd) ;
-    void setActive(int estimator) ;
+    //void setActive(int estimator) ;
 }  ;
 
 #endif

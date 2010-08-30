@@ -18,7 +18,7 @@ class binPartition
 public:
   marray<booleanT> leftPartition ;
   binPartition(int size) { N=size; left.create(N,0) ; leftPartition.create(N+1) ; }
-  long long noPositions() ;
+  double noPositions() ;
   ~binPartition() { }
   booleanT increment() ;
 } ;

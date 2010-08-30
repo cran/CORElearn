@@ -8,16 +8,18 @@
    are various variants of Relief and ReliefF algorithms (ReliefF,
    cost-sensitive ReliefF, \dots), gain ratio, gini-index, MDL, DKM, information gain, ...
    For regression problems there are RREliefF, MSE, MAE, ...
+   Parallel execution on several cores is supported for speedup.
 }
 \usage{
-  attrEval(formula, data, costMatrix = NULL, estimator, ...)
+  attrEval(formula, data, estimator, costMatrix = NULL, ...)
 }
 \arguments{
   \item{formula}{ Formula specifying the predictors to be evaluated and the target variable. }
   \item{data}{ Data frame with evaluation data. }
-  \item{costMatrix}{ Optional cost matrix. }
   \item{estimator}{ The name of the evaluation method.}
-  \item{\dots }{ Additional options used by specific evaluation methods. }
+  \item{costMatrix}{ Optional cost matrix. }
+  \item{\dots }{ Additional options used by specific evaluation methods as described in \code{\link{helpCore}}
+  . }
 }
 \details{
   Parameter \bold{formula} is used as a mechanism to select features (attributes) 
@@ -45,7 +47,7 @@
            This is a default choice for methods taking conditional dependencies among the attributes into account. }
     \item{"ReliefFbestK"}{ReliefF algorithm where all possible k (representing k nearest instances)
      are tested and for each feature the highest score is returned. Nearest instances have equal weights. }
-    \item{"Relief}{Original algorithm of Kira and Rendel (1991) working on two class problems. }
+    \item{"Relief"}{Original algorithm of Kira and Rendel (1991) working on two class problems. }
     \item{"InfGain"}{Information gain. }
     \item{"GainRatio"}{Gain ratio, which is normalized information gain to prevent bias to multi-valued attributes.}
     \item{"MDL"}{Acronym for Minimum Description Length, presents method introduced in (Kononenko, 1995) 
@@ -55,7 +57,6 @@
     \item{"MyopicReliefF"}{Myopic version of ReliefF resulting from assumption of no local dependencies and 
            attribute dependencies upon class. }
     \item{"Accuracy"}{Accuracy of resulting split. }
-    \item{"BinAccuracy"}{Accuracy of resulting binary split. }
     \item{"ReliefFmerit" }{ReliefF algorithm where for each random instance the merit of each attribute is 
           normalized by the sum of differences in all attributes.}
     \item{"ReliefFdistance"}{ReliefF algorithm where k nearest instances are weighed  directly with its 
@@ -75,7 +76,7 @@
     \item{"MDLsmp" }{Cost-sensitive variant of MDL where costs are introduced through sampling.}
     \item{"ImpurityEuclid"}{Euclidean distance as impurity function on within node class distributions.}
     \item{"ImpurityHellinger"}{Hellinger distance as impurity function on within node class distributions.}
-    \item{"UniformDKM"}{Dietterich-Kearns-Mansour (DKM) with uniform priors." }
+    \item{"UniformDKM"}{Dietterich-Kearns-Mansour (DKM) with uniform priors. }
     \item{"UniformGini"}{Gini index with uniform priors.}                      
     \item{"UniformInf"}{Information score with uniform priors.} 
     \item{"UniformAccuracy"}{Accuracy with uniform priors. }               

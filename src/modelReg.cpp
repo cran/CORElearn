@@ -17,7 +17,7 @@
 //
 //************************************************************
 void regressionTree::buildModel(marray<int> &DTrain, marray<double> &pDTrain, 
-								int TrainSize, binnodeReg *Node)
+								int TrainSize, binnodeReg *Node) const
 {
    // what kind of a model do we use in a leaf
    Node->Model.gRT = this ;
@@ -97,7 +97,7 @@ kernel:       Node->Model.creatennKernelWidthReg(TrainSize, opt->kInNN, opt->nnK
 //    fits MDL based linear model with Powell's optimization
 //
 //************************************************************
-void regressionTree::powellFitLinearModel(marray<int> &DTrain, int TrainSize, exprReg& Model)
+void regressionTree::powellFitLinearModel(marray<int> &DTrain, int TrainSize, exprReg& Model) const
 {
       int i, j ;
 
@@ -173,7 +173,7 @@ void regressionTree::powellFitLinearModel(marray<int> &DTrain, int TrainSize, ex
 //    fits linear model with singular value decomposition
 //
 //************************************************************
-void regressionTree::svdFitLinearModel(marray<int> &DTrain, int TrainSize, exprReg& Model)
+void regressionTree::svdFitLinearModel(marray<int> &DTrain, int TrainSize, exprReg& Model) const
 {
       int i ;
       double *x = new double[TrainSize+1] ;
@@ -224,7 +224,7 @@ void regressionTree::svdFitLinearModel(marray<int> &DTrain, int TrainSize, exprR
 //     and then simplify  as Quinlan's M5 does
 //
 //************************************************************
-void regressionTree::M5Simplify(marray<int> &DTrain, int TrainSize, binnodeReg* Node)
+void regressionTree::M5Simplify(marray<int> &DTrain, int TrainSize, binnodeReg* Node) const
 {
       int i ;
       double *x = new double[TrainSize+1] ;

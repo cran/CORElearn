@@ -3,28 +3,27 @@
 
 #include "general.h"
 #include "contain.h"
+#include "mstring.h"
 
 enum splitSelectionType {FROM_FILES=0, CROSS_VALIDATION=1, STRATIFIED_CV=2,
                          LOOCV=3, ALL_TRAINING=4, RANDOM_SPLIT=5 } ;
 
 class Options {
 public:
-   Options(void) { setDefault() ; }
-
    // command line options
-   char optionFile[MaxFileNameLen] ;
-   char action[MaxNameLen] ;
+   mstring optionFile ;
+   mstring action ;
 
    // data options
-   char domainName[MaxFileNameLen] ;
-   char dataDirectory[MaxPath] ;
-   char resultsDirectory[MaxPath] ;
-   char NAstring[MaxNameLen] ;
+   mstring domainName ;
+   mstring dataDirectory ;
+   mstring resultsDirectory ;
+   mstring NAstring ;
    int splitIdx ;
    int numberOfSplits ;
    splitSelectionType splitSelection ;
    double trainProportion ;
-   long int rndSeedSplit ;
+   int rndSeedSplit ;
 
 
    // building options
@@ -36,8 +35,8 @@ public:
 
    // attribute evaluation
    int attrEvaluationInstances ;  // maximal examples for estimation
-   booleanT binaryAttributes ;
-   booleanT binarySplitNumericAttributes ; // are numeric attributes' splits considered binary (or greedily discretized) in applicable measures
+   booleanT binaryEvaluation ;
+   booleanT binaryEvaluateNumericAttributes ; // are numeric attributes' splits considered binary (or greedily discretized) in applicable measures
    int multiclassEvaluation;
    marray<booleanT> estOnReg;
    marray<booleanT> estOn;
@@ -51,7 +50,6 @@ public:
    // ordEval
    int ordEvalNoRandomNormalizers ;
    booleanT ordEvalBootstrapNormalize ;
-   //oeConfidenceInterval oeCI ;
    double ordEvalNormalizingPercentile;
    marray<double> attrWeights ;
 
@@ -100,20 +98,26 @@ public:
    int rfNoTerminals ;
    int rfRegType ;
    double rfRegLambda ;
-   long int rfRndSeed ;
+   int rfRndSeed ;
 
    // miscellaneous
+   int maxThreads ;
    booleanT printTreeInDot ;
    booleanT outProbDistr ;
-   char defaultEditor[MaxPath] ;
+   mstring defaultEditor ;
+
+   // constructors
+   Options(void) { setDefault() ; }
+   Options(Options &cp) { copy(cp) ; }
 
    // methods
+   void copy(const Options &cp) ;
    void setDefault(void) ;
    void processOptions(void) ;
    int readConfig(char* ConfigName) ;
    int readConfigFromString(char* optionsString) ;
-   void outConfig(FILE *to) ;
-   int writeConfig(char* ConfigName) ;
+   void outConfig(FILE *to) const ;
+   int writeConfig(char* ConfigName) const ;
    void parseOption(char *optString, char *keyword, char *key) ;
    void assignOption(char *optString) ;
    void assignOption(char *keyword, char *key)  ;

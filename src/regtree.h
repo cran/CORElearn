@@ -41,8 +41,8 @@ protected:
               marray<double> &pRightTrain, int &RightSize, double &wLeft, double &wRight) ;
    booleanT time2stop(binnodeReg *Node) ;
    void createLeaf(binnodeReg *Node) ;
-   void buildTreeNode(binnodeReg *Node, marray<int> &DTrain, marray<double> &pDTrain, int TrainSize) ;
-   void buildModel(marray<int> &DTrain, marray<double> &pDTrain, int TrainSize, binnodeReg* Node) ;
+   void buildTreeNode(binnodeReg *Node, marray<int> &DTrain, marray<double> &pDTrain, int TrainSize) const;
+   void buildModel(marray<int> &DTrain, marray<double> &pDTrain, int TrainSize, binnodeReg* Node) const;
    double check(binnodeReg *branch, int caseIdx) ;
    void printFTree(FILE *out,  int &FeatureNo,  marray<binnodeReg*> &FeatureNode,
                    marray<binnodeReg*> &ModelString, int &LeavesNo, binnodeReg *branch, int place) ;
@@ -57,9 +57,9 @@ protected:
    double errorComplexityPrune(binnodeReg* Node, int &Size) ;
    double errorComplexityPruneVar(binnodeReg* Node, int &Size) ;
    double errorComplexityPruneCV(binnodeReg* Node, int &Size) ;
-   void svdFitLinearModel(marray<int> &DTrain, int TrainSize, exprReg& Model) ;
-   void powellFitLinearModel(marray<int> &DTrain, int TrainSize, exprReg& Model) ;
-   void M5Simplify(marray<int> &DTrain, int TrainSize, binnodeReg *Node) ;
+   void svdFitLinearModel(marray<int> &DTrain, int TrainSize, exprReg& Model)const ;
+   void powellFitLinearModel(marray<int> &DTrain, int TrainSize, exprReg& Model)const ;
+   void M5Simplify(marray<int> &DTrain, int TrainSize, binnodeReg *Node) const;
    double mdlCode(binnodeReg *Node) ;
 
    booleanT buildConstruct(marray<int> &DTrain, marray<double> &pDTrain, int TrainSize, binnodeReg* Node, int currentDepth) ;

@@ -119,9 +119,6 @@ binnode* featureTree::buildTree(marray<int> &DTrain, marray<double> &pDTrain,
 {
    // create the structure for the outcome of this method
    binnode* Node = new binnode ;
-   //CurrentNode = Node ;
-   //CurrentTrainSize = TrainSize ;
-   //CurrentExamples = &DTrain ;
    Node->DTrain.copy(DTrain) ;
    Node->DTrain.setFilled(TrainSize) ;
    Node->weight = 0.0 ;

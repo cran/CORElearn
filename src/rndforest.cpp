@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <float.h>
+#include <limits.h>
 //#include <conio.h>
 
 #include "ftree.h"
@@ -20,10 +21,17 @@
 //
 //************************************************************
 int featureTree::buildForest(void) {
+    int i, rndAux[3];
 
-   forest.create(opt->rfNoTrees) ;
+    for (i = 0 ; i < 3; i++)
+        rndAux[i] = randBetween(0,INT_MAX);
 
-   int trainSize = NoTrainCases, i ;
+    forest.create(opt->rfNoTrees) ;
+
+    // generate a random generator for each tree separately to ensure deterministic result for parallel execution
+    rndStr.initSeed(opt->rfNoTrees, 3, rndAux) ;
+
+   int trainSize = NoTrainCases ;
    if (opt->rfNoSelAttr==0)
 	    rfNoSelAttr = Mmax(1, intRound(sqrt(double(noAttr)))) ;
    else if (opt->rfNoSelAttr==-1)
@@ -37,8 +45,10 @@ int featureTree::buildForest(void) {
 
    // prepare weighs for no weighting (set equal weights)
    eProb[0] = 0.0 ;
-   for (i=1 ; i <= noAttr; i++)
+   //#pragma omp parallel for shared(eProb)
+   for (i=1 ; i <= noAttr; i++) {
       eProb[i] = double(i)/ noAttr ;
+   }
    eProb[noAttr] = 1.0 ;
 
    if (opt->rfPropWeightedTrees > 0) {
@@ -89,42 +99,40 @@ int featureTree::buildForest(void) {
    availEst[3] = estGini ;
    availEst[4] = estMyopicReliefF ;
 
-   // to maintain identical results for multi-threaded version compute randomization sequentially in advance
+   // to maintain identical results for multithreaded version compute randomization sequentially in advance
    if (opt->rfSampleProp==0)
-   		for (int i = 0 ; i < opt->rfNoTrees ; i++)
+   		for (i = 0 ; i < opt->rfNoTrees ; i++)
 	      bootstrapSample(trainSize, DTraining, forest[i].ib, forest[i].oob, forest[i].oobIdx) ;
     else
-  		for (int i = 0 ; i < opt->rfNoTrees ; i++)
+  		for (i = 0 ; i < opt->rfNoTrees ; i++)
           randomSample(trainSize, opt->rfSampleProp, DTraining, forest[i].ib, forest[i].oob, forest[i].oobIdx) ;
 
-   int estimator = opt->selectionEstimator ;
+    marray<int> estim(opt->rfNoTrees, opt->selectionEstimator ) ;
+    if (opt->rfMultipleEst)
+        //#pragma omp parallel for shared(estim,availEst,noAvailableEst)
+  		for (i = 0 ; i < opt->rfNoTrees ; i++){
+		   estim[i] = availEst[i % noAvailableEst] ;
+  		}
 
-   //#pragma omp parallel for
-   for (int it = 0 ; it < opt->rfNoTrees ; it++) {
-	   // prepare training data
-	   if (opt->rfSampleProp==0)
-		   bootstrapSample(trainSize, DTraining, forest[it].ib, forest[it].oob, forest[it].oobIdx) ;
-	   else
-           randomSample(trainSize, opt->rfSampleProp, DTraining, forest[it].ib, forest[it].oob, forest[it].oobIdx) ;
+    #pragma omp parallel for schedule(dynamic, 1)
+    for (int it = 0 ; it < opt->rfNoTrees ; it++) {
 
-	   if (opt->rfMultipleEst)
-		   opt->selectionEstimator = availEst[it % noAvailableEst] ;
-	   if ( it/double(opt->rfNoTrees) < opt->rfPropWeightedTrees) {
+    	if ( it/double(opt->rfNoTrees) < opt->rfPropWeightedTrees) {
 		   if (opt->rfNoTerminals ==0)
-	         forest[it].t.root = buildForestTree(trainSize, forest[it].ib, opt->selectionEstimator, wProb) ;
+	         forest[it].t.root = buildForestTree(trainSize, forest[it].ib, estim[it], wProb, it) ;
 		   else
-			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, trainSize, forest[it].ib, opt->selectionEstimator, wProb) ;
+			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, trainSize, forest[it].ib, estim[it], wProb, it) ;
 	   }
 	   else {
    	      if (opt->rfNoTerminals ==0)
-  	         forest[it].t.root = buildForestTree(trainSize, forest[it].ib, opt->selectionEstimator, eProb) ;
+  	         forest[it].t.root = buildForestTree(trainSize, forest[it].ib, estim[it], eProb, it) ;
 		   else
-			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, forest[it].ib.len(), forest[it].ib, opt->selectionEstimator, eProb) ;
+			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, forest[it].ib.len(), forest[it].ib, estim[it], eProb, it) ;
 	   }
+	   rfConsolidateTree(forest[it].t.root) ;
 
        // oobEstimate = oobEvaluate(forest[it].t.root, DTraining, forest[it].oob, oobEval) ;
    }
-   opt->selectionEstimator = estimator ;
    // regularization
    rfA.create(opt->rfNoTrees, 1.0/opt->rfNoTrees) ;
    if (noClasses == 2 && opt->rfRegType==1) // global regularization
@@ -138,6 +146,7 @@ int featureTree::buildForest(void) {
    avgOobAccuracy = oobAccuracy(oobEval) ;
    avgOobMargin = oobMargin(oobEval, maxOther, varMargin) ;
    avgOobCorrelation = varMargin / sqr(oobSTD(maxOther));
+   rndStr.destroy() ;
    return 1 ;
 }
 
@@ -188,8 +197,9 @@ double featureTree::oobInplaceEvaluate(binnode *rootNode, marray<int> &dSet, mar
 //             builds one tree of random forest
 //
 //************************************************************
-binnode* featureTree::buildForestTree(int TrainSize, marray<int> &DTrain, int attrEstimator, marray<double> &attrProb) {
-   binnode* Node = rfPrepareLeaf(TrainSize, DTrain);
+binnode* featureTree::buildForestTree(int TrainSize, marray<int> &DTrain, int attrEstimator, const marray<double> &attrProb, int rndIdx) {
+
+	binnode* Node = rfPrepareLeaf(TrainSize, DTrain);
 
    // stopping criterion
    if (time2stop(Node) )
@@ -202,10 +212,10 @@ binnode* featureTree::buildForestTree(int TrainSize, marray<int> &DTrain, int at
    // for estimation of the attributes, constructs, binarization, and discretization
    marray<double> pDTrain(TrainSize, 1.0) ;
    estimation *Estimator = new estimation(this, DTrain, pDTrain, TrainSize) ;
-   Estimator->setActive(attrEstimator) ;
+   Estimator->eopt.selectionEstimator = attrEstimator ;
 
    // select/build splitting attribute/construct
-   if (rfBuildConstruct(*Estimator, Node, attrProb) == -FLT_MAX ) {
+   if (rfBuildConstruct(*Estimator, Node, attrProb, rndIdx) == -FLT_MAX ) {
        rfRevertToLeaf(Node);
        delete Estimator ;
        return Node;
@@ -226,8 +236,8 @@ binnode* featureTree::buildForestTree(int TrainSize, marray<int> &DTrain, int at
 	  }
 
       // recursively call building on both partitions
-      Node->left  = buildForestTree( LeftSize, LeftTrain, attrEstimator, attrProb ) ;
-      Node->right = buildForestTree(RightSize, RightTrain, attrEstimator, attrProb) ;
+      Node->left  = buildForestTree(LeftSize, LeftTrain, attrEstimator, attrProb, rndIdx ) ;
+      Node->right = buildForestTree(RightSize, RightTrain, attrEstimator, attrProb, rndIdx ) ;
       return  Node;
 }
 
@@ -239,7 +249,8 @@ binnode* featureTree::buildForestTree(int TrainSize, marray<int> &DTrain, int at
 //       builds one tree of random forest limited in size
 //
 //************************************************************
-binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<int> &DTrain, int attrEstimator, marray<double> &attrProb) {
+binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<int> &DTrain,
+		                                 int attrEstimator, const marray<double> &attrProb, int rndIdx) {
    // create root node and put it into priority list
 
    binnode *rtNode = rfPrepareLeaf(TrainSize, DTrain) ;
@@ -254,8 +265,8 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
    // for estimation of the attributes
    marray<double> pDTrain(TrainSize, 1.0) ;
    estimation Estimator(this, DTrain, pDTrain, TrainSize) ;
-   Estimator.setActive(attrEstimator) ;
-   if ((nodeEl.key = rfBuildConstruct(Estimator, rtNode, attrProb)) == -FLT_MAX)  {
+   Estimator.eopt.selectionEstimator = attrEstimator ;
+   if ((nodeEl.key = rfBuildConstruct(Estimator, rtNode, attrProb, rndIdx)) == -FLT_MAX)  {
 	 rfRevertToLeaf(rtNode) ;
      return rtNode ;
    }
@@ -288,7 +299,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 		 }
 		 else {
 			 Estimator.initialize(LeftTrain,pDTrain,LeftSize) ;
-			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->left, attrProb)) == -FLT_MAX) {
+			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->left, attrProb, rndIdx)) == -FLT_MAX) {
 	              rfRevertToLeaf(Node->left) ;
 				  --noTerminal ;
 			 }
@@ -304,7 +315,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 		 }
 		 else {
 			 Estimator.initialize(RightTrain,pDTrain,RightSize) ;
-			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->right, attrProb)) == -FLT_MAX) {
+			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->right, attrProb, rndIdx)) == -FLT_MAX) {
 	              rfRevertToLeaf(Node->right) ;
 				  --noTerminal ;
 			 }
@@ -324,6 +335,23 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 }
 
 
+//************************************************************
+//
+//                      rfConsolidateTree
+//                      ------------------
+//
+//       deletes unnecessary data in interior nodes and leaves
+//
+//************************************************************
+void featureTree::rfConsolidateTree(binnode *branch) {
+	   if (branch->Identification != leaf) {
+				branch->DTrain.destroy() ;
+				branch->Classify.destroy();
+				rfConsolidateTree(branch->left) ;
+				rfConsolidateTree(branch->right) ;
+	   }
+}
+
 
 //************************************************************
 //
@@ -333,33 +361,48 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 //                  builds one node of the random forests' tree
 //
 //************************************************************
-double featureTree::rfBuildConstruct(estimation &Estimator, binnode* Node, marray<double> &attrProb) {
+double featureTree::rfBuildConstruct(estimation &Estimator, binnode* Node, const marray<double> &attrProb, int rndIdx) {
    int i, j ;
-   // select attributes to take into consideration
-   marray<booleanT>  selAttr(noAttr+1) ;
+   // select attributes to take into consideration and rank them (in case of inadequate rank, take next)
+   marray<int>  selAttr(noAttr+1) ;
    selAttr.setFilled(noAttr+1) ;
    if (rfNoSelAttr == noAttr)
-	   // no selection - pure bagging
-	   selAttr.init(mTRUE) ;
+	   // no selection - pure bagging, all are selected, just simplest rank
+	   for (i=0 ; i <= noAttr ; i ++)
+	      selAttr[i] = i ;
    else {
-	    // select attributes
-	    selAttr.init(mFALSE) ;
-        double rndNum ;
-		i=0 ;
-		while ( i < rfNoSelAttr) {
-			rndNum = randBetween(0.0, 1.0) ;
-			for (j=1 ; j <= noAttr ; j++)
-				if ( rndNum <= attrProb[j] )
-					break ;
-			if (selAttr[j]==mFALSE) {
-				selAttr[j] = mTRUE ;
-				i++ ;
-			}
-		}
-   }
+	    // rank attributes according to the roulette wheel
+	   marray<sortRec> wheel(noAttr+1) ;
+	   // copy cumulative distribution
+	   wheel[0].key = 0.0 ;
+	   wheel[0].value = 0 ;
+	   for (i=1 ; i <= noAttr ; i++) {
+	   		wheel[i].key = attrProb[i];
+	   		wheel[i].value = i ;
+	   }
+       double rndNum, gap ;
+       int last = noAttr ;
+	   selAttr[0] = 0 ;
+	   for (i=1 ; i <= noAttr ; i++) {
+			rndNum = rndStr.getBetween(rndIdx, 0.0, wheel[last].key) ;
+			for (j=1 ; j <= last ; j++) {
+				if (rndNum <= wheel[j].key )
+					break;
+	        }
+  			selAttr[i] = wheel[j].value ; // selected
+			// remove j-th
+  			gap = wheel[j].key - wheel[j-1].key ;
+  			for ( ; j < last ; ++j) {
+  				wheel[j].key = wheel[j+1].key - gap ;
+  				wheel[j].value = wheel[j+1].value ;
+  			}
+            --last ;
+       }
+	}
+
    // estimate the attributes
    attributeCount bestType ;
-   int bestIdx = Estimator.estimateSelected(selAttr,  bestType) ;
+   int bestIdx = Estimator.estimateSelected(selAttr, rfNoSelAttr, bestType) ;
    if (bestIdx == -1)
      return -FLT_MAX ;
 
@@ -379,7 +422,7 @@ double featureTree::rfBuildConstruct(estimation &Estimator, binnode* Node, marra
 //   returns probability distribution of the instance caseIdx computed by forest
 //
 //************************************************************
-void featureTree::rfCheck(int caseIdx, marray<double> &probDist) {
+void featureTree::rfCheck(int caseIdx, marray<double> &probDist) const {
     marray<double> distr(noClasses+1) ;
     probDist.init(0.0) ;
     int i, j, max ;
@@ -416,7 +459,7 @@ void featureTree::rfCheck(int caseIdx, marray<double> &probDist) {
 //
 //
 //************************************************************
-void featureTree::rfCheckReg(int caseIdx, marray<double> &probDist) {
+void featureTree::rfCheckReg(int caseIdx, marray<double> &probDist) const {
     marray<double> distr(noClasses+1) ;
     probDist.init(0.0) ;
     int i, max;
@@ -536,7 +579,7 @@ void featureTree::avImportance(marray<marray<double> > &avEval) {
 //          evaluation of the oob instances
 //
 //************************************************************
-void featureTree::oobEvaluate(mmatrix<int> &oob) {
+void featureTree::oobEvaluate(mmatrix<int> &oob) const {
    marray<double> distr(noClasses+1) ;
    int iT, i, max ;
    oob.init(0) ;
@@ -843,7 +886,7 @@ void featureTree::rfSplit(marray<int> &DTrain, int TrainSize, binnode* Node,
 //        computes classification for single case in one tree
 //
 //************************************************************
-int featureTree::rfTreeCheck(binnode *branch, int caseIdx, marray<double> &probDist)
+int featureTree::rfTreeCheck(binnode *branch, int caseIdx, marray<double> &probDist) const
 {
    switch (branch->Identification)  {
         case leaf:
@@ -979,7 +1022,7 @@ void featureTree::rfNearCheck(int caseIdx, marray<double> &probDist) {
 //        find the nearest cases - the ones that fall in the same leaf
 //
 //************************************************************
-void featureTree::rfFindNearInTree(binnode *branch, int caseIdx, marray<IntSortRec> &near)
+void featureTree::rfFindNearInTree(binnode *branch, int caseIdx, marray<IntSortRec> &near) const
 {
    switch (branch->Identification)  {
         case leaf:
@@ -1067,7 +1110,7 @@ binnode* featureTree::rfPrepareLeaf(int TrainSize, marray<int> &DTrain) {
       Node->NAdiscValue[i] = max ;
    }
 
-   //  numeric attribute missing values - use the average atribute value instead
+   //  numeric attribute missing values - use the average attribute value instead
    Node->NAnumValue.create(noNumeric) ;
    marray<int> NAcontWeight(noNumeric,0) ;
    marray<double> NAcontSum(noNumeric,0.0) ;
@@ -1094,7 +1137,7 @@ binnode* featureTree::rfPrepareLeaf(int TrainSize, marray<int> &DTrain) {
 //                     writes forest to given file
 //
 //************************************************************
-int featureTree::writeRF(const char* TreeFileName)
+int featureTree::writeRF(const char* TreeFileName) const
 {
    FILE *fout ;
    if ((fout=fopen(TreeFileName,"w"))==NULL)
@@ -1135,7 +1178,7 @@ int featureTree::writeRF(const char* TreeFileName)
 
 
 
-int featureTree::getSize(binnode *branch) {
+int featureTree::getSize(binnode *branch) const {
 	if (branch->Identification==leaf)
 		return 1;
 	else
@@ -1143,7 +1186,15 @@ int featureTree::getSize(binnode *branch) {
 }
 
 
-void featureTree::rfWriteTree(FILE* fout, int indent, int treeIdx) {
+int featureTree::getSumOverLeaves(binnode *branch, int depth) const {
+	if (branch->Identification==leaf)
+		return depth;
+	else
+		return (getSumOverLeaves(branch->left, depth+1) + getSumOverLeaves(branch->right, depth+1));
+}
+
+
+void featureTree::rfWriteTree(FILE* fout, int indent, int treeIdx) const {
 	if (forest[treeIdx].t.root ==0)
 	   merror("featureTree::rfWriteTree","nonexisting random forest tree") ;
    else{
@@ -1157,7 +1208,7 @@ void featureTree::rfWriteTree(FILE* fout, int indent, int treeIdx) {
 }
 
 
-void featureTree::rfWriteSubTree(FILE* fout, int indent, binnode *branch) {
+void featureTree::rfWriteSubTree(FILE* fout, int indent, binnode *branch) const {
    //fprintf(fout,"%*s",indent," ") ;
    char NAdirection[10]  ;
    fprintf(fout, "nodeId=") ;
@@ -1389,7 +1440,7 @@ binnode* featureTree::readNode(FILE* fin) {
 }
 
 
-
+/*
 int featureTree::tempSaveForest(char *fName) {
    learnRF = mTRUE ;
    setDataSplit(opt->splitIdx) ;
@@ -1515,3 +1566,4 @@ int featureTree::tempSaveForest(char *fName) {
    fclose(fout) ;
    return 1 ;
 }
+*/

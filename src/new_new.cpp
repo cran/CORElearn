@@ -4,10 +4,10 @@
 #include "new_new.h"
 #include "error.h"
  
- const long MAX_SET = 100000; // high limit
+ const int MAX_SET = 100000; // high limit
 
 void* Set[MAX_SET];
-long int    SetSize = 0;
+int    SetSize = 0;
 
 void Add(void *ptr)
 {

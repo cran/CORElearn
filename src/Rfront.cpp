@@ -24,7 +24,8 @@
 #include "ftree.h"    // decision tree with feature construction
 #include "regtree.h"
 #include "rndforest.h"  // random forests
-#include "utils.h"    // various utillities eg. computing of std. dev.
+#include "utils.h"    // various utilities eg. computing of std. dev.
+#include "random.h"
 #include "estimator.h"
 #include "estimatorReg.h"
 #include "utils.h"
@@ -34,7 +35,7 @@
 #include "Rfront.h"
 
 #if defined(DEBUG_NEW)
-extern long int SetSize;
+extern int SetSize;
 #endif
 
 extern int NoEstimators;
@@ -80,6 +81,22 @@ void testRPORT(int *a) {
 
 void testCoreRand(int *n, double *x) {
 	testRand(n, x);
+}
+
+void testClassPseudoRandom(int *n, int *s, int *k, int *m, double *x)
+{
+	PseudoRandomStreams *rnd;
+	int i, j;
+	rnd = new PseudoRandomStreams;
+	rnd->initSeed(*m, *n, s);
+	for (i=0; i<*k; i++)
+		for (j=0; j<*m; j++)
+			x[i + j * (*k)] = rnd->getDouble(j);
+}
+
+void testTime(double *x)
+{
+	x[0] = (double)time(NULL);
 }
 
 // library version
@@ -137,15 +154,14 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 	// read options
 	opt->optionsFromStrings(*noOptions, optionsName, optionsValue);
 
-	if (strcmp(opt->action, "tree") == 0 || strcmp(opt->action, "bayes") == 0
-			|| strcmp(opt->action, "knn") == 0 || strcmp(opt->action,
-			"knnKernel") == 0 || strcmp(opt->action, "rf") == 0 || strcmp(
-			opt->action, "rfNear") == 0)
+	if (opt->action == "tree" || opt->action == "bayes"
+			|| opt->action == "knn" || opt->action == "knnKernel"
+			|| opt->action == "rf" || opt->action == "rfNear" )
 		isRegression = mFALSE;
-	else if (strcmp(opt->action, "regTree") == 0)
+	else if (opt->action == "regTree")
 		isRegression = mTRUE;
 	else {
-		merror("unknown action: %s\n", opt->action);
+		merror("unknown action: %s\n", opt->action.getConstValue());
 		*modelID = -1;
 		delete opt;
 		goto cleanUp;
@@ -183,41 +199,41 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		for (int c = 1; c <= *noClasses; c++)
 			priorClProb[c - 1] = data->AttrDesc[0].valueProbability[c];
 
-	if (strcmp(data->opt->action, "tree") == 0) {
+	if (data->opt->action == "tree") {
 		dT->learnRF = mFALSE;
 		dT->constructTree();
-	} else if (strcmp(data->opt->action, "bayes") == 0) {
+	} else if (data->opt->action == "bayes") {
 		dT->learnRF = mFALSE;
 		dT->opt->minNodeWeight = dT->NoCases + 1;
 		dT->opt->modelType = 4;
 		dT->constructTree();
-	} else if (strcmp(data->opt->action, "knn") == 0) {
+	} else if (data->opt->action == "knn") {
 		dT->learnRF = mFALSE;
 		dT->opt->minNodeWeight = dT->NoCases + 1;
 		dT->opt->modelType = 2;
 		dT->constructTree();
-	} else if (strcmp(data->opt->action, "knnKernel") == 0) {
+	} else if (data->opt->action == "knnKernel") {
 		dT->learnRF = mFALSE;
 		dT->opt->minNodeWeight = dT->NoCases + 1;
 		dT->opt->modelType = 3;
 		dT->constructTree();
-	} else if (strcmp(data->opt->action, "rf") == 0) {
+	} else if (data->opt->action == "rf") {
 		dT->learnRF = mTRUE;
 		dT->opt->rfkNearestEqual = 0; // force to zero, so that memory can be released
 #if !defined(R_PORT)
 		randSeed(dT->opt->rfRndSeed);
 #endif
 		dT->buildForest();
-	} else if (strcmp(data->opt->action, "rfNear") == 0) {
+	} else if (data->opt->action == "rfNear") {
 		dT->learnRF = mTRUE;
 #if !defined(R_PORT)
 		randSeed(dT->opt->rfRndSeed);
 #endif
 		dT->buildForest();
-	} else if (strcmp(data->opt->action, "regTree") == 0) {
+	} else if (data->opt->action == "regTree") {
 		rT->constructRegTree();
 	} else {
-		Rprintf("unknown action: %s\n", dT->opt->action);
+		Rprintf("unknown action: %s\n", dT->opt->action.getConstValue());
 		delete allModels[*modelID];
 		allModels[*modelID] = 0;
 		*modelID = -1;
@@ -226,9 +242,9 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 	if (data->isRegression)
 		*avgPrediction = rT->rootAverage;
 	// for some models we can destroy the data here
-	if ((strcmp(data->opt->action, "tree") == 0 && (data->opt->modelType == 1
+	if ((data->opt->action == "tree" && (data->opt->modelType == 1
 			|| data->opt->modelType == 4))
-			|| strcmp(data->opt->action, "bayes") == 0)
+			|| data->opt->action == "bayes")
 		data->clearData(mTRUE);
 
 	// unwrap arrays
@@ -326,13 +342,13 @@ void destroyCore() {
 	/* Check heap status */
 	int heapstatus = _heapchk();
 	if (heapstatus!= _HEAPOK)
-	fprintf(stderr, "\nWARNING: Heap is not OK !!");
-	// _HEAPOK, _HEAPEMPTY, _HEAPBADBEGIN, _HEAPBADNODE
+	  merror("destroyCore final check","Heap is not OK !!");
+	  // _HEAPOK, _HEAPEMPTY, _HEAPBADBEGIN, _HEAPBADNODE
 #endif
 #endif
 
 #if defined(DEBUG_NEW)
-	printf("Still alocated memory blocks: %ld\n",SetSize);
+	printf("Still allocated memory blocks: %ld\n",SetSize);
 #endif
 }
 
@@ -886,10 +902,21 @@ SEXP exportSizesRF(SEXP modelID) {
 	mi = INTEGER(modelID)[0];
 	// is modelID valid
 	if (mi < 0 || mi >= allModels.len() || allModels[mi] == 0)
-		return (NULL);
+		return (R_NilValue);
 	featureTree *dT = (featureTree*) allModels[mi]; // working Model
 	dT->learnRF = mTRUE;
 	return (dT->exportSizes());
+}
+
+SEXP exportSumOverLeavesRF(SEXP modelID) {
+	int mi;
+	mi = INTEGER(modelID)[0];
+	// is modelID valid
+	if (mi < 0 || mi >= allModels.len() || allModels[mi] == 0)
+		return (R_NilValue);
+	featureTree *dT = (featureTree*) allModels[mi]; // working Model
+	dT->learnRF = mTRUE;
+	return (dT->exportSumOverLeaves());
 }
 
 SEXP exportModel(SEXP modelID) {
@@ -897,7 +924,7 @@ SEXP exportModel(SEXP modelID) {
 	mi = INTEGER(modelID)[0];
 	// is modelID valid
 	if (mi < 0 || mi >= allModels.len() || allModels[mi] == 0)
-		return (NULL);
+		return (R_NilValue);
 	featureTree *dT = (featureTree*) allModels[mi]; // working Model
 	dT->learnRF = mTRUE;
 	return (dT->RF2R());

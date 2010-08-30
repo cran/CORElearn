@@ -273,7 +273,7 @@ void regressionTree::createLeaf(binnodeReg *Node)
 //                transform node into a leaf
 //
 //**********************************************************************
-void regressionTree::buildTreeNode(binnodeReg *Node, marray<int> &DTrain, marray<double> &pDTrain, int TrainSize)
+void regressionTree::buildTreeNode(binnodeReg *Node, marray<int> &DTrain, marray<double> &pDTrain, int TrainSize) const
 {
    Node->DTrain.copy(DTrain) ;
    Node->DTrain.setFilled(TrainSize) ;
@@ -353,14 +353,14 @@ void regressionTree::buildTreeNode(binnodeReg *Node, marray<int> &DTrain, marray
    }
    
    // certain models need this variable because of NA values
-   // this procedure can be called from esrtimation: nodes are not correctly set there
-   binnodeReg *globalCurrent = CurrentNode ;
-   CurrentNode = Node ;
+   // this procedure can be called from estimation: nodes are not correctly set there
+   //binnodeReg *globalCurrent = CurrentNode ;
+   //CurrentNode = Node ;
 
    // build model for the data (used in case of a leaf and for estimationReg)
    buildModel(DTrain, pDTrain, TrainSize, Node) ;
 
-   CurrentNode = globalCurrent ;
+   //CurrentNode = globalCurrent ;
 
    // compute mean squared and absolute error
    double residium ;

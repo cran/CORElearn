@@ -1,4 +1,5 @@
 \name{testCore}
+\alias{testCore}
 \alias{testCoreClass}
 \alias{testCoreAttrEval}
 \alias{testCoreReg}
@@ -19,13 +20,14 @@ testCoreOrdEval(verbose=1)
 testCoreNA(verbose=1)
 testCoreRPORT(verbose=1)
 testCoreRand(verbose=1)
-allTests(verbose=1)
+allTests(verbose=1, timed=FALSE)
 }
 
 \arguments{
 \item{verbose}{An integer determining the level of verbosity. If 0, an error
   is generated, if any of the tests fails. Otherwise, only the result of the
   test is printed.}
+\item{timed}{Logical. Whether the time usage should be printed.}
 }
 
 \details{

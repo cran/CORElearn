@@ -85,7 +85,7 @@ verifyROC <- function()
         c(0.7911, 0.9978),
         c(0.8998, 0.9992))
     d <- absDiffROC(current, expect)
-    d <= 0.003
+    d <= 0.0035
 }
 
 cmp.table <- function(a, b)
@@ -151,7 +151,7 @@ testCoreAttrEval <- function(verbose=1)
     RNGversion("2.9.2")
     set.seed(0)
     train <- classDataGen(ncases)
-    test <- classDataGen(ncases)
+    #test <- classDataGen(ncases)
     estReliefF <- attrEval(class ~ ., train, estimator="ReliefFexpRank")
     comp1<-c(0.050083407,0.078033329,0.042187049,0.034625011,0.064074820,0.057376281,
              0.007454174,0.136318607,0.109862236,0.001486706)
@@ -271,17 +271,21 @@ testCoreRand <- function(verbose=1)
 	outputResult(verbose, ok, rbind(x,y))
 }
 
-allTests <- function(verbose=1)
+allTests <- function(verbose=1,timed=FALSE)
 {
 	v <- max(2, verbose)
     cat("testCoreClass()    : ")
-    r1 <- testCoreClass(v)
+    t1<-system.time(r1 <- testCoreClass(v))
+    if (timed) cat("Elapsed",t1["elapsed"],"sec\n")
     cat("testCoreAttrEval() : ")
-    r2 <- testCoreAttrEval(v)
+    t2<-system.time(r2 <- testCoreAttrEval(v))
+    if (timed) cat("Elapsed",t2["elapsed"],"sec\n")
     cat("testCoreReg()      : ")
-    r3 <- testCoreReg(v)
+    t3<-system.time(r3 <- testCoreReg(v))
+    if (timed) cat("Elapsed",t3["elapsed"],"sec\n")
     cat("testCoreOrdEval()  : ")
-    r4 <- testCoreOrdEval(v)
+    t4<-system.time(r4 <- testCoreOrdEval(v))
+    if (timed) cat("Elapsed",t4["elapsed"],"sec\n")
     cat("testCoreNA()       : ")
     r5 <- testCoreNA(v)
     cat("testCoreRPORT()    : ")
@@ -293,5 +297,23 @@ allTests <- function(verbose=1)
 	if (!all(ok) && verbose <= 0)
 		stop("some of the tests failed")
 	outputResult(verbose, ok, ok)
+}
+
+testClassPseudoRandom <- function(s, k, m)
+{
+	n <- length(s)
+	aux <- .C("testClassPseudoRandom",
+		n = as.integer(n),
+		s = as.integer(s),
+		k = as.integer(k),
+		m = as.integer(m),
+		x = double(k*m),
+		PACKAGE="CORElearn")
+	matrix(aux$x, nrow=k, ncol=m)
+}
+
+testTime <- function()
+{
+	.C("testTime", x=double(1), PACKAGE="CORElearn")$x
 }
 

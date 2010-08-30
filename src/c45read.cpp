@@ -152,7 +152,7 @@ int c45read::readC45names(FILE *from) {
 }
 
 
-int c45read::readC45data(FILE *from, char *NAstr) {
+int c45read::readC45data(FILE *from, const char *NAstr) {
 	char buf[MaxLineLen] ;
 	int strIdx ;
 	c45Data item ;

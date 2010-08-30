@@ -21,18 +21,6 @@ destroyModels <-function(model=NULL)
     }
     invisible(NULL) 
 }
-helpCore <- function(name=NULL) {
-    #optData <- optionData()  
-    optdat <- optionData()$All
-    if (is.null(name)) {
-        for (opt in optdat[,"name"])
-            printOptLine(opt) 
-    }
-    else {
-        name <- match.arg(name, optdat[,"name"])
-        printOptLine(name) 
-    }
-}
 CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKernel","bayes","regTree"), ..., costMatrix=NULL)
 {
     if (!inherits(formula,"formula")) stop("First argument must be a formula.");
@@ -121,7 +109,7 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
     noClasses <- length(class.lev);
     #terms <- delete.response(model$terms);
     dat <- model.frame(model$formula, data=newdata, na.action=na.pass);
-    aux <- prepare.Data(dat[,-1], model$formula, dependent=FALSE,class.lev, skipNAcolumn=FALSE, skipEqualColumn=FALSE);
+    aux <- prepare.Data(dat[-1], model$formula, dependent=FALSE,class.lev, skipNAcolumn=FALSE, skipEqualColumn=FALSE);
     noInst <- aux$noInst
     discnumvalues <- aux$discnumvalues;
     discdata <- aux$discdata;
@@ -165,7 +153,7 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
     }
     returnList
 }
-attrEval <- function(formula, data, costMatrix = NULL, estimator, ...)
+attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
 {
     ## find the type of estimator
     isRegression <- FALSE ;
@@ -638,9 +626,12 @@ loadRF <- function(formula, data, fileName) {
     class(res) <- "CoreModel"
     res
 }
-getRFsizes <- function(model) {
+getRFsizes <- function(model, type=c("size", "sumdepth")) {
     if (model$model != "rf") stop("The model must be a random forest.");
-    .Call("exportSizesRF", as.integer(model$modelID), PACKAGE="CORElearn")
+	type <- match.arg(type)
+    switch(type,
+    size=.Call("exportSizesRF", as.integer(model$modelID), PACKAGE="CORElearn"),
+    sumdepth=.Call("exportSumOverLeavesRF", as.integer(model$modelID), PACKAGE="CORElearn"))
 }   
 getCoreModel <- function(model) {
     if (model$model != "rf") stop("The model must be a random forest.");

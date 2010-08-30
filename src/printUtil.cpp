@@ -317,7 +317,7 @@ void printOrdEvalInst(FILE *to, int instance, marray<double> &reinfPos, marray<d
   fprintf(to, "%*s, %*s, %6s, %6s, %6s\n", maxNameLen, dt->AttrDesc[0].AttributeName, maxValLen,  dt->AttrDesc[0].ValueName[dt->DiscData(instance,0)-1],"impPos","impNeg","impAnc") ;
   // each line contains reinforcement factors for one attribute
   for (i=1 ; i < dt->noDiscrete; i++) {
-	  fprintf(to,"%*s, %*s, ", maxNameLen, dt->AttrDesc[i].AttributeName, maxValLen, ((dt->DiscData(instance,i)==NAdisc)?dt->opt->NAstring:dt->AttrDesc[dt->DiscIdx[i]].ValueName[dt->DiscData(instance,i)-1])) ;
+	 fprintf(to,"%*s, %*s, ", maxNameLen, dt->AttrDesc[i].AttributeName, maxValLen, ((dt->DiscData(instance,i)==NAdisc)?dt->opt->NAstring.getConstValue():dt->AttrDesc[dt->DiscIdx[i]].ValueName[dt->DiscData(instance,i)-1])) ;
 	 fprintf(to,"%6.4f, %6.4f, %6.4f\n", reinfPos[i], reinfNeg[i], anchor[i]) ;
   }
   //fprintf(to, "\n") ;
@@ -338,7 +338,7 @@ void printOrdEvalInstRnd(FILE *to, int instance, marray<marray<double> > &reinfP
 	}
 	fprintf(to,"\n") ;
 	for (i=1 ; i < dt->noDiscrete; i++) {
-		fprintf(to,"%17s", ((NAdisc==dt->DiscData(instance,i))?dt->opt->NAstring:dt->AttrDesc[dt->DiscIdx[i]].ValueName[dt->DiscData(instance,i)-1])) ;
+		fprintf(to,"%17s", ((NAdisc==dt->DiscData(instance,i))?dt->opt->NAstring.getConstValue():dt->AttrDesc[dt->DiscIdx[i]].ValueName[dt->DiscData(instance,i)-1])) ;
 		for (m=0 ; m < noMethods ; ++m){
 			if (m == 0)
 				rndResult = &reinfPosRnd[i] ;

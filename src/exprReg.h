@@ -41,7 +41,7 @@ class exprReg
 
 
 public:
-   regressionTree *gRT ;
+   const regressionTree *gRT ;
    exprReg() { root = 0 ; }
    exprReg(regressionTree *rt) { root = 0 ; gRT = rt; }
    ~exprReg() { destroy(); gRT=0; }

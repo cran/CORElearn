@@ -8,7 +8,7 @@
  // singular value decomposition method for solving linear regression problem
 #define TOL 1.0e-5
 
-regressionTree *gT ; // used for LWR
+const regressionTree *gT ; // used for LWR
 extern binnodeReg *currentNode ; // used for LWR
 extern int currentCase ; // used for LWR
 extern double *LWRweight ; // used for LWR
@@ -51,7 +51,7 @@ void ContDataRetriever(double Index, double Data[], marray<int> &Mask, int DataS
 //                      MdlCodeLen
 //                      ----------
 //
-//     computes codel len for optimization of the model
+//     computes code length for optimization of the model
 //
 // ************************************************************
 double MdlCodeLen(double parameter[], marray<int> &Mask)
@@ -159,7 +159,7 @@ void ContWDataRetriever(double Index, double Data[], marray<int> &Mask, int Data
 
 // mask is aded to assure that only selected parameters are fitted (those with value 1),
 // those with value 0 will stay unchanged
-void svdfit(regressionTree* gTree, double x[], double y[], double sig[], int ndata, double A[], marray<int> &mask, int ma,
+void svdfit(const regressionTree *gTree, double x[], double y[], double sig[], int ndata, double A[], marray<int> &mask, int ma,
    double **u, double **v, double w[], double *chisq,
    void (*funcs)(double, double [], marray<int> &,int))
 {
@@ -623,7 +623,7 @@ double df1dim(double x)
 
 marray<int> nrMask ;
 
-void powell(regressionTree * gTree, double p[], double **xi,marray<int> &Mask, int n, double ftol, int *iter, double *fret,
+void powell(const regressionTree *gTree, double p[], double **xi,marray<int> &Mask, int n, double ftol, int *iter, double *fret,
    double (*func)(double [], marray<int> &Mask))
 {
    void linmin(double p[], double xi[], int n, double *fret,

@@ -6,13 +6,7 @@
   For given parameter name function prints its type, default value, and short description.
   If no \code{name} is given descriptions for all available parameters are printed out.
 }
-\usage{
-helpCore(name=NULL) 
-}
 
-\arguments{
-  \item{name}{ Optional parameter giving the name of the option. }
-  }
 \details{
 There are many different parameters available. Some are general and can be used in many
 learning, or feature evaluation algorithms. All the values actually used by 
@@ -25,15 +19,29 @@ The parameters in this group may be used inside model construction
 via \code{\link{CoreModel}} and feature evaluation in \code{\link{attrEval}}. See \code{\link{attrEval}}
 for description of relevant evaluation methods. 
 
-Parameters \code{attrEvaluationInstances},\code{binaryAttributes},\code{binarySplitNumericAttributes}
-are applicable to all attribute evaluation methods.
+Parameters \code{attrEvaluationInstances},\code{binaryEvaluation},\code{binarySplitNumericAttributes}
+are applicable to all attribute evaluation methods. In models which need feature evaluation (e.g., trees,
+random forests) they affect the selection of splits in the nodes.
 Other parameters may be used only in context sensitive measures, i.e., ReliefF in classification
 and RReliefF in regression and their variants.  
 \describe{
-    \item{binaryAttributes}{type: logical, default value: FALSE \cr
-          shell we treat all attributes as binary and binarize them before evaluation if necessary. }
-    \item{binarySplitNumericAttributes}{type: logical, default value: TRUE \cr
-          shell the numerical attributes be treated as binary (to avoid biases against multi-valued attributes). }
+    \item{binaryEvaluation}{type: logical, default value: FALSE \cr
+          Shell we treat all attributes as binary and binarize them before evaluation if necessary.
+          If \code{TRUE}, then for all multivalued discrete and all numeric features a search for the
+          best binarization is performed. The evaluation of the best binarization found is reported.
+          If \code{FALSE}, then multivalued discrete features are evaluated "as is" with multivalued versions
+          of estimators. With ReliefF-type measures, numeric features are also evaluated "as is". For evaluation
+          of numeric features with other (non-ReliefF-type) measures, they are first binarized or discretized.
+          The choice between binarization and discretization is controlled by \code{binaryEvaluateNumericAttributes}.
+          See also \code{discretizationSample}. }
+    \item{binaryEvaluateNumericAttributes}{type: logical, default value: TRUE \cr
+          ReliefF like measures can evaluate numeric attributes intrinsically, others
+          have to discretize or binarize them before evaluation; for those measures
+          this parameter selects binarization (default)or discretization (computationally more demanding). }
+    \item{multiclassEvaluation}{type: integer, default value: 1, value range: 1, 4 \cr 
+               multi-class extension for two-class-only evaluation measures 
+               (1-average of all-pairs, 2-best of all-pairs, 
+               3-average of one-against-all, 4-best of one-against-all). }
     \item{attrEvaluationInstances}{type: integer, default value: 0, value range: 0, Inf \cr
           number of instances for attribute evaluation (0=all available). }
     \item{ReliefIterations}{type: integer, default value: 0, value range: -2, Inf \cr 
@@ -56,25 +64,32 @@ and RReliefF in regression and their variants.
 \describe{
     \item{ordEvalNoRandomNormalizers}{type: integer, default value: 0, value range: 0, Inf, \cr
        number of randomly shuffled attributes for normalization of each attribute (0=no normalization). }
-    \item{ordEvalBootstrapRandomNormalize}{type: logical, default value: FALSE \cr
+    \item{ordEvalBootstrapNormalize}{type: logical, default value: FALSE \cr
        are features used for normalization constructed with bootstrap sampling or random permutation. }
     \item{ordEvalNormalizingPercentile}{type: numeric, default value: 0.025, value range: 0, 0.5 \cr
        percentile defines the length of confidence interval obtained with random normalization. Percentile \code{t} forms
        interval by taking the \eqn{n\cdot t}{nt} and \eqn{n(1-t)} random evaluation as the confidence interval boundaries, thereby forming 
-       \eqn{100(1-2t)}\%  confidence interval (\code{t}=0.025 gives 95\% confidence interval).} The value \eqn{n} is set by 
-       \code{ordEvalNoRandomNormalizers} parameters.
-    \item{attrWeights}{type: character \cr
+       \eqn{100(1-2t)}\%  confidence interval (\code{t}=0.025 gives 95\% confidence interval). The value \eqn{n} is set by 
+       \code{ordEvalNoRandomNormalizers} parameter.}
+    \item{attrWeights}{type: character, \cr
        a character vector representing a list of attribute weights in the ordEval distance measure. }
 }
 }
 \section{Decision/regression tree construction}{
 There are several parameters controlling a construction of the tree model. Some are described here,
 but also attribute evaluation, stop building, model, constructive induction, discretization, 
-and pruning options described in these document are applicable.    
+and pruning options described in this document are applicable.    
+Splits in trees are always binary, however, the option \code{binaryEvaluation} has influence on the
+feature selection for the split. Namely, selecting the best feature for the split is done with the given
+value of \code{binaryEvaluation}. If \code{binaryEvaluation=FALSE}, the features are first evaluated and
+the best one is finally binarized. If \code{binaryEvaluation=TRUE}, the features are binarized before
+selection. In this case, a search for the best binarization for all considered features is performed and
+the best binarizations found are used for splits. The latter option is computationally more intensive,
+but typically does not produce better trees. 
 \describe{
-    \item{selectionEstimator}{type: character, default value: "MDL", possible values: all from \code{infoCore(what="attrEval")} \cr
+    \item{selectionEstimator}{type: character, default value: "MDL", possible values: all from \code{\link{attrEval}}, section classification \cr
         estimator for selection of attributes and binarization in classification. }
-    \item{selectionEstimatorReg}{type: character, default value: "RReliefFexpRank", possible values: all from \code{infoCore(what="attrEvalReg")} \cr
+    \item{selectionEstimatorReg}{type: character, default value: "RReliefFexpRank", possible values: all from \code{\link{attrEval}}, section regression \cr
         estimator for selection of attributes and binarization in regression. }
     \item{minReliefEstimate}{type: numeric, default value: 0, value range: -1, 1 \cr
       for all variants of Relief attribute estimator: the minimal evaluation of attribute to consider the attribute useful in further processing. }
@@ -125,9 +140,9 @@ expressive power of the tree model.
          maximal depth of the tree for constructive induction (0=do not do construction, 1=only at root, ...). }
     \item{noCachedInNode}{type: integer, default value: 5, value range: 0, Inf \cr
        number of cached attributes in each node where construction was performed. }
-    \item{constructionEstimator}{type: character, default value: "MDL", possible values: all from \code{infoCore(what="attrEval")} \cr
+    \item{constructionEstimator}{type: character, default value: "MDL", possible values: all from \code{\link{attrEval}}, section classification \cr
            estimator for constructive induction in classification. }
-    \item{constructionEstimator}{type: character, default value: "RReliefFexpRank", possible values: all from \code{infoCore(what="attrEval")} \cr
+    \item{constructionEstimatorReg}{type: character, default value: "RReliefFexpRank", possible values: all from \code{\link{attrEval}}, section regression \cr
            estimator for constructive induction in regression. }
     \item{beamSize}{type: integer, default value: 20, value range: 1, Inf \cr     size of the beam in search for best feature in constructive induction. }
     \item{maxConstructSize}{type: integer, default value: 3, value range: 1, Inf \cr
@@ -138,10 +153,18 @@ expressive power of the tree model.
  Some algorithms cannot deal with numeric attributes directly, so we have to discretize them. The discretization algorithm
  greedily (exhaustively for small number of candidates) evaluates split candidates and forms intervals of values. 
 \describe{
-    \item{discretizationLookahead}{type: integer, default value: 3, value range: 0, Inf \cr
-    number of times current discretization can be worse than the best so far found, to stop search (0=try all possibilities). }
-    \item{discretizationSample}{type: integer, default value: 50, value range: 0, Inf \cr
-     maximal number of points to try discretization (0=all sensible). }
+     \item{discretizationLookahead}{type: integer, default value: 3, value range: 0, Inf \cr
+     Discretization is performed with a greedy algorithm which adds a new boundary until there is no
+     improvement in evaluation function for \code{discretizationLookahead} number of times
+     (0=try all possibilities). Candidate boundaries are chosen from a random sample of boundaries,
+     whose size is \code{discretizationSample}. }
+     \item{discretizationSample}{type: integer, default value: 50, value range: 0, Inf \cr
+     Maximal number of points to try discretization (0=all sensible). Binarization of multivalued discrete features with
+     \eqn{k} values is performed exhaustively, if \eqn{2^k - 1} is at most \code{discretizationSample}. Otherwise binarization
+     is done greedily starting from the best separation of a single value.
+     For ReliefF-type measures, binarization of numeric features is performed with \code{discretizationSample} randomly
+     chosen splits. For other measures, the split is searched exhaustively among all possible splits.
+     }
      }
      }
 \section{Tree pruning}{
@@ -203,10 +226,12 @@ Besides parameters in this section one can apply majority of parameters for cont
          character string which represents missing and NA values in the data files. }     
 }  
 }
-\value{
-  There is no return value. Type of the option, its default value, and short description are printed 
-  on the output.
- }
+\section{Miscellaneous}{
+\describe{
+    \item{maxThreads}{type: integer, default value: 0, value range: 0, Inf \cr maximal number of active threads (0=allow openMP to set its defaults).
+         \cr As side effect, this parameter changes the number of active threads in all subsequent execution (till \code{maxThreads} is set again). }
+    }
+    }
 
 \author{ Marko Robnik-Sikonja, Petr Savicky }
 
@@ -223,13 +248,5 @@ Besides parameters in this section one can apply majority of parameters for cont
 \code{\link{attrEval}},
 \code{\link{ordEval}},
 \code{\link{paramCoreIO}}.
-}
-
-\examples{
-# single parameter
-helpCore("modelTypeReg")
-
-#description of all parameters
-helpCore()
 }
 

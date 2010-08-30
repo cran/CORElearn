@@ -5,7 +5,7 @@
   Builds a classification or regression model from the \code{data} and \code{formula} with given parameters.
   Classification models available are
 \itemize{
-\item random forests, possibly with local weighing of basic models,
+\item random forests, possibly with local weighing of basic models (parallel execution on several cores),
 \item decision tree with constructive induction in the inner nodes and/or models in the leaves,
 \item kNN and weighted kNN with Gaussian kernel,
 \item naive Bayesian classifier.

@@ -28,7 +28,7 @@ class expr
    marray<marray< marray<double> > > SBclAttrVal ; // in case of simple Bayes
    marray<marray<double> > SBattrVal ; 
    marray<double> SBcl ; 
-   marray< marray<double> > Boundary ; // in case on simple Bayes and numeric attributes
+   marray< marray<double> > Boundary ; // in case of simple Bayes and numeric attributes
    marray<double> equalDistance, differentDistance, CAslope ; // in case of kNN
    
 
@@ -43,7 +43,7 @@ class expr
    double examplesDistance(binnode *treeNode, int I1, int I2) ;
 
 public:
-   featureTree *gFT ;
+   const featureTree *gFT ;
 
    expr() { root = 0 ; gFT = 0 ; }
    expr(featureTree* ft) { root = 0 ; gFT = ft; }

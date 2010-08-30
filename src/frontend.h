@@ -27,7 +27,7 @@ void saveRF(featureTree* const Tree) ;
 void saveLargeRF(featureTree* const Tree) ;
 void loadRF(featureTree* const Tree) ;
 void singleEstimationReg(featureTree* const Tree) ;
-void allSplitsEstimationReg(featureTree* const Tree) ;
+void allSplitsEstimationReg(const featureTree *Tree) ;
 void singleTreeReg(featureTree* const Tree) ;
 void allTreeReg(featureTree* const Tree, demandType special=none) ;
 void domainCharacteristicsReg(featureTree* const Tree);

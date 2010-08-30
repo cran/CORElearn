@@ -41,7 +41,7 @@ int descSort3Comp(const void *a, const void *b) ;
 // char* int2str(int Number, char* const Str);
 
 //   logarithm of basis 2: compatibility sake
-inline double log2(double x) { return double( log(x) / 0.69314718055994528622) ; }
+//inline double log2(double x) { return double( log(x) / 0.69314718055994528622) ; }
 
 #define sqrt2 1.414213562373
 #define epsilon  1e-7
@@ -71,10 +71,10 @@ double mdlIntEncode(double number) ;
 char* fgetStrIgnoreTill(FILE *from, char *Str, char Ignore, char *SkipChars) ;
 char* sgetStrIgnoreTill(char *stringFrom, char *Str, char Ignore) ;
 
-long long binom(int N, int selector) ;
+double binom(int N, int selector) ;
 
 int intRound(double x) ;
-long int longRound(double x) ;
+long int longRound(long int x) ;
 int no1bits(unsigned long int number) ;
 
 void cvTable(marray<int> &splitTable, int NoCases, int cvDegree)  ;
@@ -86,7 +86,7 @@ double Correlation(marray<double> &X, marray<double> &Y, int From, int To) ;
 double timeMeasure(void) ;
 double timeMeasureDiff(double Start, double Finish) ;
 
-char* getWildcardFileName(char* Path, char *WildcardFileName);
+char* getWildcardFileName(const char* Path, const char *WildcardFileName);
 
 // pseudo-random number generators
 double nrran1Between(double From, double To) ;

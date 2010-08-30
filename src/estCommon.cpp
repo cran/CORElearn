@@ -6,8 +6,8 @@
 #include "contain.h"
 #include "options.h"
 
-int NoEstimators = 38;
-estDsc estName[39]={
+int NoEstimators = 37;
+estDsc estName[38]={
     {"", ""} ,
     {"ReliefFequalK",     "ReliefF with equal k-nearest" },           // 1
     {"ReliefFexpRank",    "ReliefF with exponential rank distance" }, // 2
@@ -19,34 +19,33 @@ estDsc estName[39]={
     {"Gini",              "Gini index"},                      // 8
     {"MyopicReliefF",     "Myopic Relief" },                  // 9
     {"Accuracy",          "Accuracy" },                       // 10
-    {"BinAccuracy",       "Binarized accuracy" },             // 11
-    {"ReliefFmerit",      "ReliefF with merit"},              // 12
-    {"ReliefFdistance",   "ReliefF with direct distance" },   // 13
-    {"ReliefFsqrDistance","ReliefF with direct squared distance"},  // 14
-    {"DKM",               "Dietterich-Kearns-Mansour (DKM)"}, // 15
-    {"ReliefFexpC",       "ReliefF with expected costs of misclassification"}, // 16
-    {"ReliefFavgC",       "ReliefF with average costs of misclassification"}, // 17
-    {"ReliefFpe",         "ReliefF with expected cost probabilities"},// 18
-    {"ReliefFpa",         "ReliefF with average cost probabilities"},//19
-    {"ReliefFsmp",        "ReliefF with sampling by expected cost"},// 20
-    {"GainRatioCost",     "Gain ration with cost information"},// 21
-    {"DKMcost",           "DKM with cost information"},// 22
-    {"ReliefKukar",       "ReliefF with Kukar's variant of costs"}, // 23
-    {"MDLsmp",            "MDL with expected cost sampling"}, // 24
-	{"ImpurityEuclid",    "Euclidean distance as impurity function on within node class distributions"}, // 25
-	{"ImpurityHellinger", "Hellinger distance as impurity function on within node class distributions"}, // 26
-    {"UniformDKM",        "Dietterich-Kearns-Mansour (DKM) with uniform priors" }, // 27
-    {"UniformGini",       "Gini index with uniform priors"},                      // 28
-    {"UniformInf",        "Information score with uniform priors" }, // 29
-    {"UniformAccuracy",   "Accuracy with uniform priors" }, // 30
-    {"EqualDKM",          "Dietterich-Kearns-Mansour (DKM) with equal weights for splits" }, // 31
-    {"EqualGini",         "Gini index with equal weights for splits"},                      // 32
-    {"EqualInf",          "Information score with equal weights for splits" },               // 33
-    {"EqualHellinger",    "Two equally weighted splits based Hellinger distance"}, // 34
-    {"DistHellinger",     "Hellinger distance between class distributions in branches"}, // 35
-    {"DistAUC",           "AUC distance between splits" },                // 36
-    {"DistAngle",         "Cosine of angular distance between splits" },               // 37
-    {"DistEuclid",        "Euclidean distance between splits" }               // 38
+    {"ReliefFmerit",      "ReliefF with merit"},              // 11
+    {"ReliefFdistance",   "ReliefF with direct distance" },   // 12
+    {"ReliefFsqrDistance","ReliefF with direct squared distance"},  // 13
+    {"DKM",               "Dietterich-Kearns-Mansour (DKM)"}, // 14
+    {"ReliefFexpC",       "ReliefF with expected costs of misclassification"}, // 15
+    {"ReliefFavgC",       "ReliefF with average costs of misclassification"}, // 16
+    {"ReliefFpe",         "ReliefF with expected cost probabilities"},// 17
+    {"ReliefFpa",         "ReliefF with average cost probabilities"},//18
+    {"ReliefFsmp",        "ReliefF with sampling by expected cost"},// 19
+    {"GainRatioCost",     "Gain ration with cost information"},// 20
+    {"DKMcost",           "DKM with cost information"},// 21
+    {"ReliefKukar",       "ReliefF with Kukar's variant of costs"}, // 22
+    {"MDLsmp",            "MDL with expected cost sampling"}, // 23
+	{"ImpurityEuclid",    "Euclidean distance as impurity function on within node class distributions"}, // 24
+	{"ImpurityHellinger", "Hellinger distance as impurity function on within node class distributions"}, // 25
+    {"UniformDKM",        "Dietterich-Kearns-Mansour (DKM) with uniform priors" }, // 26
+    {"UniformGini",       "Gini index with uniform priors"},                      // 27
+    {"UniformInf",        "Information score with uniform priors" }, // 28
+    {"UniformAccuracy",   "Accuracy with uniform priors" }, // 29
+    {"EqualDKM",          "Dietterich-Kearns-Mansour (DKM) with equal weights for splits" }, // 30
+    {"EqualGini",         "Gini index with equal weights for splits"},                      // 31
+    {"EqualInf",          "Information score with equal weights for splits" },               // 32
+    {"EqualHellinger",    "Two equally weighted splits based Hellinger distance"}, // 33
+    {"DistHellinger",     "Hellinger distance between class distributions in branches"}, // 34
+    {"DistAUC",           "AUC distance between splits" },                // 35
+    {"DistAngle",         "Cosine of angular distance between splits" },               // 36
+    {"DistEuclid",        "Euclidean distance between splits" }               // 37
 } ;
 
 int NoEstimatorsReg = 9;
@@ -72,10 +71,12 @@ estDsc estNameReg[10]={
 //                         constructor
 //
 // ***************************************************************************
-estimation::estimation(featureTree *fTreeParent, marray<int> &inDTrain,
+estimation::estimation(const featureTree *fTreeParent, marray<int> &inDTrain,
                  marray<double> &inpDTrain, int inTrainSize)
 {
    fTree = fTreeParent ;
+   eopt.copy( *(fTree -> opt)) ;
+
    initialize(inDTrain, inpDTrain, inTrainSize) ;
 }
 
@@ -93,7 +94,7 @@ void estimation::initialize(marray<int> &inDTrain, marray<double> &inpDTrain,
    //-------------------------------------------------------------
      int i, j, k ;
    // will we use all examples or just a subsample
-   if (inTrainSize <= fTree->opt->attrEvaluationInstances || fTree->opt->attrEvaluationInstances == 0)
+   if (inTrainSize <= eopt.attrEvaluationInstances || eopt.attrEvaluationInstances == 0)
    {
       TrainSize = inTrainSize ;
       originalDTrain.copy(inDTrain) ;
@@ -110,7 +111,7 @@ void estimation::initialize(marray<int> &inDTrain, marray<double> &inpDTrain,
            selected[i] = i ;
        selected.setFilled(inTrainSize) ;
 
-       TrainSize = fTree->opt->attrEvaluationInstances ;
+       TrainSize = eopt.attrEvaluationInstances ;
        originalDTrain.create(TrainSize) ;
        weight.create(TrainSize) ;
 
@@ -152,15 +153,14 @@ void estimation::initialize(marray<int> &inDTrain, marray<double> &inpDTrain,
    //-------------------------------------------------------------
    // set number of iterations in main reliefF loop
    //-------------------------------------------------------------
-   if (fTree->opt->ReliefIterations == 0 ||
-       fTree->opt->ReliefIterations > TrainSize)
+   if (eopt.ReliefIterations == 0 || eopt.ReliefIterations > TrainSize)
        NoIterations = TrainSize ;
-   else if (fTree->opt->ReliefIterations == -1)
+   else if (eopt.ReliefIterations == -1)
        NoIterations = (int)log(double(TrainSize)) ;
-   else if (fTree->opt->ReliefIterations == -2)
+   else if (eopt.ReliefIterations == -2)
        NoIterations = (int)sqrt(double(TrainSize)) ;
    else
-      NoIterations = fTree->opt->ReliefIterations ;
+      NoIterations = eopt.ReliefIterations ;
 
 
    //-------------------------------------------------------------
@@ -257,7 +257,7 @@ void estimation::initialize(marray<int> &inDTrain, marray<double> &inpDTrain,
         intervalIdx =  (NumValues(j,i)-minValue[i])/step[i] ;
          #if defined(DEBUG)
          if (isNAcont(intervalIdx))
-        	 merror("Missmatch between NA values or incorrect data.","") ;
+        	 merror("Mismatch between NA values or incorrect data.","") ;
          #endif
          NAnumValue( DiscValues(j,0), i )[1+int(intervalIdx)] += 1 ;
        }
@@ -286,34 +286,34 @@ void estimation::initialize(marray<int> &inDTrain, marray<double> &inpDTrain,
    //-------------------------------------------------------------
    //  set k nearest with distance density and standard deviation for distance density
    //-------------------------------------------------------------
-   if (fTree->opt->kNearestEqual <= 0)
+   if (eopt.kNearestEqual <= 0)
      kNearestEqual = TrainSize-1 ;
    else
-     kNearestEqual = Mmin(fTree->opt->kNearestEqual, TrainSize-1) ;
+     kNearestEqual = Mmin(eopt.kNearestEqual, TrainSize-1) ;
 
-   if (fTree->opt->kNearestExpRank <= 0)
+   if (eopt.kNearestExpRank <= 0)
      kDensity = TrainSize - 1 ;
    else
-     kDensity = Mmin(fTree->opt->kNearestExpRank, TrainSize-1) ;
+     kDensity = Mmin(eopt.kNearestExpRank, TrainSize-1) ;
 
 
    //-------------------------------------------------------------
    // variance of distance density
    //-------------------------------------------------------------
-   varianceDistanceDensity = sqr(fTree->opt->quotientExpRankDistance) ;
+   varianceDistanceDensity = sqr(eopt.quotientExpRankDistance) ;
 
    //-------------------------------------------------------------
    // weights of the attributes
    //-------------------------------------------------------------
    weightDisc.create(noDiscrete, 1.0) ;
    weightNum.create(noNumeric, 1.0) ;
-   if (fTree->opt->attrWeights.defined()) {
+   if (eopt.attrWeights.defined()) {
 	   int ic = 0, id= 1 ;
        for (i=1 ; i <= fTree->noAttr ; ++i) {
 		   if (fTree->AttrDesc[i].continuous)
-			   weightNum[ic++] = fTree->opt->attrWeights[i] ;
+			   weightNum[ic++] = eopt.attrWeights[i] ;
 		   else
-			   weightDisc[id++] = fTree->opt->attrWeights[i] ;
+			   weightDisc[id++] = eopt.attrWeights[i] ;
 	   }
    }
 
@@ -331,13 +331,13 @@ void estimation::initialize(marray<int> &inDTrain, marray<double> &inpDTrain,
 //        sets the active estimator variable
 //
 // ***************************************************************************
-void estimation::setActive(int estimator)
+/* void estimation::setActive(int estimator)
 {
 	if (estimator > 0 && estimator <= NoEstimators)
 		activeEstimator = estimator ;
 	else merror("estimation::setActive","invalid estimator index");
 }
-
+*/
 
 // ***************************************************************************
 //
@@ -455,8 +455,8 @@ void estimation::prepareContAttr(int attrIdx)
 
 #ifdef RAMP_FUNCTION
    // differemt, equal, slope
-   DifferentDistance[attrIdx] = valueInterval[attrIdx] * fTree->opt->numAttrProportionEqual ;
-   EqualDistance[attrIdx] = valueInterval[attrIdx] * fTree->opt->numAttrProportionDifferent  ;
+   DifferentDistance[attrIdx] = valueInterval[attrIdx] * eopt.numAttrProportionEqual ;
+   EqualDistance[attrIdx] = valueInterval[attrIdx] * eopt.numAttrProportionDifferent  ;
    if (DifferentDistance[attrIdx] > EqualDistance[attrIdx])
       CAslope[attrIdx] = double(1.0)/(DifferentDistance[attrIdx] - EqualDistance[attrIdx]) ;
     else
@@ -537,6 +537,26 @@ void estimation::computeDistances(int Example)
    }
 }
 
+void estimation::computeDistances(int Example, mmatrix<double> &DiscDistance, mmatrix<double> &NumDistance)
+{
+   int i ;
+   for (int j=0 ; j < TrainSize ; j++)
+   {
+      if (Example == j)
+      {
+         for (i=0; i<numUpper; i++)
+           NumDistance.Set(j, i, 0.0) ;
+         for (i=0 ; i < discUpper ; i++)
+           DiscDistance.Set(j, i, 0.0) ;
+      }
+      else {
+        for (i=0; i<numUpper; i++)
+          NumDistance.Set(j, i, CAdiff(i,Example,j)) ;
+        for (i=0 ; i < discUpper ; i++)
+          DiscDistance.Set(j, i, DAdiff(i,Example,j)) ;
+      }
+   }
+}
 
 // ***************************************************************************
 //
@@ -545,6 +565,20 @@ void estimation::computeDistances(int Example)
 //
 // ***************************************************************************
 double estimation::CaseDistance(int I1)
+{
+   double Distance = 0.0;
+
+   int i ;
+   for (i=1 ; i < noDiscrete ; i++)
+      Distance += DiscDistance(I1,i) ;
+
+   for (i=0; i<noNumeric; i++)
+      Distance += NumDistance(I1,i) ;
+
+   return  Distance ;
+}
+
+double estimation::CaseDistance(int I1, mmatrix<double> &DiscDistance, mmatrix<double> &NumDistance)
 {
    double Distance = 0.0;
 
@@ -668,7 +702,190 @@ double estimation::NAnumDiff(int AttrIdx, int ClassValue, double Value)
 //
 // ***************************************************************************
 //void estimation::prepareDistanceFactors(int current, int distanceType)
-void estimation::prepareDistanceFactors(int distanceType) // explicit current is not needed, because we eliminate it based on distance
+void estimation::prepareDistanceFactors(int distanceType, marray<marray<sortRec> > &distanceArray,
+		 marray<marray<sortRec> > &diffSorted, mmatrix<double> &DiscDistance, mmatrix<double> &NumDistance )
+// explicit current is not needed, because we eliminate it based on distance
+{
+
+// we use only original attributes to obtain distance in attribute space
+
+   int kSelected = 0 ;
+   switch (distanceType)
+   {
+      case estReliefFkEqual:
+              kSelected = kNearestEqual ;
+              break ;
+
+      case estReliefFexpRank:
+      case estReliefFdistance:
+      case estReliefFsqrDistance:
+      case estReliefFexpC:
+      case estReliefFavgC:
+      case estReliefFpe:
+      case estReliefFpa:
+      case estReliefFsmp:
+              kSelected = kDensity ;
+              break ;
+
+      case estReliefFbestK:
+              kSelected = TrainSize ;  // we have to consider all neighbours
+              break ;
+
+
+      default: merror("estimation::prepareDistanceFactors","invalid distance type") ;
+   }
+
+   int i, cl ;
+   sortRec tempSort ;
+
+   for (cl = 1 ; cl <= noClasses; cl++)
+   {
+      // empty data structures
+      distanceArray[cl].clear() ;
+      diffSorted[cl].clear() ;
+   }
+
+   // distances in attributes space
+   for (i=0 ; i < TrainSize; i++)   {
+      tempSort.key =  CaseDistance(i,DiscDistance,NumDistance ) ;
+ 	  if (tempSort.key == 0.0) // we skip current and identical examples
+   	      continue ;
+	  tempSort.value = i ;
+      diffSorted[DiscValues(i,0)].addEnd(tempSort) ;
+   }
+
+   // sort examples
+   for (cl=1 ; cl <= noClasses ; cl++)
+   {
+      // we sort groups of examples of the same class according to
+      // ascending distance from current
+      if (diffSorted[cl].filled() > 1)
+         diffSorted[cl].sortKsmallest(Mmin(kSelected, diffSorted[cl].filled())) ;
+   }
+
+   int upper, idx ;
+   double factor ;
+   // depending on tpe of distance, copy the nearest cases
+   // and their distance factors into resulting array
+   switch (distanceType)
+   {
+
+        case estReliefFkEqual:
+        case estReliefFbestK:
+          {
+            for (cl=1; cl <= noClasses ; cl++)
+            {
+               idx =  diffSorted[cl].filled() -1;
+               upper = Mmin(kSelected, diffSorted[cl].filled()) ;
+               for (i=0 ; i < upper ; i++)
+               {
+                  distanceArray[cl][i].value = diffSorted[cl][idx].value ;
+                  idx -- ;
+                  distanceArray[cl][i].key = 1.0  ;
+               }
+               distanceArray[cl].setFilled(upper) ;
+            }
+          }
+          break ;
+        case estReliefFexpRank:
+        case estReliefFexpC:
+        case estReliefFavgC:
+        case estReliefFpe:
+        case estReliefFpa:
+        case estReliefFsmp:
+          {
+            for (cl=1; cl <= noClasses ; cl++)
+            {
+               upper = Mmin(kSelected, diffSorted[cl].filled()) ;
+               distanceArray[cl].setFilled(upper) ;
+               if (upper < 1)  // are there any elements
+                  continue ;
+               idx =  diffSorted[cl].filled() -1;
+               factor = 1.0  ;
+               distanceArray[cl][0].key =  factor ;
+               distanceArray[cl][0].value = diffSorted[cl][idx].value ;
+               idx -- ;
+               for (i=1 ; i < upper ; i++)
+               {
+                  if (diffSorted[cl][idx].key != diffSorted[cl][idx+1].key)
+                     factor = double(exp(-sqr(double(i))/varianceDistanceDensity)) ;
+                  distanceArray[cl][i].key =  factor ;
+                  distanceArray[cl][i].value = diffSorted[cl][idx].value ;
+                  idx -- ;
+               }
+            }
+          }
+          break ;
+        case estReliefFdistance:
+          {
+            double minNonZero = FLT_MAX ; // minimal non zero distance
+            for (cl=1; cl <= noClasses ; cl++)
+               for (i= diffSorted[cl].filled() -1 ; i >= 0 ; i--)
+                  if (diffSorted[cl][i].key > 0.0)
+                  {
+                     if (diffSorted[cl][i].key < minNonZero)
+                        minNonZero = diffSorted[cl][i].key ;
+                     break;
+                  }
+            if (minNonZero == FLT_MAX)
+               minNonZero = 1.0 ;
+
+            for (cl=1; cl <= noClasses ; cl++)
+            {
+               idx =  diffSorted[cl].filled() -1;
+               upper = Mmin(kSelected, diffSorted[cl].filled()) ;
+               for (i=0 ; i < upper ; i++)
+               {
+                  if (diffSorted[cl][idx].key > 0)
+                     factor = 1.0 / diffSorted[cl][idx].key ;
+                  else
+                     factor = 2.0 / minNonZero ;
+                  distanceArray[cl][i].value = diffSorted[cl][idx].value ;
+                  distanceArray[cl][i].key = factor  ;
+                  idx -- ;
+               }
+               distanceArray[cl].setFilled(upper) ;
+            }
+          }
+          break ;
+        case estReliefFsqrDistance:
+          {
+            double minNonZero = FLT_MAX ; // minimal non zero distance
+            for (cl=1; cl <= noClasses ; cl++)
+               for (i= diffSorted[cl].filled() -1 ; i >= 0 ; i--)
+                  if (diffSorted[cl][i].key > 0.0)
+                  {
+                     if (diffSorted[cl][i].key < minNonZero)
+                        minNonZero = diffSorted[cl][i].key ;
+                     break;
+                  }
+            if (minNonZero == FLT_MAX)
+               minNonZero = 1.0 ;
+
+            for (cl=1; cl <= noClasses ; cl++)
+            {
+               idx =  diffSorted[cl].filled() -1;
+               upper = Mmin(kSelected, diffSorted[cl].filled()) ;
+               for (i=0 ; i < upper ; i++)
+               {
+                  if (diffSorted[cl][idx].key > 0)
+                     factor = 1.0 / sqr(diffSorted[cl][idx].key) ;
+                  else
+                     factor = 2.0 / sqr(minNonZero) ;
+                  distanceArray[cl][i].value = diffSorted[cl][idx].value ;
+                  distanceArray[cl][i].key = factor  ;
+                  idx -- ;
+               }
+               distanceArray[cl].setFilled(upper) ;
+            }
+          }
+          break ;
+        default: merror("estimation::prepareDistanceFactors","invalid distanceType detected") ;
+   }
+}
+
+void estimation::prepareDistanceFactors(int distanceType)
+// explicit current is not needed, because we eliminate it based on distance
 {
 
 // we use only original attributes to obtain distance in attribute space
@@ -847,7 +1064,6 @@ void estimation::prepareDistanceFactors(int distanceType) // explicit current is
         default: merror("estimation::prepareDistanceFactors","invalid distanceType detected") ;
    }
 }
-
 
 
  void estimation::EprepareDistanceFactors(oeDistanceType distType)

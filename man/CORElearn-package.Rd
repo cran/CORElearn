@@ -7,6 +7,7 @@
 The package CORElearn is an R port of CORElearn data mining system.
 It provides various classification and regression models
 as well as algorithms for feature selection and evaluation.
+Several algorithms support parallel multithreaded execution via OpenMP.
 }
 \details{
 The main functions are 

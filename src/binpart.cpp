@@ -1,7 +1,13 @@
+#include <limits.h>
+#include <float.h>
+
 #include "contain.h"
 #include "utils.h"
 #include "binpart.h"
 
+#if !defined(LLONG_MAX)
+#define LLONG_MAX 9223372036854775807LL
+#endif
 
 booleanT binPartition::incLeft(void)
 {
@@ -69,8 +75,11 @@ booleanT binPartition::increment(void)
 }
 
 
-long long binPartition::noPositions(void)
+double binPartition::noPositions(void)
 {
-   return pow((double)2.0,(double)(N-1)) ;
+   double noP = pow((double)2.0,(double)(N-1)) ;
+   if (isNaN(noP))
+	   return DBL_MAX ;
+   else return noP ;
 }
 

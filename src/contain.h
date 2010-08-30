@@ -35,7 +35,7 @@ public:
     marray<T>& operator= (const marray<T> &Source) ;
     void copy(const marray<T> &Source) ;
     ~marray() { delete [] table ; table = 0 ;}
-    booleanT defined(void)  ;
+    booleanT defined(void) const ;
     void create(int a) ;
     void create(int a, T InitValue) ;
     inline T& operator[] (int a)
@@ -56,7 +56,7 @@ public:
       }
    booleanT member(T &X) const ;
    int memberPlace(T &X) const ;
-   int lessEqPlace(T &X) ;
+   int lessEqPlace(T &X) const ;
    void addEnd(T& X) ;
    int addToAscSorted(T& X) ;
    inline void incEdge(void)
@@ -77,8 +77,8 @@ public:
       }
    void clear(void) { edge=0 ; }
    void setFilled(int filled) ;
-   inline int filled(void) { return edge; }
-   inline int len(void) { return size ; }
+   inline int filled(void) const { return edge; }
+   inline int len(void) const { return size ; }
    void init(T InitValue) ;
    void init(int From, int To,T InitValue) ;
    void sort(int(*compare)(const void *element1, const void *element2))
@@ -99,9 +99,9 @@ public:
    void destroy(void) {  delete [] table ; table = 0; size = 0 ; edge= 0 ;}
    void enlarge(int newSize) ;
 
-   int operator== (marray<T> &Y) ;
-   int operator< (marray<T> &) { return 0 ;} ;
-   int operator> (marray<T> &) { return 0 ;} ;
+   int operator== (marray<T> &Y) const ;
+   int operator< (marray<T> &) const { return 0 ;} ;
+   int operator> (marray<T> &) const { return 0 ;} ;
 
    T* toArray(void) { return table ; }
    void wrap(int sourceSize, T* source) ;
@@ -137,19 +137,6 @@ template<class T> marray<T>::marray(marray<T> &Source)
  }
 
 
-//template<class T> marray<T>::marray(int sourceSize, T *Source)
-//{
-//#if defined(DEBUG)
-//    if (sourceSize <= 0 || Source == 0)
-//      merror("marray::maray", "source table is not appropriate.") ;
-//#endif
-//
-//   size = sourceSize ;
-//   edge = 0 ;
-//   table = new T[size] ;
-//   for (int i=0 ; i < size ; i++)
-//       table[i] = Source[i] ;
-//}
 
 // assignment operator
 template<class T> marray<T>& marray<T>::operator= (const marray<T> &Source)
@@ -177,7 +164,7 @@ template<class T> void marray<T>::copy(const marray<T> &Source)
 
 
 // is this table defined at all
-template<class T> booleanT marray<T>::defined(void)
+template<class T> booleanT marray<T>::defined(void) const
 {
    if (table)
       return mTRUE ;
@@ -249,7 +236,7 @@ template<class T> int marray<T>::memberPlace(T &X) const
 }
 
 // returns index i of the element which is immediately less or equal to X in the filled table sorted ascending
-template<class T> int marray<T>::lessEqPlace(T &X)
+template<class T> int marray<T>::lessEqPlace(T &X) const
 {
    for (int i=0 ; i < edge ; i++)
    {
@@ -380,7 +367,7 @@ template<class T>T* marray<T>::unWrap(int &outSize)
 }
 
 // operator of equality
-template<class T> int marray<T>::operator== (marray<T> &Y)
+template<class T> int marray<T>::operator== (marray<T> &Y) const
 {
   if  ( len() != Y.len() || filled() != Y.filled() )
      return 0 ;
@@ -921,9 +908,9 @@ class mmatrix
     void destroy(void);
     mmatrix<Type>& operator= (const mmatrix<Type> &Source) ;
     void copy(const mmatrix<Type> &Source) ;
-    booleanT defined(void)  ;
-	inline int getDim1() { return dim1 ; }
-	inline int getDim2() { return dim2 ; }
+    booleanT defined(void) const ;
+	inline int getDim1() const { return dim1 ; }
+	inline int getDim2() const { return dim2 ; }
     inline Type& operator() (int a,int b) const
       {
          #if defined(DEBUG)
@@ -1092,7 +1079,7 @@ template<class Type> void mmatrix<Type>::copy(const mmatrix<Type> &Source)
 
 
 // is the matrix defined
-template<class Type> booleanT mmatrix<Type>::defined(void)
+template<class Type> booleanT mmatrix<Type>::defined(void) const
 {
    if (table)
       return mTRUE ;

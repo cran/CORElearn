@@ -133,22 +133,21 @@ void featureTree::makeSingleAttrNode(binnode* Node, estimation &Estimator, int b
 {
    Node->Construct.createSingle(bestIdx, bestType) ;
    Node->Construct.gFT = this ;
-   double bestEst ;
 
    if (bestType == aCONTINUOUS)
    {
       Node->Identification = continuousAttribute ;
-      if (opt->binarySplitNumericAttributes && Estimator.isMyopic(opt->selectionEstimator)) // potential bug for multi-threaded version
+      if (opt->binaryEvaluateNumericAttributes && Estimator.isMyopic(opt->selectionEstimator))
     	  Node->Construct.splitValue = Estimator.splitPoint[bestIdx];
       else
-        Node->Construct.splitValue = Estimator.bestSplitGeneral(Node->Construct, bestEst, Estimator.noDiscrete) ;
+        Node->Construct.splitValue = Estimator.bestSplitGeneral(Node->Construct, Estimator.noDiscrete) ;
    }
    else
    {
      Node->Identification = discreteAttribute ;
      //Node->Construct.leftValues.create(AttrDesc[DiscIdx[bestIdx]].NoValues+1) ;
      Node->Construct.noValues = AttrDesc[DiscIdx[bestIdx]].NoValues ;
-     Estimator.binarizeGeneral(Node->Construct, bestEst, Estimator.noDiscrete) ;
+     Estimator.binarizeGeneral(Node->Construct, Estimator.noDiscrete) ;
    }
 }
 
@@ -166,12 +165,10 @@ void featureTree::makeConstructNode(binnode* Node, estimation &Estimator, constr
    Node->Construct = Construct ;
    Node->Construct.gFT = this ;
 
-   double bestEst  ;
-
    if (Construct.countType == aCONTINUOUS)
    {
       Node->Identification = continuousAttribute ;
-      Node->Construct.splitValue = Estimator.bestSplitGeneral(Construct, bestEst, Estimator.noDiscrete) ;
+      Node->Construct.splitValue = Estimator.bestSplitGeneral(Construct,Estimator.noDiscrete) ;
    }
    else
    {

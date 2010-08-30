@@ -26,7 +26,7 @@
 //                      ----------
 //
 //   recursively prints the entire feature tree on a given stream;
-//   if features are to long, make a abbrevaition and full
+//   if features are too long, make an abbreviation and full
 //                  description below
 //
 //************************************************************
@@ -208,7 +208,7 @@ void regressionTree::outDomainSummary(FILE *to) const
 {
     fprintf(to,"\n\n DATA INFO") ;
     fprintf(to,"\n-----------------------------------------------------------") ;
-    fprintf(to,"\nDomain name: %s", opt->domainName) ;
+    fprintf(to,"\nDomain name: %s", opt->domainName.getConstValue()) ;
     fprintf(to,"\nNumber of all examples: %d", NoCases) ;
     fprintf(to,"\nNumber of discrete attributes: %d", noDiscrete) ;
     fprintf(to,"\nNumber of continuous attributes: %d", noNumeric-1) ;

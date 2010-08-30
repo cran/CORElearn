@@ -143,7 +143,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 	// check the existance of .names and determine C4.5 or native format
 	char FileName[MaxPath] ;
 
-	sprintf(FileName, "%s%s.dsc", opt->dataDirectory, opt->domainName) ;
+	sprintf(FileName, "%s%s.dsc", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 	FILE *from ;
 	if ((from=fopen(FileName,"r"))!=NULL)
 	{
@@ -179,7 +179,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 		}
 	}
 	else {
-		sprintf(FileName, "%s%s.names", opt->dataDirectory, opt->domainName) ;
+		sprintf(FileName, "%s%s.names", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 		if ((from=fopen(FileName,"r"))!=NULL) {
 			// C4.5 format
 			if (verbose) {
@@ -189,14 +189,14 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 			c45read c45r ;
 			c45r.readC45names(from) ;
 			// get data
-			sprintf(FileName, "%s%s.data", opt->dataDirectory, opt->domainName) ;
+			sprintf(FileName, "%s%s.data", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 			if ((from=fopen(FileName,"r"))!=NULL)
 			{
 				if (verbose) {
 					printf(" data,") ;
 					fflush(stdout) ;
 				}
-				c45r.readC45data(from, opt->NAstring);
+				c45r.readC45data(from, opt->NAstring.getConstValue());
 			}
 			else {
 				merror("Nonexistent data file",FileName) ;
@@ -223,7 +223,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 			else return 0 ;
 			if (!c45r.isRegression) {
 			// get cost matrix
-				sprintf(FileName, "%s%s.costs", opt->dataDirectory, opt->domainName) ;
+				sprintf(FileName, "%s%s.costs", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 				if ((from=fopen(FileName,"r"))!=NULL)
 				{
 					if (verbose) {
@@ -239,7 +239,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 			}
 		}
 		else {
-			sprintf(FileName, "%s%s", opt->dataDirectory, opt->domainName) ;
+			sprintf(FileName, "%s%s", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 			merror("Description file (.dsc or .names) does not exist for problem",FileName) ;
 			return 0 ;
 		}
@@ -262,7 +262,7 @@ int dataStore::readDescription(void)
 {
    clearDescription();
    char DescFileName[MaxPath] ;
-   sprintf(DescFileName, "%s%s.dsc", opt->dataDirectory, opt->domainName) ;
+   sprintf(DescFileName, "%s%s.dsc", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
    FILE *from ;
    if ((from=fopen(DescFileName,"r"))==NULL)
    {
@@ -442,7 +442,7 @@ int dataStore::readData(booleanT isTrain)
    clearData(isTrain) ;
 
    char DataFileName[MaxPath] ;
-   sprintf(DataFileName, "%s%s.dat", opt->dataDirectory, opt->domainName) ;
+   sprintf(DataFileName, "%s%s.dat", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 
    // check the existance of file
    FILE *dfrom ;
@@ -492,7 +492,7 @@ int dataStore::readData(booleanT isTrain)
          }
          if (AttrDesc[j].continuous)
          {
-			if (strcmp(token,opt->NAstring) == 0) {
+			if (strcmp(token,opt->NAstring.getValue()) == 0) {
                 nData->Set(i,contJ,NAcont) ;
                 if (j==0) // missing classification
                 {
@@ -510,7 +510,7 @@ int dataStore::readData(booleanT isTrain)
          {
             if (AttrDesc[j].Boundaries.defined())
             {
-               if (strcmp(token,opt->NAstring) == 0)
+               if (strcmp(token,opt->NAstring.getValue()) == 0)
                   dData->Set(i,discJ,NAdisc) ;
 			   else {
 			       sscanf(token,"%lf", &number) ;
@@ -524,7 +524,7 @@ int dataStore::readData(booleanT isTrain)
             else
             {
                // ordinary discrete attribute
-			   if (strcmp(token,opt->NAstring) == 0){
+			   if (strcmp(token,opt->NAstring.getValue()) == 0){
                   dData->Set(i,discJ,NAdisc) ;
                   if (j==0) // missing classification
                   {
@@ -806,8 +806,8 @@ int dataStore::setDataSplit(int splitIdx)
    	   // check the existance of file
 	   char ChoiceFileName[MaxPath] ;
 
-	   sprintf(ChoiceFileName, "%s.*%ds", opt->domainName, splitIdx) ;
-	   char *FName = getWildcardFileName(opt->dataDirectory, ChoiceFileName);
+	   sprintf(ChoiceFileName, "%s.*%ds", opt->domainName.getConstValue(), splitIdx) ;
+	   char *FName = getWildcardFileName(opt->dataDirectory.getConstValue(), ChoiceFileName);
 	   if (FName == 0) {
 		  merror("Nonexistent choices file",ChoiceFileName);
 		  return 0;
@@ -892,7 +892,7 @@ int dataStore::readCosts(void)
 	   return 1 ;
 
    char CostFileName[MaxPath] ;
-   sprintf(CostFileName, "%s%s.cm", opt->dataDirectory, opt->domainName) ;
+   sprintf(CostFileName, "%s%s.cm", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 
    CostMatrix.create(noClasses+1,noClasses+1,0.0) ;
 
@@ -1009,14 +1009,14 @@ int dataStore::writeData(const char* DataFileName) const
           if (AttrDesc[j].continuous)
           {
              if (isNAcont(NumData(i, AttrDesc[j].tablePlace)))
-               fprintf(dataOut," %10s", opt->NAstring) ;
+               fprintf(dataOut," %10s", opt->NAstring.getConstValue()) ;
              else
                fprintf(dataOut," %10f",NumData(i, AttrDesc[j].tablePlace)) ;
           }
           else
           {
             if (DiscData(i, AttrDesc[j].tablePlace) == NAdisc)
-              fprintf(dataOut," %4s",opt->NAstring) ;
+              fprintf(dataOut," %4s",opt->NAstring.getConstValue()) ;
             else
               fprintf(dataOut," %4d",int(DiscData(i,AttrDesc[j].tablePlace))) ;
            }

@@ -9,7 +9,7 @@
 #include "options.h"
 #include "estimator.h"                
 
-extern Options *opt ;
+//extern Options *opt ;
 
 
 
@@ -26,8 +26,7 @@ extern Options *opt ;
 // ***************************************************************************
 // ***************************************************************************
 void estimation::ReliefF(int contAttrFrom, int contAttrTo,
-                  int discAttrFrom, int discAttrTo, int distanceType)
-{
+                  int discAttrFrom, int discAttrTo, int distanceType){
 
    NumEstimation.init(contAttrFrom,contAttrTo,0.0) ;
    DiscEstimation.init(discAttrFrom,discAttrTo,0.0) ;
@@ -36,13 +35,12 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
    int NoContEstimated = contAttrTo - contAttrFrom ;
    int NoDiscEstimated = discAttrTo - discAttrFrom ;
   
-
    // number of examples belonging to each of the classes
    marray<int> noExInClass(noClasses+1) ;
    marray<double> probClass(noClasses+1) ;
    noExInClass.init(0) ;
    probClass.init(0.0) ;
-   int i, idx ;
+   int i, idx, iClss ;
    for (i=0 ; i < TrainSize ; i++)
    {
       noExInClass[ DiscValues(i,0) ]++ ;
@@ -71,12 +69,6 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
    marray<double> PhitCont(NoContEstimated, 0.0) ;
    marray<double> PmissCont(NoContEstimated, 0.0) ;
  
-   // data structure to hold nearest hits/misses
-   for (int iClss = 1 ; iClss <= noClasses; iClss++)
-   {
-      distanceArray[iClss].create(noExInClass[iClss]) ;
-      diffSorted[iClss].create(noExInClass[iClss]) ;
-   }
 
    // normalization of contribution of misses
    mmatrix<double> clNorm(noClasses+1,noClasses+1) ;
@@ -84,15 +76,13 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
      for (i=1 ; i<=noClasses ; i++)
         clNorm.Set(j,i, probClass[j]/(1.0-probClass[i]) ) ;
 
-   // we have to compute distances up to the folowing attributes
+   // we have to compute distances up to the following attributes
    discUpper = Mmax(noDiscrete, discAttrTo) ;
    numUpper = Mmax(noNumeric, contAttrTo) ;
 
    double distanceSum, normDistance, Adiff ;
-   int current, neighbourIdx, cl, iAttr, currentClass ;
-   
-   marray<double> incContDiffA(NoContEstimated), incDiscDiffA(NoDiscEstimated) ;
-       
+   int current, neighbourIdx, cl, iAttr, currentClass,iterIdx ;
+
    #if defined(PRINT_EACH_ITERATION)
      char path[MaxPath] ;
      int iPrint, contCount=0, discCount=0 ; 
@@ -112,11 +102,50 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
    // prepare order of iterations
    marray<int> sampleIdx(NoIterations);
    randomizedSample(sampleIdx, NoIterations, TrainSize) ;
-  
+   mmatrix<double> NumDistance, DiscDistance ;
+   marray<marray<sortRec> > distanceArray, diffSorted ; // manipulation of the nearest examples
+   marray<double> incContDiffA, incDiscDiffA ;
+   #if !defined(_OPENMP)
+	   // create data structures for a single thread
+       NumDistance.create(TrainSize, numUpper) ;
+	   DiscDistance.create(TrainSize, discUpper) ;
+	   distanceArray.create(noClasses+1) ;
+	   diffSorted.create(noClasses+1) ;
+	   for (iClss = 1 ; iClss <= noClasses; iClss++)
+		{
+		   distanceArray[iClss].create(noExInClass[iClss]) ;
+		   diffSorted[iClss].create(noExInClass[iClss]) ;
+		}
+	   incContDiffA.create(NoContEstimated) ;
+	   incDiscDiffA.create(NoDiscEstimated) ;
+   #endif
+
    // main ReliefF loop
-   for (int iterIdx=0 ; iterIdx < NoIterations ; iterIdx++)
+   #pragma omp parallel for private(NumDistance,DiscDistance,current,currentClass,distanceSum, \
+		                            normDistance, Adiff,neighbourIdx, cl, iAttr, idx, i,iterIdx,\
+		                            distanceArray, diffSorted,iClss, incContDiffA, incDiscDiffA ) \
+		                    shared(PhitDisc,PmissDisc,PhitCont,PmissCont,clNorm,sampleIdx,noExInClass, \
+		                    		NoContEstimated,NoDiscEstimated,distanceType, \
+		                    		contAttrFrom, contAttrTo, discAttrFrom, discAttrTo) \
+                            default(none)
+   for (iterIdx=0 ; iterIdx < NoIterations ; iterIdx++)
    {
-       current = sampleIdx[iterIdx] ;
+       #if defined(_OPENMP)
+	       // create data structures for each thread separately
+		   NumDistance.create(TrainSize, numUpper) ;
+		   DiscDistance.create(TrainSize, discUpper) ;
+		   distanceArray.create(noClasses+1) ;
+		   diffSorted.create(noClasses+1) ;
+		   for (iClss = 1 ; iClss <= noClasses; iClss++)
+			{
+			   distanceArray[iClss].create(noExInClass[iClss]) ;
+			   diffSorted[iClss].create(noExInClass[iClss]) ;
+			}
+		   incContDiffA.create(NoContEstimated) ;
+		   incDiscDiffA.create(NoDiscEstimated) ;
+       #endif
+
+	   current = sampleIdx[iterIdx] ;
  
        // initialize (optimization reasons)
        
@@ -124,10 +153,10 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
       
         
       // first we compute distances of  all other examples to current
-      computeDistances(current) ;
+      computeDistances(current,DiscDistance,NumDistance) ;
 
       // compute distance factors
-      prepareDistanceFactors(distanceType) ;
+      prepareDistanceFactors(distanceType, distanceArray,diffSorted,DiscDistance,NumDistance) ;
 
       for (cl=1 ; cl<=noClasses ; cl++)
       {
@@ -161,9 +190,11 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
             // normalization of increments
             for (idx=0 ; idx < NoContEstimated ; idx++)
               if (incContDiffA[idx] > epsilon)
+                 #pragma omp atomic
                  PhitCont[idx] += incContDiffA[idx]/distanceSum ;
             for (idx=0 ; idx < NoDiscEstimated ; idx++)
               if (incDiscDiffA[idx] > epsilon)
+                #pragma omp atomic
                 PhitDisc[idx] += incDiscDiffA[idx]/distanceSum ;
           }
           else
@@ -172,9 +203,11 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
              // normalization of increments
              for (idx=0 ; idx < NoContEstimated ; idx++)
                if (incContDiffA[idx] > epsilon)
+                 #pragma omp atomic
                  PmissCont[idx] += clNorm(cl, currentClass) * incContDiffA[idx]/distanceSum ;
              for (idx=0 ; idx < NoDiscEstimated ; idx++)
                if (incDiscDiffA[idx] > epsilon)
+                 #pragma omp atomic
                  PmissDisc[idx] += clNorm(cl, currentClass) * incDiscDiffA[idx]/distanceSum ;
           }
       }
@@ -217,8 +250,200 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
    #endif 
  
 }
+/* without OpenMP
+void estimation::ReliefF(int contAttrFrom, int contAttrTo,
+                  int discAttrFrom, int discAttrTo, int distanceType)
+{
+
+   NumEstimation.init(contAttrFrom,contAttrTo,0.0) ;
+   DiscEstimation.init(discAttrFrom,discAttrTo,0.0) ;
+
+   // prepare estimations arrays
+   int NoContEstimated = contAttrTo - contAttrFrom ;
+   int NoDiscEstimated = discAttrTo - discAttrFrom ;
 
 
+   // number of examples belonging to each of the classes
+   marray<int> noExInClass(noClasses+1) ;
+   marray<double> probClass(noClasses+1) ;
+   noExInClass.init(0) ;
+   probClass.init(0.0) ;
+   int i, idx ;
+   for (i=0 ; i < TrainSize ; i++)
+   {
+      noExInClass[ DiscValues(i,0) ]++ ;
+      probClass[ DiscValues(i,0) ] += weight[i] ;
+   }
+
+   // obtain the greatest sensible k (nubmer of nearest hits/misses)
+   // and the total weight of examples
+   int maxK = noExInClass[1] ;
+   double wAll = probClass[1] ;
+   for (idx=2 ; idx <= noClasses ; idx++)
+   {
+      if (noExInClass[idx] > maxK)
+         maxK = noExInClass[idx] ;
+      wAll += probClass[idx] ;
+   }
+
+   // compute estimations of class value probabilities with their
+   // relative frequencies
+   for (idx=1 ; idx <= noClasses ; idx++)
+      probClass[idx] = probClass[idx] / wAll ;
+
+   // initialize weights for all the attributes and all the k
+   marray<double> PhitDisc(NoDiscEstimated, 0.0) ;
+   marray<double> PmissDisc(NoDiscEstimated, 0.0) ;
+   marray<double> PhitCont(NoContEstimated, 0.0) ;
+   marray<double> PmissCont(NoContEstimated, 0.0) ;
+
+   // data structure to hold nearest hits/misses
+   for (int iClss = 1 ; iClss <= noClasses; iClss++)
+   {
+      distanceArray[iClss].create(noExInClass[iClss]) ;
+      diffSorted[iClss].create(noExInClass[iClss]) ;
+   }
+
+   // normalization of contribution of misses
+   mmatrix<double> clNorm(noClasses+1,noClasses+1) ;
+   for (int j=1 ; j<=noClasses ; j++)
+     for (i=1 ; i<=noClasses ; i++)
+        clNorm.Set(j,i, probClass[j]/(1.0-probClass[i]) ) ;
+
+   // we have to compute distances up to the folowing attributes
+   discUpper = Mmax(noDiscrete, discAttrTo) ;
+   numUpper = Mmax(noNumeric, contAttrTo) ;
+
+   double distanceSum, normDistance, Adiff ;
+   int current, neighbourIdx, cl, iAttr, currentClass ;
+
+   marray<double> incContDiffA(NoContEstimated), incDiscDiffA(NoDiscEstimated) ;
+
+   #if defined(PRINT_EACH_ITERATION)
+     char path[MaxPath] ;
+     int iPrint, contCount=0, discCount=0 ;
+     FILE *fileRelief ;
+     sprintf(path,"%s%s.%02dei",fTree->resultsDirectory, fTree->domainName,fTree->currentSplitIdx) ; // estimation of weights at each iteration
+     if ((fileRelief = fopen(path,"w"))==NULL)
+     {
+        merror("estimation::ReliefF cannot open file for writting weights of each iteration: ", path)  ;
+     }
+     else {
+        fprintf(fileRelief, "\nRelief weights changing with number of iterations\n") ;
+        fTree->printEstimationHead(fileRelief) ;
+     }
+
+   #endif
+
+   // prepare order of iterations
+   marray<int> sampleIdx(NoIterations);
+   randomizedSample(sampleIdx, NoIterations, TrainSize) ;
+
+   // main ReliefF loop
+   for (int iterIdx=0 ; iterIdx < NoIterations ; iterIdx++)
+   {
+       current = sampleIdx[iterIdx] ;
+
+       // initialize (optimization reasons)
+
+       currentClass =  DiscValues(current, 0) ;
+
+
+      // first we compute distances of  all other examples to current
+      computeDistances(current) ;
+
+      // compute distance factors
+      prepareDistanceFactors(distanceType) ;
+
+      for (cl=1 ; cl<=noClasses ; cl++)
+      {
+         // compute sum of diffs
+         incContDiffA.init(0.0) ;
+         incDiscDiffA.init(0.0) ;
+         distanceSum = 0.0 ;
+         for (i=0 ; i < distanceArray[cl].filled() ; i++)
+         {
+            neighbourIdx = distanceArray[cl][i].value ;
+            normDistance = distanceArray[cl][i].key ;
+            distanceSum += normDistance ;
+
+            // adjust the weights for all the estimated attributes and values
+            for (iAttr=contAttrFrom ; iAttr < contAttrTo ; iAttr ++)
+            {
+               idx = iAttr - contAttrFrom ;
+               Adiff = NumDistance(neighbourIdx, iAttr) ;
+               incContDiffA[idx] += Adiff * normDistance ;
+            }
+            for (iAttr=discAttrFrom ; iAttr < discAttrTo ; iAttr ++)
+            {
+               idx = iAttr - discAttrFrom ;
+               Adiff = DiscDistance(neighbourIdx, iAttr) ;
+               incDiscDiffA[idx] +=  Adiff * normDistance  ;
+            }
+         }
+         if (cl == currentClass) // hit or miss
+         {
+            // hit
+            // normalization of increments
+            for (idx=0 ; idx < NoContEstimated ; idx++)
+              if (incContDiffA[idx] > epsilon)
+                 PhitCont[idx] += incContDiffA[idx]/distanceSum ;
+            for (idx=0 ; idx < NoDiscEstimated ; idx++)
+              if (incDiscDiffA[idx] > epsilon)
+                PhitDisc[idx] += incDiscDiffA[idx]/distanceSum ;
+          }
+          else
+          {
+             // miss
+             // normalization of increments
+             for (idx=0 ; idx < NoContEstimated ; idx++)
+               if (incContDiffA[idx] > epsilon)
+                 PmissCont[idx] += clNorm(cl, currentClass) * incContDiffA[idx]/distanceSum ;
+             for (idx=0 ; idx < NoDiscEstimated ; idx++)
+               if (incDiscDiffA[idx] > epsilon)
+                 PmissDisc[idx] += clNorm(cl, currentClass) * incDiscDiffA[idx]/distanceSum ;
+          }
+      }
+      #if defined(PRINT_EACH_ITERATION)
+        fprintf(fileRelief, "%18d,", iterIdx+1) ;
+        contCount = discCount = 0 ;
+        for (iPrint=1 ; iPrint <= fTree->noAttr; iPrint++)
+        if (fTree->AttrDesc[iPrint].continuous)
+        {
+          fprintf(fileRelief, "%10.5f, ", (PmissCont[contCount] - PhitCont[contCount])/double(iterIdx+1)) ;
+          contCount++ ;
+        }
+        else {
+          fprintf(fileRelief, "%10.5f, ", (PmissDisc[discCount] - PhitDisc[discCount])/double(iterIdx+1)) ;
+          discCount++ ;
+        }
+        fprintf(fileRelief, "\n") ;
+      #endif
+   }
+   for (iAttr=contAttrFrom ; iAttr < contAttrTo ; iAttr ++)
+   {
+      idx = iAttr - contAttrFrom ;
+      NumEstimation[iAttr] = (PmissCont[idx] - PhitCont[idx])/double(NoIterations) ;
+      #ifdef DEBUG
+      if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
+        merror("estimation::ReliefF", "computed numeric weights are out of scope") ;
+      #endif
+   }
+   for (iAttr=discAttrFrom ; iAttr < discAttrTo ; iAttr ++)
+   {
+      idx = iAttr - discAttrFrom ;
+      DiscEstimation[iAttr] = (PmissDisc[idx] - PhitDisc[idx])/double(NoIterations) ;
+      #ifdef DEBUG
+      if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
+        merror("estimation::ReliefF", "computed nominal weights are out of scope") ;
+      #endif
+   }
+   #if defined(PRINT_EACH_ITERATION)
+     fclose(fileRelief) ;
+   #endif
+
+}
+*/
 
 // ***************************************************************************
 //

@@ -26,7 +26,7 @@
 //                      ----------
 //
 //   recursively prints the entire feature tree on a given stream;
-//   if features are to long, make a abbreviation and full
+//   if features are too long, make an abbreviation and full
 //                  description below
 //
 //************************************************************
@@ -248,7 +248,7 @@ void featureTree::outDomainSummary(FILE *to) const
 {
     fprintf(to,"\n\n DATA INFO") ;
     fprintf(to,"\n-----------------------------------------------------------") ;
-    fprintf(to,"\nDomain name: %s", opt->domainName) ;
+    fprintf(to,"\nDomain name: %s", opt->domainName.getConstValue()) ;
     fprintf(to,"\nNumber of examples: %d", NoCases) ;
     fprintf(to,"\nNumber of class values: %d", noClasses) ;
     fprintf(to,"\nNumber of attributes: %d", noAttr) ;

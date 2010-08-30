@@ -26,20 +26,20 @@ void estimation::ordAVdAeqNorm(int discAttrFrom, int discAttrTo, oeDistanceType 
 
    // prepare random normalization attributes
    int noBasicEstimated =  discAttrTo - discAttrFrom ;
-   int noEstimated =  noBasicEstimated * fTree->opt->ordEvalNoRandomNormalizers ;
+   int noEstimated =  noBasicEstimated * eopt.ordEvalNoRandomNormalizers ;
    int discSize = noDiscrete + noEstimated ;
    int iA, iV, iR, rn,  maxNoValues = 0 ;
    adjustTables(0, discSize) ;
    for (iA=discAttrFrom; iA < discAttrTo ; iA++) {
-	   for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-		  if (fTree->opt->ordEvalBootstrapNormalize) {
-	          DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn) ;
+	   for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+		  if (eopt.ordEvalBootstrapNormalize) {
+	          DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn) ;
 		  }
 		  else {
-	          DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
-			  DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
+	          DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
+			  DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
 		  }
-		  prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
+		  prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
 	   }
 	   if (discNoValues[iA] > maxNoValues)
 		   maxNoValues = discNoValues[iA] ;
@@ -56,9 +56,9 @@ void estimation::ordAVdAeqNorm(int discAttrFrom, int discAttrTo, oeDistanceType 
      	  reinfNegRnd(iA,iV).init(0.0) ;
      	  anchorRnd(iA,iV).init(0.0) ;
     	  // prepare space for random individual evaluations (raw)
-	      reinfPosRndRaw(iA-discAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
-	      reinfNegRndRaw(iA-discAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
-	      anchorRndRaw(iA-discAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
+	      reinfPosRndRaw(iA-discAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
+	      reinfNegRndRaw(iA-discAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
+	      anchorRndRaw(iA-discAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
 	   }
    }
    mmatrix<double> CpAe(maxNoValues+1, discSize, 0.0), CpAp(maxNoValues+1, discSize, 0.0),
@@ -223,28 +223,28 @@ void estimation::ordAVdAeqNorm(int discAttrFrom, int discAttrTo, oeDistanceType 
          if (denom > 0)
 		   reinfPos[iA][iV] = CpAp(iV, iA) / denom ;
 		 else reinfPos[iA][iV] = 0.0 ;
-		 for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		 for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAp(iV, iR) + CnAp(iV, iR) + CeAp(iV, iR) ;
 		   if (denomR > 0 && CpAp(iV, iR) > 0)  // otherwise zero
 		       reinfPosRndRaw(iA-discAttrFrom,iV)[rn] = (CpAp(iV, iR) / denomR)  ;
 		   else reinfPosRndRaw(iA-discAttrFrom,iV)[rn] = 0.0  ;
 		 }
-	     statOE(reinfPosRndRaw(iA-discAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, reinfPosRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile,reinfPos[iA][iV]) ;
+	     statOE(reinfPosRndRaw(iA-discAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, reinfPosRnd(iA,iV), eopt.ordEvalNormalizingPercentile,reinfPos[iA][iV]) ;
          reinfPosRnd(iA,iV)[noOEstats-1] = expReinfPos[iA][iV] ;
 		 // negative reinforcement
 		 denom = CpAn(iV, iA) + CnAn(iV, iA) + CeAn(iV, iA) ;
          if (denom > 0)
 		   reinfNeg[iA][iV] = CnAn(iV, iA) / denom ;
 		 else reinfNeg[iA][iV] = 0.0 ;
-		 for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		 for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAn(iV, iR) + CnAn(iV, iR) + CeAn(iV, iR) ;
 		   if (denomR > 0 && CnAn(iV, iR) > 0)  // otherwise zero
 		       reinfNegRndRaw(iA-discAttrFrom,iV)[rn] = (CnAn(iV, iR) / denomR)  ;
 		   else reinfNegRndRaw(iA-discAttrFrom,iV)[rn] = 0.0  ;
 		 }
-	     statOE(reinfNegRndRaw(iA-discAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, reinfNegRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile,reinfNeg[iA][iV]) ;
+	     statOE(reinfNegRndRaw(iA-discAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, reinfNegRnd(iA,iV), eopt.ordEvalNormalizingPercentile,reinfNeg[iA][iV]) ;
          reinfNegRnd(iA,iV)[noOEstats-1] = expReinfNeg[iA][iV] ;
 
 		 // anchoring
@@ -252,14 +252,14 @@ void estimation::ordAVdAeqNorm(int discAttrFrom, int discAttrTo, oeDistanceType 
          if (denom > 0)
 		   anchor[iA][iV] = CeAe(iV, iA) / denom ;
 		 else anchor[iA][iV] = 0.0 ;
-   	     for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+   	     for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAe(iV, iR) + CnAe(iV, iR) + CeAe(iV, iR) ;
 		   if (denomR > 0 && CeAe(iV, iR) > 0)  // otherwise zero
 		       anchorRndRaw(iA-discAttrFrom,iV)[rn] = (CeAe(iV, iR) / denomR)  ;
 		   else anchorRndRaw(iA-discAttrFrom,iV)[rn] = 0.0  ;
 		 }
- 	     statOE(anchorRndRaw(iA-discAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, anchorRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile,anchor[iA][iV]) ;
+ 	     statOE(anchorRndRaw(iA-discAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, anchorRnd(iA,iV), eopt.ordEvalNormalizingPercentile,anchor[iA][iV]) ;
          anchorRnd(iA,iV)[noOEstats-1] = expAnchor[iA][iV] ;
 	   }
    }
@@ -281,20 +281,20 @@ void estimation::ordAVdAeqNormClDiff1(int discAttrFrom, int discAttrTo, oeDistan
 
    // prepare random normalization attributes
    int noBasicEstimated =  discAttrTo - discAttrFrom ;
-   int noEstimated =  noBasicEstimated * fTree->opt->ordEvalNoRandomNormalizers ;
+   int noEstimated =  noBasicEstimated * eopt.ordEvalNoRandomNormalizers ;
    int discSize = noDiscrete + noEstimated ;
    int iA, iV, iR, rn,  maxNoValues = 0 ;
    adjustTables(0, discSize) ;
    for (iA=discAttrFrom; iA < discAttrTo ; iA++) {
-	   for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-		  if (fTree->opt->ordEvalBootstrapNormalize) {
-	          DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn) ;
+	   for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+		  if (eopt.ordEvalBootstrapNormalize) {
+	          DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn) ;
 		  }
 		  else {
-	          DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
-			  DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
+	          DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
+			  DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
 		  }
-		  prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
+		  prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
 	   }
 	   if (discNoValues[iA] > maxNoValues)
 		   maxNoValues = discNoValues[iA] ;
@@ -311,9 +311,9 @@ void estimation::ordAVdAeqNormClDiff1(int discAttrFrom, int discAttrTo, oeDistan
      	  reinfNegRnd(iA,iV).init(0.0) ;
      	  anchorRnd(iA,iV).init(0.0) ;
     	  // prepare space for random individual evaluations (raw)
-	      reinfPosRndRaw(iA-discAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
-	      reinfNegRndRaw(iA-discAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
-	      anchorRndRaw(iA-discAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
+	      reinfPosRndRaw(iA-discAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
+	      reinfNegRndRaw(iA-discAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
+	      anchorRndRaw(iA-discAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
 	   }
    }
    mmatrix<double> CpAe(maxNoValues+1, discSize, 0.0), CpAp(maxNoValues+1, discSize, 0.0),
@@ -478,28 +478,28 @@ void estimation::ordAVdAeqNormClDiff1(int discAttrFrom, int discAttrTo, oeDistan
          if (denom > 0)
 		   reinfPos[iA][iV] = CpAp(iV, iA) / denom ;
 		 else reinfPos[iA][iV] = 0.0 ;
-		 for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		 for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAp(iV, iR) + CnAp(iV, iR) + CeAp(iV, iR) ;
 		   if (denomR > 0 && CpAp(iV, iR) > 0)  // otherwise zero
 		       reinfPosRndRaw(iA-discAttrFrom,iV)[rn] = (CpAp(iV, iR) / denomR)  ;
 		   else reinfPosRndRaw(iA-discAttrFrom,iV)[rn] = 0.0  ;
 		 }
-	     statOE(reinfPosRndRaw(iA-discAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, reinfPosRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile, reinfPos[iA][iV]) ;
+	     statOE(reinfPosRndRaw(iA-discAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, reinfPosRnd(iA,iV), eopt.ordEvalNormalizingPercentile, reinfPos[iA][iV]) ;
          reinfPosRnd(iA,iV)[noOEstats-1] = expReinfPos[iA][iV] ;
 		 // negative reinforcement
 		 denom = CpAn(iV, iA) + CnAn(iV, iA) + CeAn(iV, iA) ;
          if (denom > 0)
 		   reinfNeg[iA][iV] = CnAn(iV, iA) / denom ;
 		 else reinfNeg[iA][iV] = 0.0 ;
-		 for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		 for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAn(iV, iR) + CnAn(iV, iR) + CeAn(iV, iR) ;
 		   if (denomR > 0 && CnAn(iV, iR) > 0)  // otherwise zero
 		       reinfNegRndRaw(iA-discAttrFrom,iV)[rn] = (CnAn(iV, iR) / denomR)  ;
 		   else reinfNegRndRaw(iA-discAttrFrom,iV)[rn] = 0.0  ;
 		 }
-	     statOE(reinfNegRndRaw(iA-discAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, reinfNegRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile,reinfNeg[iA][iV]) ;
+	     statOE(reinfNegRndRaw(iA-discAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, reinfNegRnd(iA,iV), eopt.ordEvalNormalizingPercentile,reinfNeg[iA][iV]) ;
          reinfNegRnd(iA,iV)[noOEstats-1] = expReinfNeg[iA][iV] ;
 
 		 // anchoring
@@ -507,14 +507,14 @@ void estimation::ordAVdAeqNormClDiff1(int discAttrFrom, int discAttrTo, oeDistan
          if (denom > 0)
 		   anchor[iA][iV] = CeAe(iV, iA) / denom ;
 		 else anchor[iA][iV] = 0.0 ;
-   	     for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+   	     for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAe(iV, iR) + CnAe(iV, iR) + CeAe(iV, iR) ;
 		   if (denomR > 0 && CeAe(iV, iR) > 0)  // otherwise zero
 		       anchorRndRaw(iA-discAttrFrom,iV)[rn] = (CeAe(iV, iR) / denomR)  ;
 		   else anchorRndRaw(iA-discAttrFrom,iV)[rn] = 0.0  ;
 		 }
- 	     statOE(anchorRndRaw(iA-discAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, anchorRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile,anchor[iA][iV]) ;
+ 	     statOE(anchorRndRaw(iA-discAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, anchorRnd(iA,iV), eopt.ordEvalNormalizingPercentile,anchor[iA][iV]) ;
          anchorRnd(iA,iV)[noOEstats-1] = expAnchor[iA][iV] ;
 	   }
    }
@@ -537,20 +537,20 @@ void estimation::ordAVdAeqNormAttrDiff1(int discAttrFrom, int discAttrTo, oeDist
 
    // prepare random normalization attributes
    int noBasicEstimated =  discAttrTo - discAttrFrom ;
-   int noEstimated =  noBasicEstimated * fTree->opt->ordEvalNoRandomNormalizers ;
+   int noEstimated =  noBasicEstimated * eopt.ordEvalNoRandomNormalizers ;
    int discSize = noDiscrete + noEstimated ;
    int iA, iV, iR, rn,  maxNoValues = 0 ;
    adjustTables(0, discSize) ;
    for (iA=discAttrFrom; iA < discAttrTo ; iA++) {
-	   for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-		  if (fTree->opt->ordEvalBootstrapNormalize) {
-	          DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn) ;
+	   for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+		  if (eopt.ordEvalBootstrapNormalize) {
+	          DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn) ;
 		  }
 		  else {
-	          DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
-			  DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
+	          DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
+			  DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
 		  }
-		  prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
+		  prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
 	   }
 	   if (discNoValues[iA] > maxNoValues)
 		   maxNoValues = discNoValues[iA] ;
@@ -567,9 +567,9 @@ void estimation::ordAVdAeqNormAttrDiff1(int discAttrFrom, int discAttrTo, oeDist
      	  reinfNegRnd(iA,iV).init(0.0) ;
      	  anchorRnd(iA,iV).init(0.0) ;
     	  // prepare space for random individual evaluations (raw)
-	      reinfPosRndRaw(iA-discAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
-	      reinfNegRndRaw(iA-discAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
-	      anchorRndRaw(iA-discAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
+	      reinfPosRndRaw(iA-discAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
+	      reinfNegRndRaw(iA-discAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
+	      anchorRndRaw(iA-discAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
 	   }
    }
    mmatrix<double> CpAe(maxNoValues+1, discSize, 0.0), CpAp(maxNoValues+1, discSize, 0.0),
@@ -743,28 +743,28 @@ void estimation::ordAVdAeqNormAttrDiff1(int discAttrFrom, int discAttrTo, oeDist
          if (denom > 0)
 		   reinfPos[iA][iV] = CpAp(iV, iA) / denom ;
 		 else reinfPos[iA][iV] = 0.0 ;
-		 for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		 for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAp(iV, iR) + CnAp(iV, iR) + CeAp(iV, iR) ;
 		   if (denomR > 0 && CpAp(iV, iR) > 0)  // otherwise zero
 		       reinfPosRndRaw(iA-discAttrFrom,iV)[rn] = (CpAp(iV, iR) / denomR)  ;
 		   else reinfPosRndRaw(iA-discAttrFrom,iV)[rn] = 0.0  ;
 		 }
-	     statOE(reinfPosRndRaw(iA-discAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, reinfPosRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile,reinfPos[iA][iV]) ;
+	     statOE(reinfPosRndRaw(iA-discAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, reinfPosRnd(iA,iV), eopt.ordEvalNormalizingPercentile,reinfPos[iA][iV]) ;
          reinfPosRnd(iA,iV)[noOEstats-1] = expReinfPos[iA][iV] ;
 		 // negative reinforcement
 		 denom = CpAn(iV, iA) + CnAn(iV, iA) + CeAn(iV, iA) ;
          if (denom > 0)
 		   reinfNeg[iA][iV] = CnAn(iV, iA) / denom ;
 		 else reinfNeg[iA][iV] = 0.0 ;
-		 for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		 for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAn(iV, iR) + CnAn(iV, iR) + CeAn(iV, iR) ;
 		   if (denomR > 0 && CnAn(iV, iR) > 0)  // otherwise zero
 		       reinfNegRndRaw(iA-discAttrFrom,iV)[rn] = (CnAn(iV, iR) / denomR)  ;
 		   else reinfNegRndRaw(iA-discAttrFrom,iV)[rn] = 0.0  ;
 		 }
-	     statOE(reinfNegRndRaw(iA-discAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, reinfNegRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile,reinfNeg[iA][iV]) ;
+	     statOE(reinfNegRndRaw(iA-discAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, reinfNegRnd(iA,iV), eopt.ordEvalNormalizingPercentile,reinfNeg[iA][iV]) ;
          reinfNegRnd(iA,iV)[noOEstats-1] = expReinfNeg[iA][iV] ;
 
 		 // anchoring
@@ -772,14 +772,14 @@ void estimation::ordAVdAeqNormAttrDiff1(int discAttrFrom, int discAttrTo, oeDist
          if (denom > 0)
 		   anchor[iA][iV] = CeAe(iV, iA) / denom ;
 		 else anchor[iA][iV] = 0.0 ;
-   	     for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+   	     for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAe(iV, iR) + CnAe(iV, iR) + CeAe(iV, iR) ;
 		   if (denomR > 0 && CeAe(iV, iR) > 0)  // otherwise zero
 		       anchorRndRaw(iA-discAttrFrom,iV)[rn] = (CeAe(iV, iR) / denomR)  ;
 		   else anchorRndRaw(iA-discAttrFrom,iV)[rn] = 0.0  ;
 		 }
- 	     statOE(anchorRndRaw(iA-discAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, anchorRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile, anchor[iA][iV]) ;
+ 	     statOE(anchorRndRaw(iA-discAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, anchorRnd(iA,iV), eopt.ordEvalNormalizingPercentile, anchor[iA][iV]) ;
          anchorRnd(iA,iV)[noOEstats-1] = expAnchor[iA][iV] ;
 	   }
    }
@@ -800,20 +800,20 @@ void estimation::ordEvalInst(int selectedInstance, int discAttrFrom, int discAtt
 {
 	// prepare random normalization attributes
 	int noBasicEstimated =  discAttrTo - discAttrFrom ;
-	int noEstimated =  noBasicEstimated * fTree->opt->ordEvalNoRandomNormalizers ;
+	int noEstimated =  noBasicEstimated * eopt.ordEvalNoRandomNormalizers ;
 	int discSize = noDiscrete + noEstimated ;
 	int iA, iV, iR, rn,  maxNoValues = 0 ;
 	adjustTables(0, discSize) ;
 	for (iA=discAttrFrom; iA < discAttrTo ; iA++) {
-		for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-			if (fTree->opt->ordEvalBootstrapNormalize) {
-				DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn) ;
+		for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+			if (eopt.ordEvalBootstrapNormalize) {
+				DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn) ;
 			}
 			else {
-				DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
-				DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
+				DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
+				DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
 			}
-			prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
+			prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
 		}
 		if (discNoValues[iA] > maxNoValues)
 			maxNoValues = discNoValues[iA] ;
@@ -821,9 +821,9 @@ void estimation::ordEvalInst(int selectedInstance, int discAttrFrom, int discAtt
 	// prepare space for raw scores of random attributes
 	marray<marray<double> > reinfPosRndRaw(noBasicEstimated), reinfNegRndRaw(noBasicEstimated), anchorRndRaw(noBasicEstimated) ;
 	for (iA=discAttrFrom ; iA < discAttrTo ; iA++) {
-		reinfPosRndRaw[iA-discAttrFrom].create(fTree->opt->ordEvalNoRandomNormalizers, 0.0);
-		reinfNegRndRaw[iA-discAttrFrom].create(fTree->opt->ordEvalNoRandomNormalizers, 0.0);
-		anchorRndRaw[iA-discAttrFrom].create(fTree->opt->ordEvalNoRandomNormalizers, 0.0);
+		reinfPosRndRaw[iA-discAttrFrom].create(eopt.ordEvalNoRandomNormalizers, 0.0);
+		reinfNegRndRaw[iA-discAttrFrom].create(eopt.ordEvalNoRandomNormalizers, 0.0);
+		anchorRndRaw[iA-discAttrFrom].create(eopt.ordEvalNoRandomNormalizers, 0.0);
 		reinfPosRnd[iA-discAttrFrom].init(0.0) ;
 		reinfNegRnd[iA-discAttrFrom].init(0.0) ;
 		anchorRnd[iA-discAttrFrom].init(0.0) ;
@@ -956,14 +956,14 @@ void estimation::ordEvalInst(int selectedInstance, int discAttrFrom, int discAtt
 		if (denom > 0)
 			reinfPos[iA] = CpAp[iA] / denom ;
 		else reinfPos[iA] = 0.0 ;
-		for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-			iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+			iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
 			denomR = CpAp[iR] + CnAp[iR] + CeAp[iR] ;
 			if (denomR > 0 && CpAp[iR] > 0)  // otherwise zero
 				reinfPosRndRaw[iA-discAttrFrom][rn] = (CpAp[iR] / denomR)  ;
 			else reinfPosRndRaw[iA-discAttrFrom][rn] = 0.0  ;
 		}
-		statOE(reinfPosRndRaw[iA-discAttrFrom], fTree->opt->ordEvalNoRandomNormalizers, reinfPosRnd[iA], fTree->opt->ordEvalNormalizingPercentile, reinfPos[iA]) ;
+		statOE(reinfPosRndRaw[iA-discAttrFrom], eopt.ordEvalNoRandomNormalizers, reinfPosRnd[iA], eopt.ordEvalNormalizingPercentile, reinfPos[iA]) ;
         reinfPosRnd[iA][noOEstats-1] = expReinfPos[iA][DiscValues(current,iA)] ;
 
 		// negative reinforcement
@@ -971,14 +971,14 @@ void estimation::ordEvalInst(int selectedInstance, int discAttrFrom, int discAtt
 		if (denom > 0)
 			reinfNeg[iA] = CnAn[iA] / denom ;
 		else reinfNeg[iA] = 0.0 ;
-		for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-			iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+			iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
 			denomR = CpAn[iR] + CnAn[iR] + CeAn[iR] ;
 			if (denomR > 0 && CnAn[iR] > 0)  // otherwise zero
 				reinfNegRndRaw[iA-discAttrFrom][rn] = (CnAn[iR] / denomR)  ;
 			else reinfNegRndRaw[iA-discAttrFrom][rn] = 0.0  ;
 		}
-		statOE(reinfNegRndRaw[iA-discAttrFrom], fTree->opt->ordEvalNoRandomNormalizers, reinfNegRnd[iA], fTree->opt->ordEvalNormalizingPercentile, reinfNeg[iA]) ;
+		statOE(reinfNegRndRaw[iA-discAttrFrom], eopt.ordEvalNoRandomNormalizers, reinfNegRnd[iA], eopt.ordEvalNormalizingPercentile, reinfNeg[iA]) ;
         reinfNegRnd[iA][noOEstats-1] = expReinfNeg[iA][DiscValues(current,iA)] ;
 
 		// anchoring
@@ -986,14 +986,14 @@ void estimation::ordEvalInst(int selectedInstance, int discAttrFrom, int discAtt
 		if (denom > 0)
 			anchor[iA] = CeAe[iA] / denom ;
 		else anchor[iA] = 0.0 ;
-		for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-			iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+			iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
 			denomR = CpAe[iR] + CnAe[iR] + CeAe[iR] ;
 			if (denomR > 0 && CeAe[iR] > 0)  // otherwise zero
 				anchorRndRaw[iA-discAttrFrom][rn] = (CeAe[iR] / denomR)  ;
 			else anchorRndRaw[iA-discAttrFrom][rn] = 0.0  ;
 		}
-		statOE(anchorRndRaw[iA-discAttrFrom], fTree->opt->ordEvalNoRandomNormalizers, anchorRnd[iA], fTree->opt->ordEvalNormalizingPercentile, anchor[iA]) ;
+		statOE(anchorRndRaw[iA-discAttrFrom], eopt.ordEvalNoRandomNormalizers, anchorRnd[iA], eopt.ordEvalNormalizingPercentile, anchor[iA]) ;
 		anchorRnd[iA][noOEstats-1] = expAnchor[iA][DiscValues(current,iA)] ;
 
 	}
@@ -1016,20 +1016,20 @@ void estimation::ordEvalInst3(int selectedInstance, int discAttrFrom, int discAt
 {
 	// prepare random normalization attributes
 	int noBasicEstimated =  discAttrTo - discAttrFrom ;
-	int noEstimated =  noBasicEstimated * fTree->opt->ordEvalNoRandomNormalizers ;
+	int noEstimated =  noBasicEstimated * eopt.ordEvalNoRandomNormalizers ;
 	int discSize = noDiscrete + noEstimated ;
 	int iA, iV, iR, rn,  maxNoValues = 0 ;
 	adjustTables(0, discSize) ;
 	for (iA=discAttrFrom; iA < discAttrTo ; iA++) {
-		for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-			if (fTree->opt->ordEvalBootstrapNormalize) {
-				DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn) ;
+		for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+			if (eopt.ordEvalBootstrapNormalize) {
+				DiscValues.bootstrapColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn) ;
 			}
 			else {
-				DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
-				DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
+				DiscValues.copyColumn(iA, noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
+				DiscValues.shuffleColumn(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
 			}
-			prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
+			prepareDiscAttr(noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn, discNoValues[iA]) ;
 		}
 		if (discNoValues[iA] > maxNoValues)
 			maxNoValues = discNoValues[iA] ;
@@ -1037,9 +1037,9 @@ void estimation::ordEvalInst3(int selectedInstance, int discAttrFrom, int discAt
 	// prepare space for raw scores of random attributes
 	marray<marray<double> > reinfPosRndRaw(noBasicEstimated), reinfNegRndRaw(noBasicEstimated), anchorRndRaw(noBasicEstimated) ;
 	for (iA=discAttrFrom ; iA < discAttrTo ; iA++) {
-		reinfPosRndRaw[iA-discAttrFrom].create(fTree->opt->ordEvalNoRandomNormalizers, 0.0);
-		reinfNegRndRaw[iA-discAttrFrom].create(fTree->opt->ordEvalNoRandomNormalizers, 0.0);
-		anchorRndRaw[iA-discAttrFrom].create(fTree->opt->ordEvalNoRandomNormalizers, 0.0);
+		reinfPosRndRaw[iA-discAttrFrom].create(eopt.ordEvalNoRandomNormalizers, 0.0);
+		reinfNegRndRaw[iA-discAttrFrom].create(eopt.ordEvalNoRandomNormalizers, 0.0);
+		anchorRndRaw[iA-discAttrFrom].create(eopt.ordEvalNoRandomNormalizers, 0.0);
 		reinfPosRnd[iA-discAttrFrom].init(0.0) ;
 		reinfNegRnd[iA-discAttrFrom].init(0.0) ;
 		anchorRnd[iA-discAttrFrom].init(0.0) ;
@@ -1186,14 +1186,14 @@ void estimation::ordEvalInst3(int selectedInstance, int discAttrFrom, int discAt
 		if (denom > 0)
 			reinfPos[iA] = CpAp[iA] / denom ;
 		else reinfPos[iA] = 0.0 ;
-		for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-			iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+			iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
 			denomR = CpAp[iR] + CnAp[iR] + CeAp[iR] ;
 			if (denomR > 0 && CpAp[iR] > 0)  // otherwise zero
 				reinfPosRndRaw[iA-discAttrFrom][rn] = (CpAp[iR] / denomR)  ;
 			else reinfPosRndRaw[iA-discAttrFrom][rn] = 0.0  ;
 		}
-		statOE(reinfPosRndRaw[iA-discAttrFrom], fTree->opt->ordEvalNoRandomNormalizers, reinfPosRnd[iA], fTree->opt->ordEvalNormalizingPercentile, reinfPos[iA]) ;
+		statOE(reinfPosRndRaw[iA-discAttrFrom], eopt.ordEvalNoRandomNormalizers, reinfPosRnd[iA], eopt.ordEvalNormalizingPercentile, reinfPos[iA]) ;
         reinfPosRnd[iA][noOEstats-1] = expReinfPos[iA][DiscValues(current,iA)] ;
 
 		// negative reinforcement
@@ -1201,14 +1201,14 @@ void estimation::ordEvalInst3(int selectedInstance, int discAttrFrom, int discAt
 		if (denom > 0)
 			reinfNeg[iA] = CnAn[iA] / denom ;
 		else reinfNeg[iA] = 0.0 ;
-		for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-			iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+			iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
 			denomR = CpAn[iR] + CnAn[iR] + CeAn[iR] ;
 			if (denomR > 0 && CnAn[iR] > 0)  // otherwise zero
 				reinfNegRndRaw[iA-discAttrFrom][rn] = (CnAn[iR] / denomR)  ;
 			else reinfNegRndRaw[iA-discAttrFrom][rn] = 0.0  ;
 		}
-		statOE(reinfNegRndRaw[iA-discAttrFrom], fTree->opt->ordEvalNoRandomNormalizers, reinfNegRnd[iA], fTree->opt->ordEvalNormalizingPercentile, reinfNeg[iA]) ;
+		statOE(reinfNegRndRaw[iA-discAttrFrom], eopt.ordEvalNoRandomNormalizers, reinfNegRnd[iA], eopt.ordEvalNormalizingPercentile, reinfNeg[iA]) ;
         reinfNegRnd[iA][noOEstats-1] = expReinfNeg[iA][DiscValues(current,iA)] ;
 
 		// anchoring
@@ -1216,14 +1216,14 @@ void estimation::ordEvalInst3(int selectedInstance, int discAttrFrom, int discAt
 		if (denom > 0)
 			anchor[iA] = CeAe[iA] / denom ;
 		else anchor[iA] = 0.0 ;
-		for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-			iR = noDiscrete + (iA - discAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+			iR = noDiscrete + (iA - discAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
 			denomR = CpAe[iR] + CnAe[iR] + CeAe[iR] ;
 			if (denomR > 0 && CeAe[iR] > 0)  // otherwise zero
 				anchorRndRaw[iA-discAttrFrom][rn] = (CeAe[iR] / denomR)  ;
 			else anchorRndRaw[iA-discAttrFrom][rn] = 0.0  ;
 		}
-		statOE(anchorRndRaw[iA-discAttrFrom], fTree->opt->ordEvalNoRandomNormalizers, anchorRnd[iA], fTree->opt->ordEvalNormalizingPercentile, anchor[iA]) ;
+		statOE(anchorRndRaw[iA-discAttrFrom], eopt.ordEvalNoRandomNormalizers, anchorRnd[iA], eopt.ordEvalNormalizingPercentile, anchor[iA]) ;
 		anchorRnd[iA][noOEstats-1] = expAnchor[iA][DiscValues(current,iA)] ;
 
 	}
@@ -3457,15 +3457,15 @@ void estimation::ordClassdAeqNorm(int contAttrFrom, int contAttrTo, int distance
 
    // prepare ranom normalization attributes
    int noBasicEstimated =  contAttrTo - contAttrFrom ;
-   int noEstimated =  noBasicEstimated * fTree->opt->ordEvalNoRandomNormalizers ;
+   int noEstimated =  noBasicEstimated * eopt.ordEvalNoRandomNormalizers ;
    int contSize = noNumeric + noEstimated ;
    int iA, iV, iR, rn ;
    adjustTables(contSize, 1) ;
    for (iA=contAttrFrom; iA < contAttrTo ; iA++) {
-	   for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-          NumValues.copyColumn(iA, noNumeric + (iA - contAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
-		  NumValues.shuffleColumn(noNumeric + (iA - contAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ) ;
-		  prepareContAttr(noNumeric + (iA - contAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn) ;
+	   for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+          NumValues.copyColumn(iA, noNumeric + (iA - contAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
+		  NumValues.shuffleColumn(noNumeric + (iA - contAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ) ;
+		  prepareContAttr(noNumeric + (iA - contAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn) ;
 	   }
    }
    // prepare space for raw scores of random attributes
@@ -3480,9 +3480,9 @@ void estimation::ordClassdAeqNorm(int contAttrFrom, int contAttrTo, int distance
      	  reinfNegRnd(iA,iV).init(0.0) ;
      	  anchorRnd(iA,iV).init(0.0) ;
     	  // prepare space for random individual evaluations (raw)
-	      reinfPosRndRaw(iA-contAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
-	      reinfNegRndRaw(iA-contAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
-	      anchorRndRaw(iA-contAttrFrom, iV).create(fTree->opt->ordEvalNoRandomNormalizers) ;
+	      reinfPosRndRaw(iA-contAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
+	      reinfNegRndRaw(iA-contAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
+	      anchorRndRaw(iA-contAttrFrom, iV).create(eopt.ordEvalNoRandomNormalizers) ;
 	   }
    }
    mmatrix<double> CpAe(1, contSize, 0.0), CpAp(1, contSize, 0.0),
@@ -3617,42 +3617,42 @@ void estimation::ordClassdAeqNorm(int contAttrFrom, int contAttrTo, int distance
          if (denom > 0)
 		   reinfPos[iA][iV] = CpAp(iV, iA) / denom ;
 		 else reinfPos[iA][iV] = 0.0 ;
-		 for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noNumeric + (iA -  - contAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		 for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noNumeric + (iA -  - contAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAp(iV, iR) + CnAp(iV, iR) + CeAp(iV, iR) ;
 		   if (denomR > 0 && CpAp(iV, iR) > 0)  // otherwise zero
 		       reinfPosRndRaw(iA-contAttrFrom,iV)[rn] = (CpAp(iV, iR) / denomR)  ;
 		   else reinfPosRndRaw(iA-contAttrFrom,iV)[rn] = 0.0  ;
 		 }
-	     statOE(reinfPosRndRaw(iA-contAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, reinfPosRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile, reinfPos[iA][iV]) ;
+	     statOE(reinfPosRndRaw(iA-contAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, reinfPosRnd(iA,iV), eopt.ordEvalNormalizingPercentile, reinfPos[iA][iV]) ;
 
 		 // negative reinforcement
 		 denom = CpAn(iV, iA) + CnAn(iV, iA) + CeAn(iV, iA) ;
          if (denom > 0)
 		   reinfNeg[iA][iV] = CnAn(iV, iA) / denom ;
 		 else reinfNeg[iA][iV] = 0.0 ;
-		 for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noNumeric + (iA  - contAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+		 for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noNumeric + (iA  - contAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAn(iV, iR) + CnAn(iV, iR) + CeAn(iV, iR) ;
 		   if (denomR > 0 && CnAn(iV, iR) > 0)  // otherwise zero
 		       reinfNegRndRaw(iA-contAttrFrom,iV)[rn] = (CnAn(iV, iR) / denomR)  ;
 		   else reinfNegRndRaw(iA-contAttrFrom,iV)[rn] = 0.0  ;
 		 }
-	     statOE(reinfNegRndRaw(iA-contAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, reinfNegRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile, reinfNeg[iA][iV]) ;
+	     statOE(reinfNegRndRaw(iA-contAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, reinfNegRnd(iA,iV), eopt.ordEvalNormalizingPercentile, reinfNeg[iA][iV]) ;
 
 		 // anchoring
 		 denom = CpAe(iV, iA) + CnAe(iV, iA) + CeAe(iV, iA) ;
          if (denom > 0)
 		   anchor[iA][iV] = CeAe(iV, iA) / denom ;
 		 else anchor[iA][iV] = 0.0 ;
-   	     for (rn=0 ; rn < fTree->opt->ordEvalNoRandomNormalizers ; rn++) {
-      	   iR = noNumeric + (iA  - contAttrFrom) * fTree->opt->ordEvalNoRandomNormalizers + rn ;
+   	     for (rn=0 ; rn < eopt.ordEvalNoRandomNormalizers ; rn++) {
+      	   iR = noNumeric + (iA  - contAttrFrom) * eopt.ordEvalNoRandomNormalizers + rn ;
    	       denomR = CpAe(iV, iR) + CnAe(iV, iR) + CeAe(iV, iR) ;
 		   if (denomR > 0 && CeAe(iV, iR) > 0)  // otherwise zero
 		       anchorRndRaw(iA-contAttrFrom,iV)[rn] = (CeAe(iV, iR) / denomR)  ;
 		   else anchorRndRaw(iA-contAttrFrom,iV)[rn] = 0.0  ;
 		 }
- 	     statOE(anchorRndRaw(iA-contAttrFrom,iV), fTree->opt->ordEvalNoRandomNormalizers, anchorRnd(iA,iV), fTree->opt->ordEvalNormalizingPercentile, anchor[iA][iV]) ;
+ 	     statOE(anchorRndRaw(iA-contAttrFrom,iV), eopt.ordEvalNoRandomNormalizers, anchorRnd(iA,iV), eopt.ordEvalNormalizingPercentile, anchor[iA][iV]) ;
    }
 }
 */

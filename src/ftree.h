@@ -55,23 +55,24 @@ protected:
    void makeSingleAttrNode(binnode* Node, estimation &Estimator, int bestIdx, attributeCount bestType) ;
    void selectBeam(marray<construct> &Beam, marray<construct> &stepCache, marray<double> &stepCacheEst, marray<construct> &Candidates, estimation &Estimator, attributeCount aCount) ;
    double oobInplaceEvaluate(binnode *root, marray<int> &dSet, marray<booleanT> &oobSet, mmatrix<int> &oob) ;
-   binnode* buildForestTree(int TrainSize, marray<int> &DTrain, int attrEstimator,  marray<double> &attrProb) ;
-   double rfBuildConstruct(estimation &Estimator, binnode* Node, marray<double> &attrProb) ;
-   void rfCheck(int caseIdx, marray<double> &probDist) ;
-   int rfTreeCheck(binnode *branch, int caseIdx, marray<double> &probDist) ;
+   binnode* buildForestTree(int TrainSize, marray<int> &DTrain, int attrEstimator,  const marray<double> &attrProb, int rndIdx) ;
+   double rfBuildConstruct(estimation &Estimator, binnode* Node, const marray<double> &attrProb, int rndIdx) ;
+   void rfCheck(int caseIdx, marray<double> &probDist) const ;
+   int rfTreeCheck(binnode *branch, int caseIdx, marray<double> &probDist) const;
    void rfSplit(marray<int> &DTrain, int TrainSize, binnode* Node, marray<int> &LeftTrain, int &LeftSize, marray<int> &RightTrain, int &RightSize) ;
    void rfNearCheck(int caseIdx, marray<double> &probDist) ;
-   void rfFindNearInTree(binnode *branch, int caseIdx, marray<IntSortRec> &near) ;
-   binnode* rfBuildLimitedTree(int noTerminal, int TrainSize, marray<int> &DTrain, int attrEstimator, marray<double> &attrProb) ;
+   void rfFindNearInTree(binnode *branch, int caseIdx, marray<IntSortRec> &near) const ;
+   binnode* rfBuildLimitedTree(int noTerminal, int TrainSize, marray<int> &DTrain, int attrEstimator, const marray<double> &attrProb, int rndIdx) ;
    void rfRevertToLeaf(binnode *Node) ;
    binnode* rfPrepareLeaf(int TrainSize, marray<int> &DTrain) ;
-   void rfCheckReg(int caseIdx, marray<double> &probDist) ;
+   void rfCheckReg(int caseIdx, marray<double> &probDist) const ;
    double rfEvalA0(void);
-   void rfWriteTree(FILE* fout, int indent, int treeIdx) ;
-   void rfWriteSubTree(FILE* fout, int indent, binnode *branch) ;
+   void rfWriteTree(FILE* fout, int indent, int treeIdx) const;
+   void rfWriteSubTree(FILE* fout, int indent, binnode *branch) const;
+   void rfConsolidateTree(binnode *branch) ;
 
    double oobAccuracy(mmatrix<int> &oob) ;
-   void oobEvaluate(mmatrix<int> &oob) ;
+   void oobEvaluate(mmatrix<int> &oob) const ;
    double oobMargin(mmatrix<int> &oob, marray<int> &maxOther, double &varMargin) ;
    double oobSTD(marray<int> &maxOther) ;
    void oobMarginAV(mmatrix<int> &oob, int noVal, marray<int> &origVal,
@@ -89,6 +90,7 @@ protected:
 public:
    booleanT learnRF ;
    double avgOobAccuracy, avgOobMargin, avgOobCorrelation ;
+   PseudoRandomStreams rndStr ;
 
    featureTree();
    ~featureTree();
@@ -114,15 +116,17 @@ public:
    void varImportance(marray<double> &varEval) ;
    void printAttrEval(FILE *to, marray<int> &idx, marray<marray<double> > &attrEval) ;
    void avImportance(marray<marray<double> > &avEval) ;
-   int writeRF(const char* TreeFileName);
-   int tempSaveForest(char *fName) ;
+   int writeRF(const char* TreeFileName) const;
+   //int tempSaveForest(char *fName) ;
    int predictR(marray<int> &predictedClass, marray<double> &predictedProb) ;
     booleanT readForest(char *fileName) ;
    binnode* readTree(FILE* fin, int treeIdx) ;
    binnode* readNode(FILE* fin) ;
-   int getSize(binnode *branch);
+   int getSize(binnode *branch) const;
+   int getSumOverLeaves(binnode *branch, int depth) const;
 #if defined(R_PORT)
    SEXP exportSizes(void);
+   SEXP exportSumOverLeaves(void);
    SEXP RF2R(void) ;
    SEXP RFtree2R(binnode *branch);
 #endif

@@ -19,11 +19,12 @@
 int estimationReg::estimate(int selectedEstimator, int contAttrFrom, int contAttrTo,
                          int discAttrFrom, int discAttrTo, attributeCount &bestType)
 {
-   if (fTree->opt->binaryAttributes)
+
+   if (eopt.binaryEvaluation)
    {
-      fTree->opt->binaryAttributes = mFALSE ;
+      eopt.binaryEvaluation = mFALSE ;
       estBinarized(selectedEstimator, contAttrFrom, contAttrTo, discAttrFrom, discAttrTo, discAttrTo) ;
-	  fTree->opt->binaryAttributes = mTRUE ;
+	  eopt.binaryEvaluation = mTRUE ;
    }
    else {
 
@@ -44,33 +45,7 @@ int estimationReg::estimate(int selectedEstimator, int contAttrFrom, int contAtt
 		   case estRReliefFwithMSE: // combination of Relief and MSE
 				Combination(contAttrFrom,contAttrTo,discAttrFrom,discAttrTo, estRReliefFexpRank) ;
 				break ;
-  /*
-		   case estRReliefFconstr:
-		   case estMSEmeanConstr:
-				{
-					  marray<constructReg> DiscConstruct(discAttrTo-discAttrFrom), ContConstruct(contAttrTo-contAttrFrom) ;
-					  int i, j ;
-					  for (i=discAttrFrom ; i < discAttrTo ; i++)
-					  {
-						 DiscConstruct[i-discAttrFrom].createSingle(i, aDISCRETE) ;
-						 DiscConstruct[i-discAttrFrom].leftValues.create(discNoValues[i]+1,mFALSE) ;
-						 DiscConstruct[i-discAttrFrom].noValues = discNoValues[i] ;
-						 for (j=1 ; j < (DiscConstruct[i-discAttrFrom].leftValues.len()+1) /2 ; j++)
-						   DiscConstruct[i-discAttrFrom].leftValues[j] = mTRUE ;
-					  }
-					  DiscConstruct.setFilled(discAttrTo-discAttrFrom) ;
-					  for (i=contAttrFrom ; i < contAttrTo ; i++)
-					  {
-						 ContConstruct[i-contAttrFrom].createSingle(i, aCONTINUOUS) ;
-						 ContConstruct[i-contAttrFrom].splitValue = (minValue[i]+maxValue[i])/2.0 ;
-					  }
-					  ContConstruct.setFilled(contAttrTo-contAttrFrom) ;
-					  estimateConstruct(selectedEstimator, contAttrFrom,contAttrTo,discAttrFrom,discAttrTo, bestType,
-										DiscConstruct, ContConstruct) ;
-				 }
-				 break ;
-*/
-		   case estMSEofMean: // standard deviation
+  		   case estMSEofMean: // standard deviation
 				MSE(contAttrFrom,contAttrTo,discAttrFrom,discAttrTo) ;
 				break ;
 
@@ -581,8 +556,8 @@ void estimationReg::prepareContAttr(int attrIdx)
 
 #if defined(RAMP_FUNCTION)
    // differemt, equal, slope
-    DifferentDistance[attrIdx] = valueInterval[attrIdx] * fTree->opt->numAttrProportionEqual ;
-    EqualDistance[attrIdx] = valueInterval[attrIdx] * fTree->opt->numAttrProportionDifferent  ;
+    DifferentDistance[attrIdx] = valueInterval[attrIdx] * eopt.numAttrProportionEqual ;
+    EqualDistance[attrIdx] = valueInterval[attrIdx] * eopt.numAttrProportionDifferent  ;
    if (DifferentDistance[attrIdx] > EqualDistance[attrIdx])
       CAslope[attrIdx] = double(1.0)/(DifferentDistance[attrIdx] - EqualDistance[attrIdx]) ;
     else
@@ -641,7 +616,8 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
    NumEstimation.init(contAttrFrom,contAttrTo, 0.0) ;
    DiscEstimation.init(discAttrFrom,discAttrTo, 0.0) ;
 
-   int i, j, idx, greedyPositions, exhaustivePositions ;
+   int i, j, idx, greedyPositions; 
+   double exhaustivePositions ;
    marray<double> valueWeight ;
    double bestEstimate, estimate, minRound, totalWeight ;
    int val, idxRound ;
@@ -655,10 +631,10 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
    double leftError=0, rightError=0;
 
    int maxSample ;
-   if (fTree->opt->discretizationSample==0)
+   if (eopt.discretizationSample==0)
      maxSample = TrainSize -1;
    else
-      maxSample = fTree->opt->discretizationSample ;
+      maxSample = eopt.discretizationSample ;
 
    for (i=discAttrFrom ; i < discAttrTo ; i++)
    {
@@ -855,10 +831,10 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
          noUnique = 0 ;
 
       int sampleSize ;
-      if (fTree->opt->discretizationSample==0)
+      if (eopt.discretizationSample==0)
         sampleSize = noUnique ;
       else
-        sampleSize = Mmin(fTree->opt->discretizationSample, noUnique) ;
+        sampleSize = Mmin(eopt.discretizationSample, noUnique) ;
 
       marray<int> splits(sampleSize) ;
 
@@ -933,8 +909,8 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
 
       NumEstimation[i] = - bestEstimate ;
    }
-   fTree->destroy(leftNode) ;
-   fTree->destroy(rightNode) ;
+   delete leftNode ;
+   delete rightNode ;
 }
 
 

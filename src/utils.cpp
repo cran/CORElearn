@@ -545,9 +545,9 @@ int intRoundD(double x)
 	return (x>=0 ? (x-0.5 > int(x) ? int(x)+1 : int(x)) : (x + 0.5 < int(x) ? int(x)-1 :  int(x))) ;
 }
 
-long int longRound(double x)
+long int longRound(long int x)
 {
-   return (x>=0 ? long(x+0.5) : long(x-0.5)) ;
+   return (x>=0 ? (long int)(x+0.5) : (long int)(x-0.5)) ;
 }
 
 
@@ -561,18 +561,18 @@ long int longRound(double x)
 //
 //
 //************************************************************
-long long binom(int n, int k) {
+double binom(int n, int k) {
     if (k > n)
         return 0;
 
     if (k > n/2)
         k = n-k; // Take advantage of symmetry
 
-    long double b = 1.0;
+    double b = 1.0;
     for (int i = 1; i <= k; i++)
          b *= (n-k+i) / i;
 
-    return (int)(b + 0.5); // avoid rounding error
+    return (b + 0.5);
 }
  /*
  long int binom(int N, int selector)
@@ -760,7 +760,7 @@ double timeMeasureDiff(double Start, double Finish)
 //
 //
 // ************************************************************
-char* getWildcardFileName(char *Path, char *WildcardFileName)
+char* getWildcardFileName(const char *Path, const char *WildcardFileName)
 {
    char fullName[MaxPath] ;
    sprintf(fullName, "%s%s" ,Path,WildcardFileName) ;
@@ -877,8 +877,8 @@ void mrg32k5aSeed(long seed) {
 	   seed = - seed ;
    if (seed == 0)
 	   seed = 2 ;
-   __int64 m1 = 4294949027U, m2 = 4294934327U ;
-   __int64 sg = seed ;
+   long m1 = 4294949027U, m2 = 4294934327U ;
+   long sg = seed ;
    s10 = (double)sg ;
    sg = (sg * seed + 1) % m1 ;
    s11 = (double)sg ;

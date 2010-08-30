@@ -15,7 +15,8 @@ class estimationReg
 friend class regressionTree ;
 friend class constructReg ;
 
-    regressionTree *fTree ;
+    const regressionTree *fTree ;
+    Options eopt ;
     mmatrix<int> DiscValues ;
     mmatrix<double> NumValues ;
     marray<double> contDiffA, discDiffA ;

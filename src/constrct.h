@@ -23,7 +23,7 @@ class construct
    friend class featureTree ;
    constructNode *root ;
    //  binnode* TreeNode ;  
-   featureTree* gFT ;
+   const featureTree* gFT ;
 
    void destroy(constructNode *node) ;
    void dup(const constructNode *Source, PconstructNode &Target) ;
@@ -45,7 +45,8 @@ public:
    int noValues ;
    
    construct() { root = 0 ; gFT = 0 ; }
-   construct(featureTree* ft) {root = 0; gFT = ft; }; 
+   construct(const featureTree* ft) { root=0 ; init(ft); };
+   void init(const featureTree* ft) {destroy(); gFT = ft; }
    ~construct() ;
    construct(construct &Copy) ;
    int operator== (construct &X) ;

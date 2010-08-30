@@ -3,6 +3,7 @@
 
 #include "contain.h"
 #include "ftree.h"
+#include "random.h"
 
 
 struct IntSortRec
@@ -31,6 +32,7 @@ public:
    marray<booleanT> oob ; // train set indication of out-of-bag instances
    marray<int> oobIdx ; // indexes of out-of-bag instances
    bintree t ;
+   //PseudoRandom rnd ;
    forestTree(void) {}
    ~forestTree(void) {} 
 } ;

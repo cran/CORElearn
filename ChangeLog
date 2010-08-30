@@ -1,3 +1,5 @@
+CORElearn-0.9.28, 2010-08-30: support for OpenMP based multithreaded execution, improved documentation  
+CORElearn-0.9.27, 2010-03-05: bug fix for single attribute problems 
 CORElearn-0.9.26, 2010-01-10: bug fix for Sun platform 
 CORElearn-0.9.25, 2010-01-07: added rfAttrEval, feature evaluation with random forest, bug fixes 
 CORElearn-0.9.24, 2009-12-06: improvements in plot.ordEval, and additional checks of input data 

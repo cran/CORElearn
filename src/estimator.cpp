@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <float.h>
+#include <omp.h>
 
 #include "estimator.h"
 #include "general.h"
@@ -12,63 +13,59 @@
 // ***************************************************************************
 //
 //                     estimate
-//     estimate selected attributes with choosen measure
+//     estimate selected attributes with chosen measure
 //     and returns the index and type of the best estimated attribute
 //
 // ***************************************************************************
 int estimation::estimate(int selectedEstimator, int contAttrFrom, int contAttrTo,
                          int discAttrFrom, int discAttrTo, attributeCount &bestType) {
 
-   // first estimate then find best, etc.
-
-   if (fTree->opt->binaryAttributes) {
+   if (eopt.binaryEvaluation) {
 	  // estimate all of them as binary, so first prepare binarized attributes, then come here again
-      fTree->opt->binaryAttributes = mFALSE ;
+      eopt.binaryEvaluation = mFALSE ;
       estBinarized(selectedEstimator, contAttrFrom, contAttrTo, discAttrFrom, discAttrTo, discAttrTo) ;
-	  fTree->opt->binaryAttributes = mTRUE ;
+	  eopt.binaryEvaluation = mTRUE ;
    }
    else if (isMyopic(selectedEstimator)){ // these estimate only discrete non-Relief-like attributes
-  		 int beforeEstimator = fTree->opt->selectionEstimator ;
-  		 fTree->opt->selectionEstimator = selectedEstimator ;
+  		 int beforeEstimator = eopt.selectionEstimator ;
+  		 eopt.selectionEstimator = selectedEstimator ;
 
   		 prepareImpurityFunction(selectedEstimator) ; // set the right function pointer
-  		 int idx ;
-
+  		 //int idx ;
+  		 //construct discAttrib ;
  		 // discrete attributes
-		 construct discAttrib(fTree) ;
-
-  		 for (idx=discAttrFrom ; idx < discAttrTo ; idx++) {
-  			  discAttrib.createSingle(idx, aDISCRETE) ;
-  			  discAttrib.noValues = discNoValues[idx];
+         #pragma omp parallel for
+  		 for (int idx=discAttrFrom ; idx < discAttrTo ; idx++) {
 			  DiscEstimation[idx] = estImpurityDisc(idx) ;
 		 }
 
   		 // numeric attributes
-    	  double result ;
-  		 if (fTree->opt->binarySplitNumericAttributes)
+    	 if (eopt.binaryEvaluateNumericAttributes)
   		 {
     		 // binarize numeric attributes and the estimate of the best split
   	      	 // is the estimate of the attribute
-
-  			construct contAttrib(fTree) ;
-  			for (idx=contAttrFrom ; idx < contAttrTo ; idx++)
+    		double result ;
+  			construct contAttrib ;
+            #pragma omp parallel for private(contAttrib,result)
+            for (int idx=contAttrFrom ; idx < contAttrTo ; idx++)
   			{
-  			  contAttrib.createSingle(idx, aCONTINUOUS) ;
-  			  if (selectedEstimator == estMDLsmp)
-  			    splitPoint[idx] = impuritySplitSample(contAttrib, result) ;
-  			  else
-  			    splitPoint[idx] = impuritySplit(contAttrib, result) ;
-  			  NumEstimation[idx] = result ;
-
+     		   contAttrib.init(fTree) ;
+  			   contAttrib.createSingle(idx, aCONTINUOUS) ;
+               if (selectedEstimator == estMDLsmp)
+  			     splitPoint[idx] = impuritySplitSample(contAttrib, result) ;
+  			   else
+  			     splitPoint[idx] = impuritySplit(contAttrib, result) ;
+  			   NumEstimation[idx] = result ;
   			}
   		 }
   		 else { // this is an expensive operation, we have to discretize
   			marray<double> Bounds ;
-  			for (idx=contAttrFrom ; idx < contAttrTo ; idx++)	{
+            #pragma omp parallel for private(Bounds)
+  			for (int idx=contAttrFrom ; idx < contAttrTo ; idx++)	{
   			   NumEstimation[idx] = discretizeGreedy(idx, Bounds, discAttrTo) ;
   			}
   		 }
-  		 fTree->opt->selectionEstimator = beforeEstimator ;
+  		 eopt.selectionEstimator = beforeEstimator ;
        }
        else {
     	   // estimate ReliefF and its variants
@@ -195,10 +192,6 @@ void estimation::prepareImpurityFunction(int selectedEstimator) {
 		   fImpurity = &estimation::accuracyImpurity ;
 		   fImpurityGain = &estimation::accuracyGain ;
 		   break ;
-	   case estBinAccuracy:
-		   fImpurity = &estimation::accuracyImpurity ;
-		   fImpurityGain = &estimation::accuracyGain ;
-		   break ;
 	   case estDKM:
 		   fImpurity = &estimation::DKMImpurity ;
 		   fImpurityGain = &estimation::DKMgain ;
@@ -225,7 +218,7 @@ void estimation::prepareImpurityFunction(int selectedEstimator) {
 	   case estUniformAccuracy:
 		   fImpurity = &estimation::zeroImpurity ;
 		   fImpurityUniform = &estimation::accuracyOnDistribution ;
-		   fImpurityGain = &estimation::gainUniform ;
+		   fImpurityGain = &estimation::accUniform ;
 		   break ;
 	   case estEqualDKM:
 		   fImpurity = &estimation::DKMImpurity ;
@@ -481,13 +474,14 @@ double estimation::estImpurityDisc(int discIdx)
    mmatrix<int> noClassAttrVal(noClasses+1, discNoValues[discIdx]+1, 0) ;
    int j, iC, iV;
    int OKvalues = 0 ;
-   int attrValue ;
+   int attrValue, classValue ;
    for (j=0 ; j < TrainSize ; j++)
    {
       attrValue = DiscValues(j, discIdx) ;
       if (attrValue != NAdisc) {
-         noClassAttrVal(DiscValues(j, 0), attrValue)++ ; // initially we store all for the right side
-         OKvalues ++ ;
+    	  classValue = DiscValues(j, 0) ;
+          noClassAttrVal(classValue, attrValue)++ ;
+          OKvalues ++ ;
       }
    }
    if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
@@ -501,6 +495,14 @@ double estimation::estImpurityDisc(int discIdx)
 		   noAttrVal[iV] += noClassAttrVal(iC,iV);
 	   }
    }
+   int noValidSplits = 0 ;
+   for (iV = 1 ;  iV <= discNoValues[discIdx] ; ++iV){
+	   if (noAttrVal[iV] >0)
+		    noValidSplits++ ;
+   }
+   if (noValidSplits <=1)
+	   return -FLT_MAX ;
+
    double priorImpurity = (this->*fImpurity)(OKvalues, noClassAttrVal, 0) ;
 
    return (this->*fImpurityGain)(priorImpurity, OKvalues, noAttrVal, noClassAttrVal) ;
@@ -553,7 +555,7 @@ double estimation::impuritySplit(construct &nodeConstruct, double &bestEstimatio
    for (j=1 ; j < OKvalues ; j++)
    {
 	   // only estimate for unique values and sufficiently large split nodes
-       if (sortedAttr[j].key != sortedAttr[lastDifferent].key && j >= fTree->opt->minNodeWeight && j <= OKvalues - fTree->opt->minNodeWeight) {
+       if (sortedAttr[j].key != sortedAttr[lastDifferent].key && j >= eopt.minNodeWeight && j <= OKvalues - eopt.minNodeWeight) {
           //compute heuristic measure
     	  noAttrVal[1] = j ;
     	  noAttrVal[2] = OKvalues - j ;
@@ -660,41 +662,55 @@ double estimation::impuritySplitSample(construct &nodeConstruct, double &bestEst
 // ***************************************************************************
 //
 //                     estimateSelected
-//     estimate selected attributes with choosen measure
-//     and returns the index and type of the best estimated attribute
-//        intended only for fast estimation with RF and  with non-Releif measures
+//    - estimate selected attributes with chosen measure
+//    - and returns the index and type of the best estimated attribute
+//    - intended only for fast estimation with RF and  with non-Releif measures
+//    - attributes are ranked and only first  noSelected shall be estimated, but
+//        invalid attributes are not numbered
+//
 //
 // ***************************************************************************
-int estimation::estimateSelected(marray<booleanT> &mask, attributeCount &bestType) {
-   int selectedEstimator = activeEstimator ;
-   attributeCount bT ; // dummy
-   double bestEst = - FLT_MAX;
-   int bestIdx = -1, iA ;
-   	for (iA=1; iA < mask.filled(); iA++)
-	   if (mask[iA]) { // evaluate that attribute
-		   if (fTree->AttrDesc[iA].continuous) {
-			   estimate(selectedEstimator, fTree->AttrDesc[iA].tablePlace, fTree->AttrDesc[iA].tablePlace +1, 0, 0, bT) ;
-			   if (NumEstimation[fTree->AttrDesc[iA].tablePlace] > bestEst){
-				   bestEst = NumEstimation[fTree->AttrDesc[iA].tablePlace] ;
-			       bestType = aCONTINUOUS ;
-				   bestIdx = fTree->AttrDesc[iA].tablePlace ;
-			   }
-		   }
-		   else {
-			   estimate(selectedEstimator, 0, 0, fTree->AttrDesc[iA].tablePlace, fTree->AttrDesc[iA].tablePlace +1,  bT) ;
-			   if (DiscEstimation[fTree->AttrDesc[iA].tablePlace] > bestEst){
-				   bestEst = DiscEstimation[fTree->AttrDesc[iA].tablePlace] ;
-			       bestType = aDISCRETE ;
-				   bestIdx = fTree->AttrDesc[iA].tablePlace ;
-			   }
-		   }
-	   }
-   return bestIdx ;
+int estimation::estimateSelected(marray<int> &rankList, int noSelected, attributeCount &bestType) {
+	//int selectedEstimator = activeEstimator ;
+	attributeCount bT ; // dummy
+	double bestEst = - FLT_MAX;
+	int bestIdx = -1, iRL=1, iA;
+	while (iRL <= noSelected) {
+		iA = rankList[iRL] ;
+		if (fTree->AttrDesc[iA].continuous) {
+			estimate(eopt.selectionEstimator, fTree->AttrDesc[iA].tablePlace, fTree->AttrDesc[iA].tablePlace +1, 0, 0, bT) ;
+			if (NumEstimation[fTree->AttrDesc[iA].tablePlace] > bestEst){
+				bestEst = NumEstimation[fTree->AttrDesc[iA].tablePlace] ;
+				bestType = aCONTINUOUS ;
+				bestIdx = fTree->AttrDesc[iA].tablePlace ;
+			}
+			else if (NumEstimation[fTree->AttrDesc[iA].tablePlace] == -FLT_MAX) {
+				// invalid attribute
+				if (noSelected < rankList.filled()-1)
+					++noSelected ;
+			}
+		}
+		else {
+			estimate(eopt.selectionEstimator, 0, 0, fTree->AttrDesc[iA].tablePlace, fTree->AttrDesc[iA].tablePlace +1,  bT) ;
+			if (DiscEstimation[fTree->AttrDesc[iA].tablePlace] > bestEst){
+				bestEst = DiscEstimation[fTree->AttrDesc[iA].tablePlace] ;
+				bestType = aDISCRETE ;
+				bestIdx = fTree->AttrDesc[iA].tablePlace ;
+			}
+			else if (DiscEstimation[fTree->AttrDesc[iA].tablePlace] == -FLT_MAX) {
+				// invalid attribute
+				if (noSelected < rankList.filled()-1)
+					++noSelected ;
+			}
+		}
+		++iRL ;
+	}
+	return bestIdx ;
 }
 booleanT estimation::isMyopic(int selectedEstimator) {
 	if (selectedEstimator == estInfGain || selectedEstimator == estGainRatio
 			|| selectedEstimator == estMDL || selectedEstimator == estGini	|| selectedEstimator == estMyopicReliefF
-			|| selectedEstimator == estAccuracy || selectedEstimator == estBinAccuracy
+			|| selectedEstimator == estAccuracy
 			|| selectedEstimator == estDKM || selectedEstimator == estDKMcost
 			|| selectedEstimator == estGainRatioCost || selectedEstimator == estMDLsmp || selectedEstimator == estImpurityEuclid
 			|| selectedEstimator == estImpurityHellinger || selectedEstimator == estEqualHellinger || selectedEstimator == estDistHellinger
@@ -780,7 +796,7 @@ double estimation::accuracyGain(double priorImpurity, int weightNode, marray<int
 	   if (attrVal[valIdx] >0)
          acc += tempP * (this->*fImpurity)(attrVal[valIdx], noClassAttrVal, valIdx) ;
     }
-    return (priorImpurity - acc)  ;
+    return acc-priorImpurity  ;
 }
 
 double estimation::accuracyImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
@@ -856,6 +872,36 @@ double estimation::gainUniform(double priorImpurity, int weightNode, marray<int>
 	}
 	return 1.0-gain ; ;
 }
+// top level estimator for uniform accuracy, calling appropriate distribution function
+double estimation::accUniform(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
+	double pvj, gain=0.0  ;
+	int i,valIdx;
+	// compute unconditional class probabilities
+	for (i=1 ; i <= noClasses ;i++) {
+		noClassAttrVal(i,0) = 0 ;
+		for (valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++)
+			noClassAttrVal(i,0) += noClassAttrVal(i,valIdx) ;
+	}
+	marray<double> dist(noClasses+1, 0);
+	for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
+		pvj = 0 ;
+	    for (i=1 ; i <= noClasses ;i++)
+		  if (noClassAttrVal(i,0) > 0) {
+		     pvj += double(noClassAttrVal(i,valIdx))/noClassAttrVal(i,0);
+	    }
+
+	    if (pvj>0){
+	    	dist.init(0.0);
+	      for (i=1 ; i <= noClasses ;i++) {
+		    if (noClassAttrVal(i,0) > 0)
+		     dist[i] = double(noClassAttrVal(i,valIdx))/noClassAttrVal(i,0)/pvj;
+	      }
+	      pvj /= noClasses ;
+	      gain += pvj * (this->*fImpurityUniform)(dist) ;
+	    }
+	}
+	return gain-priorImpurity ; ;
+}
 
 
 
@@ -913,7 +959,7 @@ double estimation::zeroImpurity(int weightNode, mmatrix<int> &noClassAttrVal, in
 // extended to multi-class problem by all pairs of classes difference
 double estimation::EuclidHellingerImpurity(int weightNode, mmatrix<int> &noClassAttrVal, int valIdx) {
 	double da, t ;
-	switch (fTree->opt->multiclassEvaluation) {
+	switch (eopt.multiclassEvaluation) {
 	case 1: // average over all-pairs
 	case 3: // average over one-against-all
 		da = 0.0 ;
@@ -926,11 +972,11 @@ double estimation::EuclidHellingerImpurity(int weightNode, mmatrix<int> &noClass
 		return -1 ;
 	}
 	int i, j, noComb=0 ;
-	if (fTree->opt->multiclassEvaluation==1 || fTree->opt->multiclassEvaluation==2) {
+	if (eopt.multiclassEvaluation==1 || eopt.multiclassEvaluation==2) {
 		for (i=1 ; i <= noClasses ;i++){
-			if (noClassAttrVal(i,valIdx)>0) {
+			//if (noClassAttrVal(i,valIdx)>0) {
 				for (j=i+1 ; j <= noClasses ;j++) {
-					if (noClassAttrVal(j,valIdx)>0) {
+					//if (noClassAttrVal(j,valIdx)>0) {
 						if (preparedEstimator == estImpurityEuclid)
 							t =  sqr(double(noClassAttrVal(i,valIdx))/weightNode - double(noClassAttrVal(j,valIdx))/weightNode ) ;
 						else if (preparedEstimator == estImpurityHellinger)
@@ -939,30 +985,30 @@ double estimation::EuclidHellingerImpurity(int weightNode, mmatrix<int> &noClass
 							merror("estimation::EuclidHellingerImpurity","invalid estimator detected") ;
 							t = -1.0 ;
 						}
-						if (fTree->opt->multiclassEvaluation==1) {
+						if (eopt.multiclassEvaluation==1) {
 							// average of all-pairs
 							da +=t ;
 							++noComb;
 						}
-						else if (fTree->opt->multiclassEvaluation==2) 	{
+						else if (eopt.multiclassEvaluation==2) 	{
 							// best of all-pairs
 							if (t > da)
 								da = t ;
 						}
-					}
+					//}
 				}
-			}
+			//}
 		}
 	}
-	else if (fTree->opt->multiclassEvaluation==3 || fTree->opt->multiclassEvaluation==4){
+	else if (eopt.multiclassEvaluation==3 || eopt.multiclassEvaluation==4){
 		for (i=1 ; i <= noClasses ;i++) {
-			if (noClassAttrVal(i,valIdx)>0) {
+			//if (noClassAttrVal(i,valIdx)>0) {
 				// form the virtual others class with index 0
 				noClassAttrVal(0,valIdx) = 0 ;
 				for (j=1 ; j <= noClasses ;j++)
 					if (j != i)
 						noClassAttrVal(0,valIdx) += noClassAttrVal(j, valIdx) ;
-				if (noClassAttrVal(0,valIdx)>0) {
+				//if (noClassAttrVal(0,valIdx)>0) {
 					if (preparedEstimator==estImpurityEuclid)
 						t =  sqr(double(noClassAttrVal(i,valIdx))/weightNode - double(noClassAttrVal(0,valIdx))/weightNode ) ;
 					else if (preparedEstimator == estImpurityHellinger)
@@ -971,24 +1017,26 @@ double estimation::EuclidHellingerImpurity(int weightNode, mmatrix<int> &noClass
 						merror("estimation::EuclidHellingerImpurity","invalid estimator detected") ;
 						t = -1.0 ;
 				    }
-					if (fTree->opt->multiclassEvaluation == 3) {
+					if (eopt.multiclassEvaluation == 3) {
 						// average of all-pairs
 						da +=t ;
 						++noComb;
 				    }
-					else if (fTree->opt->multiclassEvaluation == 4) {
+					else if (eopt.multiclassEvaluation == 4) {
 						// best of all-pairs
 						if (t > da)
 							da = t ;
 				    }
-			   }
-			}
+			   //}
+			//}
 		}
 	}
-	switch (fTree->opt->multiclassEvaluation) {
+	switch (eopt.multiclassEvaluation) {
 	case 1: // average over all-pairs
 	case 3: // average over one-against-all
-		return da / double(noComb) ;
+		if (noComb > 0)
+		  return da / double(noComb) ;
+		else return - FLT_MAX ;
 	case 2: // maximum over all pairs
 	case 4: // maximum over one-against-all
 		return da ;
@@ -1028,7 +1076,9 @@ double estimation::EqualHellinger(double priorImpurity, int weightNode, marray<i
 			}
 		}
 	}
-	return h / double(noComb) ; // average over all combinations of splits
+	if (noComb>0)
+		return h / double(noComb) ; // average over all combinations of splits
+	else return -FLT_MAX ;
 }
 
 
@@ -1171,7 +1221,7 @@ double estimation::stepAUC(int c1, int c2, mmatrix<int> &noClassAttrVal) {
 double estimation::distMulticlassEvaluation(double priorImpurity, int weightNode, marray<int> &attrVal, mmatrix<int> &noClassAttrVal){
 	double  d=0.0, di  ;
 	int i,j,valIdx,noComb=0 ;
-	switch (fTree->opt->multiclassEvaluation) {
+	switch (eopt.multiclassEvaluation) {
 	case 1: // average over all-pairs
 	case 3: // average over one-against-all
 		d = 0.0 ;
@@ -1191,12 +1241,12 @@ double estimation::distMulticlassEvaluation(double priorImpurity, int weightNode
 			noClassAttrVal(i,0) += noClassAttrVal(i,valIdx) ;
 	}
 	// for distances based on two distributions of conditional probabilities  p(a_valIdx | c_i) and p(a_valIdx | c_j)
-	if (fTree->opt->multiclassEvaluation == 1 || fTree->opt->multiclassEvaluation == 2) {  // all-pairs extension
+	if (eopt.multiclassEvaluation == 1 || eopt.multiclassEvaluation == 2) {  // all-pairs extension
 		for (i=1 ; i <= noClasses ;i++) {
-			if (noClassAttrVal(i,0)>0) {
+			//if (noClassAttrVal(i,0)>0) {
 				for (j=i+1 ; j <= noClasses ;j++) {
-					if (noClassAttrVal(j,0) >0) {
-						if (fTree->opt->multiclassEvaluation == 1) { // average over all-pairs
+					//if (noClassAttrVal(j,0) >0) {
+						if (eopt.multiclassEvaluation == 1) { // average over all-pairs
 							++noComb ;
 							d += (this->*fDistStep)(i, j, noClassAttrVal) ;
 						}
@@ -1205,14 +1255,14 @@ double estimation::distMulticlassEvaluation(double priorImpurity, int weightNode
 							if (di > d)
 								d = di ;
 						}
-					}
+					//}
 				}
-			}
+			//}
 		}
 	}
-	else if (fTree->opt->multiclassEvaluation == 3 || fTree->opt->multiclassEvaluation == 4) {  // one-against-all extension
+	else if (eopt.multiclassEvaluation == 3 || eopt.multiclassEvaluation == 4) {  // one-against-all extension
 		for (i=1 ; i <= noClasses ;i++) {
-			if (noClassAttrVal(i,0)>0) {
+			//if (noClassAttrVal(i,0)>0) {
 				// form the virtual others class with index 0
 				noClassAttrVal(0,0) = 0 ;
 				for (valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
@@ -1222,8 +1272,8 @@ double estimation::distMulticlassEvaluation(double priorImpurity, int weightNode
 							noClassAttrVal(0,valIdx) += noClassAttrVal(j, valIdx) ;
 					noClassAttrVal(0,0) += noClassAttrVal(0,valIdx) ;
 				}
-				if (noClassAttrVal(0,0) >0) {
-					if (fTree->opt->multiclassEvaluation == 3) { // average over one-against-all
+				//if (noClassAttrVal(0,0) >0) {
+					if (eopt.multiclassEvaluation == 3) { // average over one-against-all
 						++noComb ;
 						d += (this->*fDistStep)(i, 0, noClassAttrVal) ;
 					}
@@ -1233,15 +1283,17 @@ double estimation::distMulticlassEvaluation(double priorImpurity, int weightNode
 							d = di ;
 
 					}
-				}
+				//}
 			}
-		}
+		//}
 	}
 
-	switch (fTree->opt->multiclassEvaluation) {
+	switch (eopt.multiclassEvaluation) {
 	case 1: // average over all-pairs
 	case 3: // average over one-against-all
-		return d / double(noComb) ;
+		if (noComb>0)
+			return d / double(noComb) ;
+		else return -FLT_MAX ;
 	case 2: // maximum over all pairs
 	case 4: // maximum over one-against-all
 		return d ;
@@ -1974,10 +2026,10 @@ void estimation::BinAccuracy(int discAttrFrom, int discAttrTo)
    int discIdx, i, j, maxSample ;
    mmatrix<int> noClassAttrVal(noClasses+1, 3) ;
 
-   if (fTree->opt->discretizationSample==0)
+   if (eopt.discretizationSample==0)
      maxSample = TrainSize -1;
    else
-      maxSample = fTree->opt->discretizationSample ;
+      maxSample = eopt.discretizationSample ;
 
 
    double est, maxEst, maxRound ;

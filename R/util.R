@@ -12,11 +12,13 @@ prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrd
     else {
         if (is.null(class.lev))  {## regression
            predictionColumn <- double(length=nrow(data))
-           predictionColumn<-NA
+           predictionColumn[] <- NA
            data <- cbind(prediction=predictionColumn,data)
        }
        else {
-		   data <- cbind(prediction=factor(NA,levels=class.lev),data);
+           predictionColumn <- double(length=nrow(data))
+           predictionColumn[] <- NA           
+		   data <- cbind(prediction=factor(predictionColumn,levels=class.lev),data);
        }
 	}
     col.names <- names(data)
@@ -96,7 +98,7 @@ infoCore<-function(what=c("attrEval","attrEvalReg")) {
     switch (what,
       attrEval =
         c("ReliefFequalK", "ReliefFexpRank", "ReliefFbestK", "Relief", "InfGain", "GainRatio", "MDL", "Gini",
-        "MyopicReliefF", "Accuracy", "BinAccuracy", "ReliefFmerit", "ReliefFdistance", "ReliefFsqrDistance",
+        "MyopicReliefF", "Accuracy", "ReliefFmerit", "ReliefFdistance", "ReliefFsqrDistance",
         "DKM", "ReliefFexpC", "ReliefFavgC", "ReliefFpe", "ReliefFpa", "ReliefFsmp", "GainRatioCost", "DKMcost",
         "ReliefKukar", "MDLsmp","ImpurityEuclid", "ImpurityHellinger",
         "UniformDKM","UniformGini","UniformInf","UniformAccuracy",
@@ -155,243 +157,129 @@ prepare.Options <- function(...)
     opt
  }
 optionData <- function() {
-    estDsc <- infoCore(what="attrEval");
+    estDsc <- infoCore(what="attrEval")
     estList <- paste(estDsc,collapse=",")
-    estDscReg <- infoCore(what="attrEvalReg");
+    estDscReg <- infoCore(what="attrEvalReg")
     estListReg <- paste(estDscReg,collapse=",")
-    	optAllList <- list(
+    optAllList <- list(
     ## follows description of all parameters 
-    ## the format is list with 6 components, some may be empty "":
+    ## the format is list with 5 components, some may be empty "":
     ## 1. name of parameter
-    ## 2. parameter type:logical, integer, numeric, character
+    ## 2. parameter type: logical, integer, numeric, character
     ## 3. default value
-    ## 4.lower limit
+    ## 4. lower limit
     ## 5. upper limit
-    ## 5. description 
-	list("binaryAttributes","logical",FALSE, FALSE, TRUE,
-		"treat all attributes as binary?"),
-	list("binarySplitNumericAttributes","logical", TRUE, FALSE, TRUE,
-		"treat numerical attributes as binary?"),
-    list("multiclassEvaluation","integer", 1, 1, 4,
-        "multi-class extension for two-class-only evaluation measures",
-        "1=average over all-pairs", 
-        "2=best of all-pairs", 
-        "3=average over one-against-all",
-        "4=best of one-against-all"),
-    list("attrEvaluationInstances","integer", 0, 0, Inf,
-		"number of instances for attribute evaluation (0=all available)"),
-	list("ReliefIterations","integer", 0, -2, Inf,
-		"number of iterations for all variants of Relief",
-			"0=DataSize",
-			"-1=ln(DataSize)",
-			"-2=sqrt(DataSize)"),
-	list("numAttrProportionEqual","numeric", 0.04, 0, 1,
-		"used in ramp function, proportion of numerical attribute's range to consider two values equal"),
-	list("numAttrProportionEqual","numeric", 0.1, 0, 1,
-		"used in ramp function, proportion of numerical attribute's range to consider two values different"),
-	list("kNearestEqual","integer", 10, 0, Inf,
-		"number of neighbours to consider in equal k-nearest attribute evaluation"),
-	list("kNearestExpRank","integer", 70, 0, Inf,
-		"number of neighbours to consider in exponential rank distance attribute evaluation"),
-	list("quotientExpRankDistance","numeric", 20, 0, Inf,
-		"quotient in exponential rank distance attribute evaluation"),
-	## ordEval algorithm
-    list("ordEvalNoRandomNormalizers","integer", 0, 0, Inf,
-		"number of randomly shuffled attributes for normalization of each attribute",
-			"0=no normalization"),
-	list("ordEvalBootstrapNormalize","logical",FALSE, FALSE, TRUE, 
-       "are features used for normalization constructed with bootstrap sampling or random permutation?"),
-#    list("ordEvalConfidenceInterval","integer", 1, 1, 3,
-#        "type of confidence interval for ordEval random normalization",
-#        "1=two sided",
-#        "2=upper",
-#        "3=lower"),
-    list("ordEvalNormalizingPercentile","numeric", 0.025, 0, 1,
-        "defines the length of confidence interval obtained with random normalization. The default value gives 95% confidence interval."),
-    list("attrWeights","character","","","",
-		 "weights of the attributes in the ordEval distance measure"),
- ## stop building the tree
-    list("minNodeWeight","numeric", 2, 0, Inf,
-		"minimal number of instances (weight) of a tree node to split it further"),
-	list("relMinNodeWeight","numeric", 0, 0, 1.0,
-		"minimal proportion of training instances in a tree node to split it further"),
-	list("majorClassProportion","numeric", 1.0, 0, 1.0,
-		"proportion of majority class in a classification tree node to stop splitting it"),
-    list("rootStdDevProportion","numeric", 0.0, 0, 1.0,
-		"proportion of root's standard deviation in a regression tree node to stop splitting it"),
-    	## tree building
-    list("selectionEstimator","character","MDL",estList,"",
-		"estimator for selection of attributes and binarization in classification"),
-    list("selectionEstimatorReg","character","RReliefFexpRank",estListReg,"",
-		"estimator for selection of attributes and binarization in regression"),
-    list("minReliefEstimate","numeric", 0, -1.0, 1.0,
-		"for variants of Relief attribute estimator the minimal evaluation of attribute to consider it useful"),
-	list("minInstanceWeight","numeric", 0.05, 0, 1.0,
-		"minimal weight of an instance to use it further"),
-	## models in the leaves of the tree
-    list("modelType","integer", 1, 1, 4,
-		"type of models used in classification tree leaves",
-			"1=majority class",
-			"2=k-nearest neighbours",
-			"3=k-nearest neighbors with kernel",
-			"4=naive Bayes"),
-    list("modelTypeReg","integer", 1, 1, 8,
-		"type of models used in regression tree leaves",
-			"1=mean predicted value",
-			"2=median predicted value",
-			"3=linear by MSE",
-			"4=linear by MDL",
-			"5=linear as in M5",
-			"6=kNN",
-			"7=Gaussian kernel regression",
-			"8=locally weighted linear regression"),
-   	list("kInNN","integer", 10, 0, Inf,
-		"number of neighbours in k-nearest neighbours models",
-			"0=all"),
-	list("nnKernelWidth","numeric", 2, 0, Inf,
-		"kernel width in k-nearest neighbours models"),
-	## naive bayes as the model
-    list("bayesDiscretization","integer", 2, 1, 2,
-		"type of discretization for naive Bayes models",
-			"1=greedy with selection estimator",
-			"2=equal frequency"),
-	list("bayesEqFreqIntervals","integer", 4, 1, Inf,
-		"number of intervals in equal frequency discretization for naive Bayes models"),
-	## feature construction
-    list("constructionMode","integer", 15, 1, 15,
-		"sum of constructive operators",
-			"1=single",
-			"2=conjunction",
-			"4=addition",
-			"8=multiplication",
-			"all=1+2+4+8=15"),
-	list("constructionDepth","integer", 0, 0, Inf,
-		"maximal depth of the tree for constructive induction",
-			"0=do not do construction",
-			"1=only at root",
-			"..."),
-	list("noCachedInNode","integer", 5, 0, Inf,
-		"number of cached attributes in each node where construction was performed"),
-	list("constructionEstimator","character","MDL",estList,"",
-		"estimator for constructive induction in classification"),
-    list("constructionEstimator","character","RReliefFexpRank",estListReg,"",
-		"estimator for constructive induction in regression"),
-    list("beamSize","integer", 20, 1, Inf,
-		"size of the beam in constructive induction"),
-	list("maxConstructSize","integer", 3, 1, Inf,
-		"maximal size of constructs in constructive induction"),
-	## attribute discretization
-    list("discretizationLookahead","integer", 3, 0, Inf,
-		"number of times current discretization can be worse than the best",
-			"0=try all possibilities"),
-	list("discretizationSample","integer", 50, 0, Inf,
-		"maximal number of points to try discretization",
-			"0=all sensible"),
-	## tree pruning
-    list("selectedPruner","integer", 1, 0, 1,
-		"decision tree pruning method used",
-			"0=none",
-			"1=with m-estimate"),
-    list("selectedPrunerReg","integer", 2, 0, 4,
-		"regression tree pruning method used",
-			"0=none",
-			"1=MDL",
-			"2=with m-estimate",
-			"3=as in M5",
-			"4=error complexity as in CART (fixed alpha)"),
-   	list("mdlModelPrecision","numeric", 0.1, 0, Inf,
-		"precision of model coefficients in MDL tree pruning"),
-	list("mdlErrorPrecision","numeric", 0.01, 0, Inf,
-		"precision of errors in MDL tree pruning"),
-	list("mEstPruning","numeric", 2, 0, Inf,
-		"m-estimate for tree pruning"),
-    list("alphaErrorComplexity","numeric", 0, 0, Inf,
-		"alpha for error complexity pruning"),
-    ## prediction
-    list("mEstPrediction","numeric", 0, 0, Inf,
-		"m-estimate for prediction"),
-	## random forests
-    list("rfNoTrees","integer", 100, 1, Inf,
-		"number of trees in the random forest"),
-	list("rfNoSelAttr","integer", 0, -2, Inf,
-		"number of randomly selected attributes in the node",
-			"0=sqrt(numOfAttr)",
-			"-1=log_2(numOfAttr)+1",
-			"-2=all"),
-	list("rfMultipleEst","logical",FALSE, FALSE, TRUE,
-		"use multiple attribute estimators in the forest?"),
-	list("rfkNearestEqual","integer", 30, 0, Inf,
-		"number of nearest intances for weighted random forest classification",
-			"0=no weighing"),
-	list("rfPropWeightedTrees","numeric", 0, 0, 1.0,
-		"proportion of trees where attribute probabilities are weighted with their quality"),
-	list("rfPredictClass","logical",FALSE, FALSE, TRUE,
-		"individual trees predict with majority class (otherwise with class distribution)?"),
-	## construction of general tree ensembles
-    list("rfSampleProp","numeric", 0, 0, 1.0,
-		"proportion of the training set to be used in learning",
-			"0=bootstrap replication"),
-	list("rfNoTerminals","integer", 0, 0, Inf,
-		"maximal number of leaves in each tree",
-			"0=build the whole tree"),
-	## regularization
-    list("rfRegType","integer", 2, 0, 2,
-		"type of regularization",
-			"0=no regularization",
-			"1=global regularization",
-			"2=local regularization"),
-	list("rfRegLambda","numeric", 0, 0, Inf,
-		"regularization parameter lambda",
-			"0=no regularization"),
-    ## data from files
-    list("domainName","character","","","",
-		"name of a problem to read from files with suffixes .dsc, .dat, .names, .data, .cm, and .costs"),
-    list("dataDirectory","character","","","",
-		"folder where data files are stored"),   
-    list("NAstring","character","?","","",
-		"character string which represents NA values in the data files")     
-	)
-	optAll <- data.frame()
-	optLogical <- data.frame()
-	optInteger <- data.frame()
-	optNumeric <- data.frame()
-	optCharacter <- data.frame()
-	for (i in seq(along=optAllList)) {
-		optRow <- optAllList[[i]]
-		comment <- paste("comment: ",optRow[[6]],"\n",sep="")
-		if (length(optRow) >= 7) {
-			for (i in 7:length(optRow)) {
-				comment <- paste(comment,"    ",optRow[[i]],"\n",sep="")
-			}
-		}
-		if (optRow[[2]] == "logical") {
-			optDsc <- list(default=optRow[[3]],description=comment)
-			optLogical <- rbind(optLogical,data.frame(optDsc,stringsAsFactors=FALSE))
-			optIndex <- nrow(optLogical)
-		} else if (optRow[[2]] == "integer") {
-			optDsc <- list(default=optRow[[3]],lower=optRow[[4]],upper=optRow[[5]],description=comment)
-			optInteger <- rbind(optInteger,data.frame(optDsc,stringsAsFactors=FALSE))
-			optIndex <- nrow(optInteger)
-		} else if (optRow[[2]] == "numeric") {
-			optDsc <- list(default=optRow[[3]],lower=optRow[[4]],upper=optRow[[5]],description=comment)
-			optNumeric <- rbind(optNumeric,data.frame(optDsc,stringsAsFactors=FALSE))
-			optIndex <- nrow(optNumeric)
-		} else if (optRow[[2]]=="character") {
-			if (optRow[[4]] != "" && length(grep(",",optRow[[4]]))==0) {
-				warning(paste("Character option",optRow[[1]],"with a single value",optRow[[4]]))
-			}
-			optDsc <- list(default=optRow[[3]],type=optRow[[4]],description=comment)
-			optCharacter <- rbind(optCharacter,data.frame(optDsc,stringsAsFactors=FALSE))
-			optIndex <- nrow(optCharacter)
-		} else {
-			warning(paste("Unknown type of option",optRow[[2]]))
-		}
-		optDsc <- list(name=optRow[[1]],type=optRow[[2]],index=optIndex);
-		optAll <- rbind(optAll,data.frame(optDsc,stringsAsFactors=FALSE))
-	}
-	list(All=optAll,Logical=optLogical,Integer=optInteger,Numeric=optNumeric,Character=optCharacter)
+    ## Option data follow
+    ## \section{Attribute/feature evaluation}
+    list("binaryEvaluation", "logical", FALSE, FALSE, TRUE),
+    list("binaryEvaluateNumericAttributes", "logical", TRUE, FALSE, TRUE),
+    list("multiclassEvaluation", "integer", 1, 1, 4),
+    list("attrEvaluationInstances", "integer", 0, 0, Inf),
+    list("ReliefIterations", "integer", 0, -2, Inf),
+    list("numAttrProportionEqual", "numeric", 0.04, 0, 1),
+    list("numAttrProportionEqual", "numeric", 0.1, 0, 1),
+    list("kNearestEqual", "integer", 10, 0, Inf),
+    list("kNearestExpRank", "integer", 70, 0, Inf),
+    list("quotientExpRankDistance", "numeric", 20, 0, Inf),
+    ## \section{Algorithm ordEval}
+    list("ordEvalNoRandomNormalizers", "integer", 0, 0, Inf),
+    list("ordEvalBootstrapNormalize", "logical", FALSE, FALSE, TRUE),
+    list("ordEvalNormalizingPercentile", "numeric", 0.025, 0, 0.5),
+    list("attrWeights", "character", "", "", ""),
+    ## \section{Decision/regression tree construction}
+    list("selectionEstimator", "character", "MDL", estList, ""),
+    list("selectionEstimatorReg", "character", "RReliefFexpRank", estListReg, ""),
+    list("minReliefEstimate", "numeric", 0, -1, 1),
+    list("minInstanceWeight", "numeric", 0.05, 0, 1),
+    ## \section{Stop tree building}
+    list("minNodeWeight", "numeric", 2, 0, Inf),
+    list("relMinNodeWeight", "numeric", 0, 0, 1),
+    list("majorClassProportion", "numeric", 1, 0, 1),
+    list("rootStdDevProportion", "numeric", 0, 0, 1),
+    ## \section{Models in the tree leaves}
+    list("modelType", "integer", 1, 1, 4),
+    list("modelTypeReg", "integer", 1, 1, 8),
+    list("kInNN", "integer", 10, 0, Inf),
+    list("nnKernelWidth", "numeric", 2, 0, Inf),
+    list("bayesDiscretization", "integer", 2, 1, 2),
+    list("bayesEqFreqIntervals", "integer", 4, 1, Inf),
+    ## \section{Constructive induction aka. feature construction}
+    list("constructionMode", "integer", 15, 1, 15),
+    list("constructionDepth", "integer", 0, 0, Inf),
+    list("noCachedInNode", "integer", 5, 0, Inf),
+    list("constructionEstimator", "character", "MDL", estList, ""),
+    list("constructionEstimatorReg", "character", "RReliefFexpRank", estListReg, ""),
+    list("beamSize", "integer", 20, 1, Inf),
+    list("maxConstructSize", "integer", 3, 1, Inf),
+    ## \section{Attribute discretization}
+    list("discretizationLookahead", "integer", 3, 0, Inf),
+    list("discretizationSample", "integer", 50, 0, Inf),
+    ## \section{Tree pruning}
+    list("selectedPruner", "integer", 1, 0, 1),
+    list("selectedPrunerReg", "integer", 2, 0, 4),
+    list("mdlModelPrecision", "numeric", 0.1, 0, Inf),
+    list("mdlErrorPrecision", "numeric", 0.01, 0, Inf),
+    list("mEstPruning", "numeric", 2, 0, Inf),
+    list("alphaErrorComplexity", "numeric", 0, 0, Inf),
+    ## \section{Prediction}
+    list("mEstPrediction", "numeric", 0, 0, Inf),
+    ## \section{Random forests}
+    list("rfNoTrees", "integer", 100, 1, Inf),
+    list("rfNoSelAttr", "integer", 0, -2, Inf),
+    list("rfMultipleEst", "logical", FALSE, FALSE, TRUE),
+    list("rfkNearestEqual", "integer", 30, 0, Inf),
+    list("rfPropWeightedTrees", "numeric", 0, 0, 1),
+    list("rfPredictClass", "logical", FALSE, FALSE, TRUE),
+    ## \section{General tree ensembles}
+    list("rfSampleProp", "numeric", 0, 0, 1),
+    list("rfNoTerminals", "integer", 0, 0, Inf),
+    list("rfRegType", "integer", 2, 0, 2),
+    list("rfRegLambda", "numeric", 0, 0, Inf),
+    ## \section{Read data directly from files}
+    list("domainName", "character", "", "", ""),
+    list("dataDirectory", "character", "", "", ""),
+    list("NAstring", "character", "?", "", ""),
+    ## \section{Miscellaneous}
+    list("maxThreads", "integer", 0, 0, Inf)
+    )
+    optAll <- data.frame()
+    optLogical <- data.frame()
+    optInteger <- data.frame()
+    optNumeric <- data.frame()
+    optCharacter <- data.frame()
+    for (i in seq(along=optAllList)) {
+        optRow <- optAllList[[i]]
+        if (optRow[[2]] == "logical") {
+            optDsc <- list(default=optRow[[3]])
+            optLogical <- rbind(optLogical,data.frame(optDsc,stringsAsFactors=FALSE))
+            optIndex <- nrow(optLogical)
+        } else if (optRow[[2]] == "integer") {
+            optDsc <- list(default=optRow[[3]],lower=optRow[[4]],upper=optRow[[5]])
+            optInteger <- rbind(optInteger,data.frame(optDsc,stringsAsFactors=FALSE))
+            optIndex <- nrow(optInteger)
+        } else if (optRow[[2]] == "numeric") {
+            optDsc <- list(default=optRow[[3]],lower=optRow[[4]],upper=optRow[[5]])
+            optNumeric <- rbind(optNumeric,data.frame(optDsc,stringsAsFactors=FALSE))
+            optIndex <- nrow(optNumeric)
+        } else if (optRow[[2]]=="character") {
+            if (optRow[[4]] != "" && length(grep(",",optRow[[4]]))==0) {
+                warning(paste("Character option",optRow[[1]],"with a single value",optRow[[4]]))
+            }
+            optDsc <- list(default=optRow[[3]],type=optRow[[4]])
+            optCharacter <- rbind(optCharacter,data.frame(optDsc,stringsAsFactors=FALSE))
+            optIndex <- nrow(optCharacter)
+        } else {
+            warning(paste("Unknown type of option",optRow[[2]]))
+        }
+        optDsc <- list(name=optRow[[1]],type=optRow[[2]],index=optIndex);
+        optAll <- rbind(optAll,data.frame(optDsc,stringsAsFactors=FALSE))
+    }
+    list(All=optAll,Logical=optLogical,Integer=optInteger,Numeric=optNumeric,Character=optCharacter)
 }
+
+# prepare the structure in advance for speed
 optData <- optionData()  
+
 getStatNames <- function() {
     return(c("median", "Q1", "Q3", "lowPercentile", "highPercentile", "mean", "stdDev", "p-value","exp")) 
 }
@@ -421,7 +309,7 @@ checkOptionsValues <- function(options) {
 					lower <- optData$Numeric$lower[k]
 					upper <- optData$Numeric$upper[k]
 					if (nval < lower || nval > upper) {
-						 warning(sprintf("option %s should be in [%lf, %lf]", optNames[i], lower, upper), call.=FALSE)
+						 warning(sprintf("option %s should be in [%f, %f]", optNames[i], lower, upper), call.=FALSE)
 					}
 				}
 			}
@@ -470,7 +358,7 @@ checkEstimatorOptions <- function(estimator, options, isRegression) {
     else
        estimator <- match.arg(estimator, estDsc);
 	## options allowed for all estimators,
-	commonOpts <- c("attrEvaluationInstances","binaryAttributes","binarySplitNumericAttributes")
+	commonOpts <- c("attrEvaluationInstances","binaryEvaluation","binaryEvaluateNumericAttributes","maxThreads")
 	for (i in 1:length(commonOpts)) {
 		idx <- match(commonOpts[i], optNames, nomatch=-1);
 		if (idx >0)
@@ -521,12 +409,13 @@ checkModelOptions <- function(model, options) {
     optNames <- names(options);
     ## first check options by models, later handle special cases
     discretizationOpts <- c("selectionEstimator","discretizationLookahead","discretizationSample")
-    discretizationOptsReg <- c("selectionEstimatorReg","discretizationLookahead","discretizationSample")
+    discretizationOptsReg <- c("selectionEstimatorReg","discretizationLookahead","discretizationSample") # currently not used
     bayesOpts <- c(discretizationOpts,"bayesDiscretization","bayesEqFreqIntervals")
     knnOpts <- c("kInNN")
     knnKernelOpts <- c("kInNN","nnKernelWidth")
-    treeModelOpts<-c("modelType",bayesOpts,knnOpts,knnKernelOpts)
-    treeModelOptsReg<-c("modelTypeReg",knnKernelOpts)
+    miscOpts <-c("maxThreads") 
+    treeModelOpts<-c("modelType",bayesOpts,knnOpts,knnKernelOpts,miscOpts)
+    treeModelOptsReg<-c("modelTypeReg",knnKernelOpts,miscOpts)
     treeStopOpts <- c("minNodeWeight","relMinNodeWeight","majorClassProportion","minInstanceWeight")  
     treeStopOptsReg <- c("minNodeWeight","relMinNodeWeight","minInstanceWeight","rootStdDevProportion")  
     treePruneOpts <- c("selectedPruner","mEstPruning","mdlModelPrecision","mdlErrorPrecision")
@@ -534,10 +423,9 @@ checkModelOptions <- function(model, options) {
     treeConstructOpts <- c("constructionEstimator","constructionMode","constructionDepth","beamSize","maxConstructSize","noCachedInNode")
     treeConstructOptsReg <- c("constructionEstimatorReg","constructionMode","constructionDepth","beamSize","maxConstructSize","noCachedInNode")
     treeOpts <- unique(c("selectionEstimator",treeModelOpts,treeStopOpts,treePruneOpts,treeConstructOpts))
-    rfOpts <- c("selectedEstimator",treeStopOpts,discretizationOpts, "rfNoTrees", "rfNoSelAttr","rfMultipleEst","rfPropWeightedTrees","rfPredictClass","rfSampleProp","rfNoTerminals","rfRegType","rfRegLambda")
+    rfOpts <- unique(c("selectionEstimator",treeStopOpts,discretizationOpts,miscOpts,"rfNoTrees", "rfNoSelAttr","rfMultipleEst","rfPropWeightedTrees","rfPredictClass","rfSampleProp","rfNoTerminals","rfRegType","rfRegLambda"))
     rfNearOpts <- c(rfOpts,"rfkNearestEqual")
     regOpts <- unique(c("selectionEstimatorReg",treeModelOptsReg,treeStopOptsReg,treePruneOptsReg,treeConstructOptsReg))
-     
     opts = switch(model, rf=rfOpts, rfNear=rfNearOpts, bayes=bayesOpts, knn=knnOpts, knnKernel=knnKernelOpts, tree=treeOpts, regTree=regOpts)
     for (i in 1:length(opts)) {
       idx <- match(opts[i], optNames, nomatch=-1);
@@ -568,11 +456,12 @@ checkModelOptions <- function(model, options) {
 checkPredictOptions <- function(model, options) {
     optNames <- names(options);
     ## first check options by models, later handle special cases
+    miscOpts <-c("maxThreads") 
     bayesOpts <- c()
     knnOpts <- c("kInNN")
     knnKernelOpts <- c("kInNN","nnKernelWidth")
-    treeOpts <- c(knnKernelOpts,"mEstPrediction")
-    rfOpts <- c("rfPredictClass")
+    treeOpts <- c(knnKernelOpts,"mEstPrediction",miscOpts)
+    rfOpts <- c("rfPredictClass",miscOpts)
     rfNearOpts <- c(rfOpts,"rfkNearestEqual")
     regOpts <- treeOpts 
     
@@ -586,7 +475,8 @@ checkPredictOptions <- function(model, options) {
 }
 checkOrdEvalOptions <- function(options) {
     optNames <- names(options);
-    ordEvalOpts <- c("ordEvalNoRandomNormalizers","ordEvalBootstrapNormalize","ordEvalNormalizingPercentile","attrWeights") #,"ordEvalConfidenceInterval")
+    miscOpts <-c("maxThreads") 
+    ordEvalOpts <- c(miscOpts,"ordEvalNoRandomNormalizers","ordEvalBootstrapNormalize","ordEvalNormalizingPercentile","attrWeights") #,"ordEvalConfidenceInterval")
     opts = ordEvalOpts
     for (i in 1:length(opts)) {
       idx <- match(opts[i], optNames, nomatch=-1);
@@ -607,47 +497,12 @@ checkDataOptions <- function(options) {
     options[optNames]
 }
 optDefault <- function(optName) {
-    optdat <- optionData()$All
+    optdat <- optData$All
     allIdx = match(optName, optdat[,"name"])
     type = optdat[allIdx,"type"]
     tabIdx = optdat[allIdx,"index"]
     switch (type, integer=optData$Integer[tabIdx,"default"],numeric=optData$Numeric[tabIdx,"default"],
                   logical=optData$Logical[tabIdx,"default"],character=optData$Character[tabIdx,"default"])
-}
-printOptLine <- function(name) {
-    optData <- optionData()
-    optdat <- optData$All
-	allIdx = match(name, optdat[,"name"])
-	type = optdat[allIdx,"type"]
-	tabIdx = optdat[allIdx,"index"]
-	cat("option=", name, "\n", sep="")
-	cat("type=", type, sep="")
-                    
-    if (type == "integer") {
-    lower = optData$Integer[tabIdx,"lower"]
-    upper = optData$Integer[tabIdx,"upper"]
-    default = optData$Integer[tabIdx,"default"]
-    description = optData$Integer[tabIdx,"description"]
-    cat(", min_value=", lower, ", max_value=", upper,", default_value=", default,"\n", sep="");
-  }
-  else if (type == "numeric") {
-    lower = optData$Numeric[tabIdx,"lower"]
-    upper = optData$Numeric[tabIdx,"upper"]
-    default = optData$Numeric[tabIdx,"default"]
-    description = optData$Numeric[tabIdx,"description"]
-    cat(", min_value=", lower, ", max_value=", upper,", default_value=", default,"\n", sep="");
-  }
-  else if (type == "logical") {
-    default = optData$Logical[tabIdx,"default"]
-    description = optData$Logical[tabIdx,"description"]
-    cat(", default_value=", default,"\n", sep="");
-  }
-  else if (type == "character") {
-    default = optData$Character[tabIdx,"default"]
-    description = optData$Character[tabIdx,"description"]
-    cat(", default_value=", default,"\n", sep="");
-  }
-	cat(description,"\n\n");
 }
 preparePlot<-function(fileName="Rplot", ...)
 {

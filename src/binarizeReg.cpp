@@ -32,8 +32,8 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
       return ;
    }
 
-   booleanT binaryAttributesBefore = fTree->opt->binaryAttributes ;
-   fTree->opt->binaryAttributes = mFALSE ;
+   booleanT binaryEvaluationBefore = eopt.binaryEvaluation ;
+   eopt.binaryEvaluation = mFALSE ;
  
    attributeCount bestType ;
    int i ;
@@ -46,7 +46,7 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
           
        prepareDiscAttr(firstFreeDiscSlot, 2) ; 
 
-	   i = estimate(fTree->opt->selectionEstimatorReg, 1, 1, firstFreeDiscSlot, firstFreeDiscSlot+1, bestType) ;
+	   i = estimate(eopt.selectionEstimatorReg, 1, 1, firstFreeDiscSlot, firstFreeDiscSlot+1, bestType) ;
        nodeConstruct.leftValues[1] = mTRUE ;
        bestEstimation =  DiscEstimation[firstFreeDiscSlot] ;
    }
@@ -59,7 +59,7 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
 
    int noBasicAttr = (noDiscrete+noNumeric-1) ;
    int greedyPositions = NoValues * (NoValues+1)/2 ;
-   int exhaustivePositions ;
+   double exhaustivePositions ;
    if (NoValues < maxVal4ExhDisc) // exhaustive positions would reach more than 2^32 which is way too much
      exhaustivePositions = Generator.noPositions() ;
     else  exhaustivePositions = -1 ;
@@ -68,11 +68,11 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
 	   //selectedEstimator == estRReliefFconstr || 
 	   selectedEstimator == estRReliefFdistance || selectedEstimator == estRReliefFsqrDistance) // ReliefF estimators
       greedyPositions += (NoValues-1)*noBasicAttr; // we also have to estimate basic attributes in each round (distances)
-   if ( (NoValues < maxVal4ExhDisc) && (exhaustivePositions * 0.8 <= greedyPositions || exhaustivePositions < fTree->opt->discretizationSample))
+   if ( (NoValues < maxVal4ExhDisc) && (exhaustivePositions * 0.8 <= greedyPositions || exhaustivePositions < eopt.discretizationSample))
    {
      // exhaustive search
-     adjustTables(0,  firstFreeDiscSlot + exhaustivePositions) ;
-     marray<marray<booleanT> >  leftValues(exhaustivePositions) ;
+     adjustTables(0,  int(firstFreeDiscSlot + exhaustivePositions)) ;
+     marray<marray<booleanT> >  leftValues( (int)exhaustivePositions) ;
      int i, noIncrements = 0 ;
      while (Generator.increment() )
      {
@@ -143,7 +143,7 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
         }
      }
    }
-   fTree->opt->binaryAttributes = binaryAttributesBefore ;
+   eopt.binaryEvaluation = binaryEvaluationBefore ;
 
 }
 
@@ -291,10 +291,10 @@ double estimationReg::bestSplitGeneral(int selectedEstimator, constructReg &node
 
 
    int sampleSize ; 
-   if (fTree->opt->discretizationSample==0)
+   if (eopt.discretizationSample==0)
      sampleSize = OKvalues -1;
    else
-     sampleSize = Mmin(fTree->opt->discretizationSample, OKvalues-1) ;
+     sampleSize = Mmin(eopt.discretizationSample, OKvalues-1) ;
    marray<int> splits(sampleSize) ;
    randomizedSample(splits, sampleSize, OKvalues-1) ;
 
@@ -340,15 +340,15 @@ double estimationReg::bestSplitGeneral(int selectedEstimator, constructReg &node
      prepareDiscAttr(firstFreeDiscSlot + j, 2) ; 
    }
  
-   booleanT binaryAttributesBefore = fTree->opt->binaryAttributes ;
-   fTree->opt->binaryAttributes = mFALSE ;
+   booleanT binaryEvaluationBefore = eopt.binaryEvaluation ;
+   eopt.binaryEvaluation = mFALSE ;
 
    // estimate and select best
    int bestIdx = estimate(selectedEstimator, 1, 1,
                             firstFreeDiscSlot, firstFreeDiscSlot+sampleSize, bestType) ;
    bestEstimation = DiscEstimation[bestIdx] ;
      
-   fTree->opt->binaryAttributes = binaryAttributesBefore ;
+   eopt.binaryEvaluation = binaryEvaluationBefore ;
 
    return (sortedAttr[splits[bestIdx-firstFreeDiscSlot]].key + sortedAttr[splits[bestIdx-firstFreeDiscSlot]+1].key)/2.0 ;
 }
@@ -466,8 +466,8 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
    if (firstFreeDiscSlot == 0)
 	   firstFreeDiscSlot = noDiscrete ;
 
-   booleanT binaryAttributesBefore = fTree->opt->binaryAttributes ;
-   fTree->opt->binaryAttributes = mFALSE ;
+   booleanT binaryEvaluationBefore = eopt.binaryEvaluation ;
+   eopt.binaryEvaluation = mFALSE ;
 
    attributeCount bestType ;
    int addedAttr = 0, i, j, NoValues, noPartitions, iDisc, iCont, estIdx ;
@@ -477,7 +477,7 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
    char discAttrValue ;
 
    // estimated size
-   adjustTables(0, firstFreeDiscSlot + NoDiscEstimated* 4 + NoContEstimated * fTree->opt->discretizationSample) ;
+   adjustTables(0, firstFreeDiscSlot + NoDiscEstimated* 4 + NoContEstimated * eopt.discretizationSample) ;
 
 
    for (iDisc=discAttrFrom ; iDisc < discAttrTo; iDisc++)
@@ -505,7 +505,7 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
   
 		   binPartition Generator(NoValues) ;
            noPartitions = 0 ;
-		   adjustTables(0,  firstFreeDiscSlot + addedAttr + Mmin(Generator.noPositions(), (long long)(fTree->opt->discretizationSample))) ;
+		   adjustTables(0,  firstFreeDiscSlot + addedAttr + int(Mmin(Generator.noPositions(), (double)(eopt.discretizationSample)))) ;
            discFrom[estIdx] = firstFreeDiscSlot + addedAttr ;
  		   while (Generator.increment() )
 		   {
@@ -524,7 +524,7 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
 			  prepareDiscAttr(firstFreeDiscSlot + addedAttr, 2) ; 
 			  addedAttr++ ;
               noPartitions++ ;
-			  if (noPartitions >= fTree->opt->discretizationSample)
+			  if (noPartitions >= eopt.discretizationSample)
 				  break ;
 			}
             discTo[estIdx] = firstFreeDiscSlot + addedAttr ;
@@ -579,10 +579,10 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
 	   }
 
 
-	   if (fTree->opt->discretizationSample==0)
+	   if (eopt.discretizationSample==0)
 		 sampleSize = OKvalues -1;
 	   else
-		 sampleSize = Mmin(fTree->opt->discretizationSample, OKvalues-1) ;
+		 sampleSize = Mmin(eopt.discretizationSample, OKvalues-1) ;
 
       randomizedSample(splits, sampleSize, OKvalues-1) ;
 
@@ -650,6 +650,6 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
 			  NumEstimation[iCont] = DiscEstimation[iBin] ;
    }
 
-   fTree->opt->binaryAttributes = binaryAttributesBefore ;
+   eopt.binaryEvaluation = binaryEvaluationBefore ;
 }
 

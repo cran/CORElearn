@@ -1,5 +1,6 @@
 \name{infoCore}
 \alias{infoCore}
+
 \title{ Description of certain CORElearn parameters}
 \description{
  Depending on parameter \code{what} the function prints some information on CORElearn,

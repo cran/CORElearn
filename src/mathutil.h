@@ -11,7 +11,7 @@
   void svbksb(double **u, double w[], double **v, int m, int n, double b[],
       double x[]);
    void svdcmp(double **a, int m, int n, double w[], double **v);
-   void svdfit(regressionTree *gT, double x[], double y[], double sig[], int ndata, double a[], marray<int> &, int ma,
+   void svdfit(const regressionTree *gT, double x[], double y[], double sig[], int ndata, double a[], marray<int> &, int ma,
       double **u, double **v, double w[], double *chisq,
       void (*funcs)(double, double [], marray<int> &, int)) ;
    void svdvar(double **v, int ma, double w[], double **cvm) ;
@@ -27,7 +27,7 @@
    double (*func)(double []), void (*dfunc)(double [], double [])) ;
  double df1dim(double x) ;
 
- void powell(regressionTree *gT, double p[], double **xi, marray<int> &, int n, double ftol, int *iter, double *fret,
+ void powell(const regressionTree *gT, double p[], double **xi, marray<int> &, int n, double ftol, int *iter, double *fret,
    double (*func)(double [], marray<int> &)) ;
 
  void linmin(double p[], double xi[], int n, double *fret, double (*func)(double [],marray<int> &)) ;
