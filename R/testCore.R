@@ -85,7 +85,7 @@ verifyROC <- function()
         c(0.7911, 0.9978),
         c(0.8998, 0.9992))
     d <- absDiffROC(current, expect)
-    d <= 0.0035
+    d <= 0.0037
 }
 
 cmp.table <- function(a, b)

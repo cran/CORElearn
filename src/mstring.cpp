@@ -66,7 +66,7 @@
     }
     char mstring::operator[] (int a) const  {
           #if defined(DEBUG)
-             if ( a>=len() || a<0)
+             if ( a>len() || a<0)
                 merror("mstring, operator []:","bounds check failed !") ;
           #endif
           return value[a] ;

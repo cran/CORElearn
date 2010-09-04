@@ -7,6 +7,7 @@
 // *********************************************************************
 #include <float.h>
 #include <string.h>
+#include <math.h>
 
 #include "estimator.h"
 #include "constrct.h"

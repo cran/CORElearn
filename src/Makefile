@@ -1,22 +1,23 @@
 #
 # support for OpenMP multithreading on different platforms
 # 
+$(warning CXX=$(CXX)  R_ARCH= $(R_ARCH))
 ifeq ($(CXX),g++)
-  # GNU compilers, also MinGW
-  OMP_FLAG = -fopenmp
+	# GNU compilers, also MinGW
+	OMP_FLAG = -fopenmp
 else
-  ifeq ($(CXX),CC)
-    # Oracle's Sun Studio
-    OMP_FLAG = -xopenmp
-  else
-     ifeq ($(CXX),cl)
-       #Microsoft MSVC compiler
-       OMP_FLAG = /openmp
-     else
-        # provide option for your compiler here, or leave empty for no OpenMP support
-        OMP_FLAG = 
-     endif
-  endif
+	ifeq ($(CXX),CC)
+		# Oracle's Sun Studio
+		OMP_FLAG = -xopenmp
+ 	else
+		ifeq ($(CXX),cl)
+			#Microsoft MSVC compiler
+			OMP_FLAG = /openmp
+		else
+			# provide option for your compiler here, or leave empty for no OpenMP support
+			OMP_FLAG = 
+		endif
+	endif
 endif
 all:
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(OMP_FLAG) -c *.cpp

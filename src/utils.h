@@ -32,16 +32,18 @@ struct sort3Rec
 };
 
 void quicksort(sortRec* const T,int left, int right);
-int ascSortComp(const void *a, const void *b) ;
-int descSortComp(const void *a, const void *b) ;
+extern "C" int ascSortComp(const void *a, const void *b) ;
+extern "C" int descSortComp(const void *a, const void *b) ;
 void quicksort(sort3Rec* const T,int left, int right);
-int ascSort3Comp(const void *a, const void *b) ;
-int descSort3Comp(const void *a, const void *b) ;
+extern "C" int ascSort3Comp(const void *a, const void *b) ;
+extern "C" int descSort3Comp(const void *a, const void *b) ;
 
 // char* int2str(int Number, char* const Str);
 
 //   logarithm of basis 2: compatibility sake
-//inline double log2(double x) { return double( log(x) / 0.69314718055994528622) ; }
+#if defined(MICROSOFT)
+  inline double log2(double x) { return double( log(x) / 0.69314718055994528622) ; }
+#endif
 
 #define sqrt2 1.414213562373
 #define epsilon  1e-7

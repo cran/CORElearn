@@ -88,11 +88,13 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 		// exhaustive search
 		adjustTables(0, firstFreeDiscSlot + int(exhaustivePositions)) ;
 		marray<marray<booleanT> >  leftValues( (int)exhaustivePositions ) ;
-		int noIncrements = 0 ;
+		int noIncrements = 0, noLeft, noRight ;
 		while (Generator.increment() )
 		{
 			// save partition
 			leftValues[noIncrements] = Generator.leftPartition ;
+			// count values to check if partiotion  is valid
+			noLeft = noRight = 0 ;
 			// compute data column
 			for (i=0 ; i < TrainSize ; i++)
 			{
@@ -100,27 +102,39 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 				if (attrValue == NAdisc)
 					DiscValues.Set(i, firstFreeDiscSlot + noIncrements, NAdisc) ;
 				else
-					if (leftValues[noIncrements][attrValue])
+					if (leftValues[noIncrements][attrValue]) {
 						DiscValues.Set(i, firstFreeDiscSlot + noIncrements, 1) ;
-					else
+						noLeft ++ ;
+					}
+					else {
 						DiscValues.Set(i, firstFreeDiscSlot + noIncrements, 2) ;
+						noRight ++ ;
+					}
 			}
-			prepareDiscAttr(firstFreeDiscSlot + noIncrements, 2) ;
-			noIncrements++ ;
+			if (noLeft >= eopt.minNodeWeight && noRight > eopt.minNodeWeight) {
+			  prepareDiscAttr(firstFreeDiscSlot + noIncrements, 2) ;
+			  noIncrements++ ;
+			}
 		}
-
-
-		// estimate and select best
-		bestIdx = estimate(eopt.selectionEstimator, 0, 0,
+		// check validity of partitions
+        if (noIncrements == 0) 
+			nodeConstruct.leftValues.init(mTRUE) ; // put all to left, getting invalid split
+		else if (noIncrements == 1)  // no need to estimate
+		   nodeConstruct.leftValues =  leftValues[0] ;
+		else {
+		   // estimate and select best
+		   bestIdx = estimate(eopt.selectionEstimator, 0, 0,
 				firstFreeDiscSlot, firstFreeDiscSlot+noIncrements, bestType) ;
-		nodeConstruct.leftValues =  leftValues[bestIdx - firstFreeDiscSlot] ;
-		//bestEstimation =  DiscEstimation[bestIdx] ;
+		   nodeConstruct.leftValues =  leftValues[bestIdx - firstFreeDiscSlot] ;
+		   //bestEstimation =  DiscEstimation[bestIdx] ;
+		}
 	}
 	else
 	{
 		// greedy search
 		adjustTables(0, firstFreeDiscSlot + NoValues) ;
 		marray<marray<booleanT> >  leftValues(NoValues) ;
+		marray<int>  noLeft(NoValues), noRight(NoValues) ; // number of instances after a split
 		marray<booleanT> currentBest(NoValues+1, mFALSE) ;
 		int i, j, added ;
 		double bestEstimation = -FLT_MAX ;
@@ -133,6 +147,7 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 				{
 					currentBest[j] = mTRUE ;
 					leftValues[added] = currentBest ;
+					noLeft[added] = noRight[added] = 0 ;
 
 					// compute data column
 					for (i=0 ; i < TrainSize ; i++)
@@ -141,10 +156,15 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 						if (attrValue == NAdisc)
 							DiscValues.Set(i, firstFreeDiscSlot + added, NAdisc) ;
 						else
-							if (leftValues[added][attrValue])
+							if (leftValues[added][attrValue]) {
 								DiscValues.Set(i, firstFreeDiscSlot + added, 1) ;
-							else
+								noLeft[added] ++ ;
+							}
+							else {
 								DiscValues.Set(i, firstFreeDiscSlot + added, 2) ;
+								noRight[added] ++ ;
+							}
+
 					}
 					prepareDiscAttr(firstFreeDiscSlot + added, 2) ;
 
@@ -156,8 +176,14 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 			currentBest = leftValues[bestIdx - firstFreeDiscSlot] ;
 			if (DiscEstimation[bestIdx] > bestEstimation)
 			{
-				bestEstimation = DiscEstimation[bestIdx] ;
-				nodeConstruct.leftValues =  currentBest ;
+				// check if split is valid
+				if ( noLeft[bestIdx - firstFreeDiscSlot] >= eopt.minNodeWeight && noRight[bestIdx - firstFreeDiscSlot] >= eopt.minNodeWeight ) {
+				   bestEstimation = DiscEstimation[bestIdx] ;
+				   nodeConstruct.leftValues =  currentBest ;
+				}
+				else if (bestEstimation == -FLT_MAX) { // no added yet
+				   nodeConstruct.leftValues =  currentBest ; // add anyway, but do not update bestEstimation
+				}
 			}
 		}
 	}
@@ -200,9 +226,10 @@ double estimation::bestSplitGeneral(construct &nodeConstruct, int firstFreeDiscS
 	sortedAttr.setFilled(OKvalues) ;
 	sortedAttr.qsortAsc() ;
 
-	// select only unique values
-	int lastUnique = 0 ;
-	for (i=1 ; i < OKvalues ; i++)
+	// select only unique values but skip also smallest and largest values - we do not want split there
+	int lastUnique = 0, lower = int(eopt.minNodeWeight+0.5), upper =  int(OKvalues - eopt.minNodeWeight) ;
+	sortedAttr[lastUnique] = sortedAttr[lower] ;
+	for ( i = lower+1; i < upper ; i++)
 	{
 		if (sortedAttr[i].key != sortedAttr[lastUnique].key)
 		{
@@ -224,27 +251,6 @@ double estimation::bestSplitGeneral(construct &nodeConstruct, int firstFreeDiscS
 		sampleSize = Mmin(eopt.discretizationSample, OKvalues-1) ;
 	marray<int> splits(sampleSize) ;
 	randomizedSample(splits, sampleSize, OKvalues-1) ;
-
-	//   if (OKvalues-1 > sampleSize)
-	//   {
-	//       // do sampling
-	//       marray<int> sortedCopy(OKvalues) ;
-	//       for (i=0 ; i < OKvalues ; i++)
-	//         sortedCopy[i] = i ;
-	//
-	//       int upper = OKvalues - 1 ;
-	//       int selected ;
-	//       for (i=0 ; i < sampleSize ; i++)
-	//       {
-	//          selected = randBetween(0, upper) ;
-	//          splits[i] = sortedCopy[selected] ;
-	//          upper -- ;
-	//          sortedCopy[selected] = sortedCopy[upper] ;
-	//       }
-	//   }
-	//   else
-	//     for (i=0 ; i < sampleSize ; i++)
-	//        splits[i] = i ;
 
 	attributeCount bestType ;
 
@@ -314,7 +320,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
 	sortedAttr.setFilled(OKvalues) ;
 	sortedAttr.qsortAsc() ;
 
-	// eliminate duplicates
+	// eliminate duplicates 
 	int unique = 0 ;
 	for (j=1 ; j < OKvalues ; j ++)
 	{

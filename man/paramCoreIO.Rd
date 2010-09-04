@@ -40,7 +40,6 @@ paramCoreIO(model, fileName, io=c("read","write"))
 
 \examples{
 # use iris data
-
 # build random forests model with certain parameters
 modelRF <- CoreModel(Species ~ ., iris, model="rf", 
               selectionEstimator="MDL",minNodeWeight=5,rfNoTrees=100)

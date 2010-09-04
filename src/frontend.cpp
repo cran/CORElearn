@@ -66,7 +66,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 0.9.28, built on " __DATE__ " at " __TIME__
+" version 0.9.29, built on " __DATE__ " at " __TIME__
 #if defined(_OPENMP)
 " with OpenMP support"
 #endif
@@ -201,7 +201,7 @@ void mainMenu(featureTree* gFT) {
        do
        {
     	 printf("\n\n Current domain: ") ;
-		 if (gFT->opt->domainName.isDefined())
+		 if (gFT->opt->domainName[0])
            printf("%s\n", gFT->opt->domainName.getConstValue()) ;
          else
            printf("<none>\n") ;

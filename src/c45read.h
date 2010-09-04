@@ -76,7 +76,7 @@ public:
 
 	int readC45names(FILE *from) ;
 	int readC45data(FILE *from, const char *NAstr) ;
-	bool readValidLine(FILE *from, char *buf);
+	int readValidLine(FILE *from, char *buf);
 	bool getC45nameList(char *buf, mlist<mstring> &names) ;
 	int readC45costs(FILE *from, mmatrix<double> &CostMatrix) ;
 

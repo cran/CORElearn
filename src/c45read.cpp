@@ -162,8 +162,10 @@ int c45read::readC45data(FILE *from, const char *NAstr) {
 	mstring valStr ;
 	char *token ;
 	int pos, discIdx, numIdx ;
+	int lineNo = 0, linesRead = readValidLine(from, buf) ;
 
-	while (readValidLine(from, buf)){
+	while (linesRead > 0){
+		lineNo++ ;
 		strIdx = 0 ;
 	    item.create(noDiscreteAttr, noNumericAttr) ;
 		token = myToken(buf, strIdx, datSeparators);
@@ -193,7 +195,10 @@ int c45read::readC45data(FILE *from, const char *NAstr) {
             		valStr.copy(token) ;
             		pos = ait->value.values.findPos(valStr) ;
             		if (pos < 1){
-            			merror("Invalid value for attribute ", ait->value.name.getValue()) ;
+						char *ebuf = new char[ait->value.name.len()+20] ;
+						sprintf(ebuf,"%s in line %d",ait->value.name.getValue(),lineNo) ;
+            			merror("Invalid value for attribute ", ebuf) ;
+						delete [] ebuf ;
             			return 0 ;
             		}
             		else {
@@ -208,6 +213,7 @@ int c45read::readC45data(FILE *from, const char *NAstr) {
 		}
         dat.addEnd(item) ;
 	    ++noDataCases ;
+		linesRead = readValidLine(from, buf) ;
 	}
 	return 1 ;
 }
@@ -262,24 +268,27 @@ int c45read::readC45costs(FILE *from, mmatrix<double> &CostMatrix) {
 	return 1 ;
 }
 
-
-bool c45read::readValidLine(FILE *from, char *buf)
+// returns number of lines actually read, 0 if error
+int c45read::readValidLine(FILE *from, char *buf)
 {
 	int len ;
 	char *line ;
+	int noLines = 0 ;
 	do {
 
 	   line = fgets(buf,MaxLineLen,from);
 	   if (line == NULL) {
-		   return false ;
+		   return 0 ;
 	   }
+	   noLines ++ ;
 	   len = (int)strlen(buf) ;
 	   if (len == MaxLineLen-1)
 		   merror("Too long line, possible buffer overrun",buf);
-	   buf[strlen(buf)-1] = '\0' ; //remove \n at end of line
+	   if (buf[strlen(buf)-1] == '\n')
+		   buf[strlen(buf)-1] = '\0' ; //remove \n at end of line
 	   trimWhite(buf) ;
 	} while  (buf[0] == '|' || buf[0] == '#' || buf[0] == '%' || buf[0]=='\0') ; // skip empty and comments lines
-	return true ;
+	return noLines ;
 }
 
 bool c45read::getC45nameList(char *buf, mlist<mstring> &names) {

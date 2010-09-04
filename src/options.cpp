@@ -14,7 +14,9 @@
 #include <stdio.h>      // converting strings to doubleing point
 #include <stdlib.h>
 #include <time.h>
+#if defined(_OPENMP)
 #include <omp.h>
+#endif
 
 #include "general.h"
 
@@ -147,13 +149,13 @@ void Options::copy(const Options &cp) {
 
 
 void Options::setDefault(void) {
-    optionFile.destroy() ;
+    optionFile="" ;
 	action = "none" ;
-    domainName.destroy() ;
+    domainName="" ;
     splitIdx = 0 ;
-    dataDirectory = "data" ;
+    dataDirectory = "." ;
     dataDirectory.append(strDirSeparator) ;  // we attach separator: / or backslash
-    resultsDirectory = "results" ;
+    resultsDirectory = "." ;
     resultsDirectory.append(strDirSeparator) ;
     NAstring = "?" ;
     numberOfSplits = 10 ;
@@ -446,13 +448,13 @@ void Options::outConfig(FILE *to) const
     fprintf(to, "# ---------- File and data options ----------\n") ;
 
     // Domain name
-	fprintf(to,"domainName=%s  # domain name\n",domainName.getConstValue() ) ;
+	fprintf(to,"domainName=%s  # domain name\n", domainName.getConstValue() ) ;
 
     // Data directory
-	fprintf(to,"dataDirectory=%.*s  # data directory\n", dataDirectory.len()-1, dataDirectory.getConstValue()) ;
+	fprintf(to,"dataDirectory=%s  # data directory\n", dataDirectory.getConstValue()) ;
 
     // Results directory
-	fprintf(to,"resultsDirectory=%.*s  # results directory\n", resultsDirectory.len()-1, resultsDirectory.getConstValue()) ;
+	fprintf(to,"resultsDirectory=%s  # results directory\n", resultsDirectory.getConstValue()) ;
 
     // Definiton of train/test data splits
     fprintf(to,"# Types of supported splits to training/testing data:  \n") ;
@@ -783,6 +785,8 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	else if (strcmp(keyword, "dataDirectory")==0) {
         // data directory
         dataDirectory = key ;
+		if (! dataDirectory[0])
+			dataDirectory = "." ;
         char last = dataDirectory[dataDirectory.len()-1] ;
         if (last != DirSeparator)
           dataDirectory.append(strDirSeparator) ;
@@ -790,6 +794,8 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	else if (strcmp(keyword, "resultsDirectory")==0) {
        // Results directory
        resultsDirectory = key ;
+		if (! resultsDirectory[0])
+			resultsDirectory = "." ;
        char last = resultsDirectory[resultsDirectory.len()-1] ;
        if (last != DirSeparator)
           resultsDirectory.append(strDirSeparator) ;

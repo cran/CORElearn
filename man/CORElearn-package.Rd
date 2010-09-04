@@ -7,7 +7,9 @@
 The package CORElearn is an R port of CORElearn data mining system.
 It provides various classification and regression models
 as well as algorithms for feature selection and evaluation.
-Several algorithms support parallel multithreaded execution via OpenMP.
+Several algorithms support parallel multithreaded execution via OpenMP, 
+but this feature is currently not supported on all platforms 
+(e.g., Win32 prior to 2.12, Win64 until full support for gcc 4.4).
 }
 \details{
 The main functions are 
@@ -45,6 +47,10 @@ cost-sensitive ReliefF, ..), gain ratio, gini-index, MDL, DKM, information gain,
 Some of the internal structures of the C++ part are described in \code{\link{CORElearn-internal}}.
 
 For an automatically generated list of functions use \code{help(package=CORElearn)} or \code{library(help=CORElearn)}.
+
+For certain platforms multithreaded execution is not supported, since current set of compilers 
+at CRAN do not support OpenMP, but it is possible to recompile the package with appropriate tools and compilers
+(modify Makefile or Makefile.win in src folder, or consult authors).   
 }
 \author{
 Marko Robnik-Sikonja, Petr Savicky

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <float.h>
+#if defined(_OPENMP)
 #include <omp.h>
+#endif
 
 #include "estimator.h"
 #include "general.h"
@@ -326,7 +328,7 @@ double estimation::CVVilalta(int contAttrFrom, int contAttrTo,
    discUpper = Mmax(noDiscrete, discAttrTo) ;
    numUpper = Mmax(noNumeric, contAttrTo) ;
 
-   double weightSum, weight, sigma, ConVar = 0.0 , distance, denominator ;
+   double weightSum, w, sigma, ConVar = 0.0 , distance, denominator ;
    int current, m ;
 
 
@@ -351,13 +353,13 @@ double estimation::CVVilalta(int contAttrFrom, int contAttrTo,
         distance = CaseDistance(m) ;
         denominator = NoUsed - distance ;
         if (denominator > epsilon)
-          weight = 1.0 / pow(2.0, alpha * distance/denominator) ;
+          w = 1.0 / pow(2.0, alpha * distance/denominator) ;
         else
-          weight = 0.0 ;
+          w = 0.0 ;
 
-        weightSum += weight ;
+        weightSum += w ;
 
-        sigma += weight * DiscDistance(m, 0) ;
+        sigma += w * DiscDistance(m, 0) ;
      }
 
      ConVar += sigma/weightSum ;
@@ -520,7 +522,6 @@ double estimation::estImpurityDisc(int discIdx)
 //************************************************************
 double estimation::impuritySplit(construct &nodeConstruct, double &bestEstimation)
 {
-
    marray<sortRec> sortedAttr(TrainSize) ;
    marray<int> noAttrVal(2+1, 0) ; // number of cases in each branch i.e. the sum over class values for each branch in noClassAttrVal, index 0 unused
    noAttrVal.setFilled(3) ;
@@ -546,25 +547,26 @@ double estimation::impuritySplit(construct &nodeConstruct, double &bestEstimatio
    double priorImpurity = (this->*fImpurity)(OKvalues, noClassAttrVal, 2) ;
    sortedAttr.setFilled(OKvalues) ;
    sortedAttr.qsortAsc() ;
-   // initially we move one instance from right to left
-   noClassAttrVal(DiscValues(sortedAttr[0].value, 0),1)++ ;
-   noClassAttrVal(DiscValues(sortedAttr[0].value, 0),2)-- ;
-   int lastDifferent = 0 ;
    bestEstimation = - FLT_MAX ;
    double est = 0, splitValue = - FLT_MAX ; // smaller than any value, so all examples will go into one branch
-   for (j=1 ; j < OKvalues ; j++)
+   // initially we move some left instance from right to left
+   for (j=0 ; j < eopt.minNodeWeight ; j++) {
+	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 1)++ ; // increase on the left
+	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 2)-- ;  // decrease on right
+   }
+   int upperLimit = int(OKvalues - eopt.minNodeWeight) ;
+   for ( ; j < upperLimit ; j++)
    {
-	   // only estimate for unique values and sufficiently large split nodes
-       if (sortedAttr[j].key != sortedAttr[lastDifferent].key && j >= eopt.minNodeWeight && j <= OKvalues - eopt.minNodeWeight) {
+   	   // only estimate for unique values 
+       if (sortedAttr[j].key != sortedAttr[j-1].key) {
           //compute heuristic measure
     	  noAttrVal[1] = j ;
     	  noAttrVal[2] = OKvalues - j ;
     	  est = (this->*fImpurityGain)(priorImpurity, OKvalues, noAttrVal, noClassAttrVal) ;
     	  if (est > bestEstimation) {
     		  bestEstimation = est ;
-    		  splitValue = (sortedAttr[j].key + sortedAttr[lastDifferent].key)/2.0 ;
+     		  splitValue = (sortedAttr[j].key + sortedAttr[j-1].key)/2.0 ;
     	  }
-    	  lastDifferent = j ;
        }
 	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 1)++ ; // increase on the left
 	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 2)-- ;  // decrease on right
@@ -632,24 +634,27 @@ double estimation::impuritySplitSample(construct &nodeConstruct, double &bestEst
    double priorImpurity = (this->*fImpurity)(OKvalues, noClassAttrVal, 2) ;
    sortedAttr.setFilled(OKvalues) ;
    sortedAttr.qsortAsc() ;
-   // initially we move one instance from right to left
-   noClassAttrVal(DiscValues(sortedAttr[0].value, 0),1)++ ;
-   noClassAttrVal(DiscValues(sortedAttr[0].value, 0),2)-- ;
-   int lastDifferent = 0 ;
    bestEstimation = - FLT_MAX ;
    double est = 0, splitValue = - FLT_MAX ; // smaller than any value, so all examples will go into one branch
-   for (j=1 ; j < OKvalues ; j++)
+
+  // initially we move some left instance from right to left
+   for (j=0 ; j < eopt.minNodeWeight ; j++) {
+	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 1)++ ; // increase on the left
+	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 2)-- ;  // decrease on right
+   }
+   int upperLimit = int(OKvalues - eopt.minNodeWeight) ;
+   for ( ; j < upperLimit ; j++)
    {
-       if (sortedAttr[j].key != sortedAttr[lastDifferent].key) {
+   	   // only estimate for unique values 
+       if (sortedAttr[j].key != sortedAttr[j-1].key) {
           //compute heuristic measure
     	  noAttrVal[1] = j ;
     	  noAttrVal[2] = OKvalues - j ;
     	  est = (this->*fImpurityGain)(priorImpurity, OKvalues, noAttrVal, noClassAttrVal) ;
     	  if (est > bestEstimation) {
     		  bestEstimation = est ;
-    		  splitValue = (sortedAttr[j].key + sortedAttr[lastDifferent].key)/2.0 ;
+     		  splitValue = (sortedAttr[j].key + sortedAttr[j-1].key)/2.0 ;
     	  }
-    	  lastDifferent = j ;
        }
 	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 1)++ ; // increase on the left
 	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 2)-- ;  // decrease on right

@@ -99,13 +99,13 @@ void quicksort(sortRec* const T, int left, int right)
 }
 
 
-int ascSortComp( const void *a, const void *b)
+extern "C" int ascSortComp( const void *a, const void *b)
 {
    return ( ( ((sortRec*)a)->key > ((sortRec*)b)->key ) ? 1 : (-1) ) ;
 }
 
 
-int descSortComp( const void *a, const void *b)
+extern "C" int descSortComp( const void *a, const void *b)
 {
    return ( ( ((sortRec*)a)->key < ((sortRec*)b)->key ) ? 1 : (-1) ) ;
 }
@@ -118,13 +118,13 @@ void quicksort(sort3Rec* const T, int left, int right)
 }
 
 
-int ascSort3Comp( const void *a, const void *b)
+extern "C" int ascSort3Comp( const void *a, const void *b)
 {
    return ( ( ((sort3Rec*)a)->key > ((sort3Rec*)b)->key ) ? 1 : (-1) ) ;
 }
 
 
-int descSort3Comp( const void *a, const void *b)
+extern "C" int descSort3Comp( const void *a, const void *b)
 {
    return ( ( ((sort3Rec*)a)->key < ((sort3Rec*)b)->key ) ? 1 : (-1) ) ;
 }
