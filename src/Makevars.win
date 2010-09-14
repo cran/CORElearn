@@ -9,7 +9,7 @@ else
   ifeq ($(CXX),g++)
     # GNU compilers, also MinGW
     #OMP_FLAG = -fopenmp
-    # uncomment previous line and comment next line is you have gcc 4.4 or later
+    # uncomment previous line and comment next line if gcc 4.4 or later is available
     OMP_FLAGS=
   else
     ifeq ($(CXX),CC)
