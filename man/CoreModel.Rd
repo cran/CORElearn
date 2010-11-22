@@ -47,7 +47,7 @@ Regression models:
      \item{\code{"regTree"}}{ regression trees with constructive induction in inner nodes and/or models in leaves
      controlled by modelTypeReg parameter.
      Models used in leaves of the regression tree can also be used as stand-alone regression models 
-     using option minNodeWeight=Inf (see examples below):
+     using option minNodeWeightTree=Inf (see examples below):
      \itemize{
         \item linear models with pruning techniques
         \item locally weighted regression
@@ -114,7 +114,7 @@ Majority of these references are available from \url{http://lkm.fri.uni-lj.si/rm
 
 # build random forests model with certain parameters
 modelRF <- CoreModel(Species ~ ., iris, model="rf",
-              selectionEstimator="MDL",minNodeWeight=5,rfNoTrees=100)
+              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 print(modelRF)
 
 # build decision tree with naive Bayes in the leaves
@@ -128,7 +128,7 @@ print(modelRT)
 
 # build kNN kernel regressor by preventing tree splitting
 modelKernel <- CoreModel(response~., instReg, model="regTree",
-                    modelTypeReg=7, minNodeWeight=Inf)
+                    modelTypeReg=7, minNodeWeightTree=Inf)
 print(modelKernel)
 
 # A more complex example demonstrating also destroyModels() follows.

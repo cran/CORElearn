@@ -54,7 +54,7 @@ train <-classDataGen(noInst=200)
 cal <-classDataGen(noInst=200)
 
 # build random forests model with certain parameters
-modelRF <- CoreModel(class~., train, model="rf",   selectionEstimator="MDL",minNodeWeight=5,rfNoTrees=100)
+modelRF <- CoreModel(class~., train, model="rf",   selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 # prediction 
 pred <- predict.CoreModel(modelRF, cal, rfPredictClass=FALSE)
 

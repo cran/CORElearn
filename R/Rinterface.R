@@ -33,6 +33,7 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
     if (!isRegression && !inherits(dat[[1]],"factor")) {
         dat[[1]] <- factor(dat[[1]]);
         cat("Changing dependent variable to factor with levels:",levels(dat[[1]]),"\n");
+        warning("Possibly this is an error caused by regression formula and classification model or vice versa.")
     }
     class.lev <- levels(dat[[1]]);
     noClasses <- length(class.lev);
@@ -173,6 +174,7 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
     if (!isRegression && !inherits(dat[[1]],"factor")) {
         dat[[1]] <- factor(dat[[1]]);
         cat("Changing dependent variable to factor with levels:",levels(dat[[1]]),"\n");
+        warning("Possibly this is an error caused by regression formula and classification attribute estimator or vice versa.")
     }
     class.lev <- levels(dat[[1]]);
     noClasses <- length(class.lev)
@@ -465,17 +467,42 @@ printOrdEval<-function(x) {
     maxAttrChars <- max(nchar(c(object$attrNames,"Attribute")))
     maxAVChars <- max(nchar(c(unlist(object$valueNames),"Value")))
     header <- paste(sprintf("%*s %*s",maxAttrChars,"Attribute",maxAVChars,"Value"),
-            sprintf("%6s %6s  %6s %6s  %6s %6s","Up","p-val","Down","p-val","Anchor","p-val"),sep="  ")
+                    sprintf("%6s %6s %6s %6s  %6s %6s %6s %6s  %6s %6s %6s %6s","Down","Down_p","Down_l","Down_h","Up","Up_p","Up_l","Up_h","Anchor","Anch_p","Anch_l","Anch_h")
+                    ,sep=" ")
     cat(header,"\n")
     for (a in 1:object$noAttr) {
         line <- paste(sprintf("%*s %*s",maxAttrChars,object$attrNames[a],maxAVChars,"all"),
-                sprintf("%6.4f %6.4f  %6.4f %6.4f  %6.4f %6.4f", object$reinfPosAttr[a],object$rndReinfPosAttr[a,"p-value"],object$reinfNegAttr[a],object$rndReinfNegAttr[a,"p-value"],object$anchorAttr[a],object$rndAnchorAttr[a,"p-value"]),
-                sep="  ")
+                sprintf("%6.4f %6.4f %6.4f %6.4f  %6.4f %6.4f %6.4f %6.4f  %6.4f %6.4f %6.4f %6.4f", 
+                        object$reinfPosAttr[a], 
+                        object$rndReinfPosAttr[a,"p-value"],
+                        object$rndReinfPosAttr[a,"lowPercentile"],
+                        object$rndReinfPosAttr[a,"highPercentile"],
+                        object$reinfNegAttr[a],
+                        object$rndReinfNegAttr[a,"p-value"],
+                        object$rndReinfNegAttr[a,"lowPercentile"],
+                        object$rndReinfNegAttr[a,"highPercentile"],
+                        object$anchorAttr[a],
+                        object$rndAnchorAttr[a,"p-value"],
+                        object$rndAnchorAttr[a,"lowPercentile"],
+                        object$rndAnchorAttr[a,"highPercentile"]),               
+                sep="  ") ;
         cat(line,"\n")
         
         for (v in 1:object$ordVal){
             line <- paste(sprintf("%*s %*s",maxAttrChars," ",maxAVChars,object$valueNames[[a]][v]),
-                    sprintf("%6.4f %6.4f  %6.4f %6.4f  %6.4f %6.4f", object$reinfPosAV[a,v],object$rndReinfPosAV[a,v,"p-value"],object$reinfNegAV[a,v],object$rndReinfNegAV[a,v,"p-value"],object$anchorAV[a,v],object$rndAnchorAV[a,v,"p-value"]),
+                    sprintf("%6.4f %6.4f %6.4f %6.4f  %6.4f %6.4f %6.4f %6.4f  %6.4f %6.4f %6.4f %6.4f", 
+                            object$reinfPosAV[a,v],
+                            object$rndReinfPosAV[a,v,"p-value"],
+                            object$rndReinfPosAV[a,v,"lowPercentile"],
+                            object$rndReinfPosAV[a,v,"highPercentile"],
+                            object$reinfNegAV[a,v],
+                            object$rndReinfNegAV[a,v,"p-value"],
+                            object$rndReinfNegAV[a,v,"lowPercentile"],
+                            object$rndReinfNegAV[a,v,"highPercentile"],
+                            object$anchorAV[a,v],
+                            object$rndAnchorAV[a,v,"p-value"],
+                            object$rndAnchorAV[a,v,"lowPercentile"],
+                            object$rndAnchorAV[a,v,"highPercentile"]),            
                     sep="  ")
             cat(line,"\n")
         }
@@ -491,7 +518,11 @@ modelEval <- function(model, correctClass, predictedClass, predictedProb=NULL, c
         else { 
             return(modelEvaluationClass.Core(correctClass,predictedClass,predictedProb,costMatrix,priorClProb,beta))
         }
-    } 
+    }
+    if (class(model) != "CoreModel"){
+        warning("Only models of type CoreModel can be evaluated with this type of call. Others shall supply NULL for argument model, and provide value of avgTrainPrediction in case of regression.")
+        return(NULL) ;
+    }
     if (model$model == "regTree") {
         if (is.null(avgTrainPrediction))
             avgTrainPrediction <- model$avgTrainPrediction

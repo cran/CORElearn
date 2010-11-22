@@ -35,7 +35,7 @@ Numerical vector of the length equal to the number of trees in RF.
 # build random forests model with certain parameters, 
 # do not make too many and too large trees
 modelRF <- CoreModel(Species ~ ., iris, model="rf", 
-              selectionEstimator="MDL", minNodeWeight=50, rfNoTrees=50)
+              selectionEstimator="MDL", minNodeWeightRF=50, rfNoTrees=50)
 
 getRFsizes(modelRF) 
 }

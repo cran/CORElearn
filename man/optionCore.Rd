@@ -44,6 +44,8 @@ and RReliefF in regression and their variants.
                3-average of one-against-all, 4-best of one-against-all). }
     \item{attrEvaluationInstances}{type: integer, default value: 0, value range: 0, Inf \cr
           number of instances for attribute evaluation (0=all available). }
+    \item{minNodeWeightEst}{type: numeric, default value: 2, value range: 0, Inf \cr
+        minimal number of instances (weight) in resulting split to take it in consideration. }          
     \item{ReliefIterations}{type: integer, default value: 0, value range: -2, Inf \cr 
               number of iterations for all variants of Relief (0=DataSize, -1=ln(DataSize) -2=sqrt(DataSize)). }
     \item{numAttrProportionEqual}{type: numeric, default value: 0.04, value range: 0, 1 \cr
@@ -99,8 +101,10 @@ but typically does not produce better trees.
 \section{Stop tree building}{
 During tree construction the node is recursively split, until certain condition is fulfilled.
 \describe{
-    \item{minNodeWeight}{type: numeric, default value: 2, value range: 0, Inf \cr
-        minimal number of instances (weight) of a tree node to split it further. }
+    \item{minNodeWeightTree}{type: numeric, default value: 5, value range: 0, Inf \cr
+        minimal number of instances (weight) of a leaf in the decision or regression tree model. }
+    \item{minNodeWeightRF}{type: numeric, default value: 2, value range: 0, Inf \cr
+        minimal number of instances (weight) of a leaf in the random forest tree. }
     \item{relMinNodeWeight}{type: numeric, default value: 0, value range: 0, 1 \cr
        minimal proportion of training instances in a tree node to split it further. }
     \item{majorClassProportion}{type: numeric, default value: 1, value range: 0, 1 \cr
@@ -201,7 +205,7 @@ Besides parameters in this section one can apply majority of parameters for cont
       Proportion of trees where attribute probabilities are weighted with their quality. As attribute weighting might reduce the variance between the models, 
       the default value switches the weighing off. }
     \item{rfPredictClass}{type: logical, default value: FALSE \cr
-      shall individual trees predict with majority class (otherwise with class distribution). }
+      shall individual trees predict with majority class (otherwise with class distribution). }     
       }
       }
  \section{General tree ensembles}{
@@ -228,7 +232,7 @@ Besides parameters in this section one can apply majority of parameters for cont
 }
 \section{Miscellaneous}{
 \describe{
-    \item{maxThreads}{type: integer, default value: 0, value range: 0, Inf \cr maximal number of active threads (0=allow openMP to set its defaults).
+    \item{maxThreads}{type: integer, default value: 0, value range: 0, Inf \cr maximal number of active threads (0=allow OpenMP to set its defaults).
          \cr As side effect, this parameter changes the number of active threads in all subsequent execution (till \code{maxThreads} is set again). }
     }
     }

@@ -39,7 +39,7 @@ destroyModels(model=NULL)
 
 # build random forests model with certain parameters
 model <- CoreModel(Species ~ ., iris, model="rf", 
-              selectionEstimator="MDL",minNodeWeight=5,rfNoTrees=100)
+              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 
 # prediction 
 pred <- predict.CoreModel(model, iris, rfPredictClass=FALSE)

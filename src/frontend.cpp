@@ -66,7 +66,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 0.9.30, built on " __DATE__ " at " __TIME__
+" version 0.9.32, built on " __DATE__ " at " __TIME__
 #if defined(_OPENMP)
 " with OpenMP support"
 #endif
@@ -671,7 +671,7 @@ void allSplitsEstimationReg(const featureTree *FTree)
 //                      singleTree
 //                      ----------
 //
-//      dealing wih single tree construction and testing
+//      dealing with single tree construction and testing
 //
 //**********************************************************************
 void singleTree(featureTree* const Tree) {

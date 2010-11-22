@@ -183,58 +183,53 @@ binnode* featureTree::buildTree(marray<int> &DTrain, marray<double> &pDTrain,
        Node->NAnumValue[i] = (maxValue[i] + minValue[i]) / 2.0 ;
     }
 
+
+
    // for estimation of the attributes, constructs, binarization, and discretization
-   estimation Estimator(this, DTrain, pDTrain, TrainSize) ;
+   estimation *Estimator = new estimation(this, DTrain, pDTrain, TrainSize) ;
 
    // build model for the data (used in case of a leaf and for estimation)
-   buildModel(Estimator, Node) ;
-
+   buildModel(*Estimator, Node) ;
 
    // stopping criterion
-   if (time2stop(Node) )
-   {
-      createLeaf(Node) ;
-
+   if (time2stop(Node) ) {
+	  createLeaf(Node) ;
+	  delete Estimator ;
       return Node ;
    }
-   else
-   {
+
        // select/build splitting attribute/construct
-      if (! buildConstruct(Estimator, Node, currentDepth) )
-      {
-            createLeaf(Node) ;
+	if (!buildConstruct(*Estimator, Node, currentDepth)) {
+		createLeaf(Node);
+		delete Estimator;
+		return Node;
+	}
+	delete Estimator;
 
-            return Node ;
-      }
+	marray<int> LeftTrain, RightTrain;
+	marray<double> pLeftTrain, pRightTrain;
+	int LeftSize = 0, RightSize = 0;
+	double wLeft = 0.0, wRight = 0.0;
 
-      marray<int> LeftTrain, RightTrain ;
-      marray<double> pLeftTrain, pRightTrain ;
-      int LeftSize = 0, RightSize = 0;
-      double wLeft=0.0, wRight = 0.0 ;
+	// split the data according to attribute (call by reference)
+	split(DTrain, pDTrain, TrainSize, Node, LeftTrain, pLeftTrain, LeftSize,
+			RightTrain, pRightTrain, RightSize, wLeft, wRight);
 
-      // split the data according to attribute (call by reference)
-      split(DTrain, pDTrain, TrainSize, Node, LeftTrain, pLeftTrain, LeftSize,
-               RightTrain, pRightTrain, RightSize, wLeft, wRight) ;
+	Node->weightLeft = wLeft;
+	// is the resulting split inappropriate
+	if (LeftSize == 0 || RightSize == 0 || wLeft < opt->minNodeWeightTree || wRight	< opt->minNodeWeightTree) {
+		createLeaf(Node);
 
-      Node->weightLeft = wLeft ;
-      // is the resulting split inappropriate
-      if (LeftSize==0 || RightSize==0 || wLeft < opt->minNodeWeight || wRight < opt->minNodeWeight)
-      {
-         createLeaf(Node) ;
+		return Node;
+	}
 
-         return Node ;
-      }
+	// recursively call building on both partitions
 
+	Node->left = buildTree(LeftTrain, pLeftTrain, LeftSize, currentDepth + 1);
 
-      // recursively call building on both partitions
+	Node->right = buildTree(RightTrain, pRightTrain, RightSize, currentDepth + 1);
 
-      Node->left  = buildTree(LeftTrain, pLeftTrain, LeftSize, currentDepth+1) ;
-
-      Node->right = buildTree(RightTrain, pRightTrain, RightSize, currentDepth+1) ;
-
-
-      return  Node;
-   }
+	return Node;
 }
 
 
@@ -249,7 +244,7 @@ binnode* featureTree::buildTree(marray<int> &DTrain, marray<double> &pDTrain,
 booleanT featureTree::time2stop(binnode *Node)
 {
    // absolute training weight (number of examples) is too small
-   if (Node->weight < opt->minNodeWeight)
+   if (Node->weight < opt->minNodeWeightTree)
       return mTRUE ;
 
    // proportion of training examples is too small

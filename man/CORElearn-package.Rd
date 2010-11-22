@@ -8,8 +8,11 @@ The package CORElearn is an R port of CORElearn data mining system.
 It provides various classification and regression models
 as well as algorithms for feature selection and evaluation.
 Several algorithms support parallel multithreaded execution via OpenMP, 
-but this feature is currently not supported on all platforms 
-(e.g., Win32 prior to 2.12, Win64 until full support for gcc 4.4).
+but this feature is currently not supported on all platforms.
+It works on Linux, Sun, and Mac. On Windows (both 32 and 64 bit version) it works, 
+but official toolchain does not support it, so  
+we provide binary package with OpenMP support on package website
+\url{http://lkm.fri.uni-lj.si/rmarko/software}.
 }
 \details{
 The main functions are 
@@ -107,7 +110,7 @@ cat(versionCore(),"\n")
 
 # build random forests model with certain parameters
 model <- CoreModel(Species ~ ., iris, model="rf", 
-              selectionEstimator="MDL",minNodeWeight=5,rfNoTrees=100)
+              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 print(model)
 
 # prediction with node distribution

@@ -1,3 +1,5 @@
+CORElearn-0.9.32, 2010-11-22: feature evaluation enhancements, bug fixes,   
+CORElearn-0.9.31, 2010-10-01: bug fixes, extraction of additional information from trees and random forests models   
 CORElearn-0.9.30, 2010-09-14: reorganizing testCore, so that it is less dependent on random seed and platform   
 CORElearn-0.9.29, 2010-09-04: disabling OpenMP for R Win64, since it does not support full set of libraries yet   
 CORElearn-0.9.28, 2010-08-30: support for OpenMP based multithreaded execution, improved documentation  

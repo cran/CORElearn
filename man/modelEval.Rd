@@ -75,7 +75,7 @@ Horwood, 2007
 
 # build random forests model with certain parameters
 model <- CoreModel(Species ~ ., iris, model="rf", 
-              selectionEstimator="MDL",minNodeWeight=5,rfNoTrees=100)
+              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 
 # prediction with node distribution
 pred <- predict.CoreModel(model, iris, rfPredictClass=FALSE)

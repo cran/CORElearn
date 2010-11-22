@@ -36,7 +36,7 @@ void featureTree::printFTree(FILE *out,  int &FeatureNo,
 {
    if (branch)
    {
-      if (branch->left) // not the leaf yet
+      if (branch->left) // not a leaf yet
       {
          int fNo = FeatureNo++ ;   // reserve current index
 

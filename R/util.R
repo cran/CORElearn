@@ -175,6 +175,7 @@ optionData <- function() {
     list("binaryEvaluateNumericAttributes", "logical", TRUE, FALSE, TRUE),
     list("multiclassEvaluation", "integer", 1, 1, 4),
     list("attrEvaluationInstances", "integer", 0, 0, Inf),
+    list("minNodeWeightEst", "numeric", 2, 0, Inf),
     list("ReliefIterations", "integer", 0, -2, Inf),
     list("numAttrProportionEqual", "numeric", 0.04, 0, 1),
     list("numAttrProportionEqual", "numeric", 0.1, 0, 1),
@@ -192,7 +193,8 @@ optionData <- function() {
     list("minReliefEstimate", "numeric", 0, -1, 1),
     list("minInstanceWeight", "numeric", 0.05, 0, 1),
     ## \section{Stop tree building}
-    list("minNodeWeight", "numeric", 2, 0, Inf),
+    list("minNodeWeightTree", "numeric", 5, 0, Inf),
+    list("minNodeWeightRF", "numeric", 2, 0, Inf),
     list("relMinNodeWeight", "numeric", 0, 0, 1),
     list("majorClassProportion", "numeric", 1, 0, 1),
     list("rootStdDevProportion", "numeric", 0, 0, 1),
@@ -358,7 +360,7 @@ checkEstimatorOptions <- function(estimator, options, isRegression) {
     else
        estimator <- match.arg(estimator, estDsc);
 	## options allowed for all estimators,
-	commonOpts <- c("attrEvaluationInstances","binaryEvaluation","binaryEvaluateNumericAttributes","maxThreads")
+	commonOpts <- c("attrEvaluationInstances","minNodeWeightEst","binaryEvaluation","binaryEvaluateNumericAttributes","maxThreads")
 	for (i in 1:length(commonOpts)) {
 		idx <- match(commonOpts[i], optNames, nomatch=-1);
 		if (idx >0)
@@ -416,8 +418,8 @@ checkModelOptions <- function(model, options) {
     miscOpts <-c("maxThreads") 
     treeModelOpts<-c("modelType",bayesOpts,knnOpts,knnKernelOpts,miscOpts)
     treeModelOptsReg<-c("modelTypeReg",knnKernelOpts,miscOpts)
-    treeStopOpts <- c("minNodeWeight","relMinNodeWeight","majorClassProportion","minInstanceWeight")  
-    treeStopOptsReg <- c("minNodeWeight","relMinNodeWeight","minInstanceWeight","rootStdDevProportion")  
+    treeStopOpts <- c("minNodeWeightTree","minNodeWeightRF","relMinNodeWeight","majorClassProportion","minInstanceWeight")  
+    treeStopOptsReg <- c("minNodeWeightTree","minNodeWeightRF","relMinNodeWeight","minInstanceWeight","rootStdDevProportion")  
     treePruneOpts <- c("selectedPruner","mEstPruning","mdlModelPrecision","mdlErrorPrecision")
     treePruneOptsReg <- c("selectedPrunerReg","mEstPruning","mdlModelPrecision","mdlErrorPrecision")
     treeConstructOpts <- c("constructionEstimator","constructionMode","constructionDepth","beamSize","maxConstructSize","noCachedInNode")

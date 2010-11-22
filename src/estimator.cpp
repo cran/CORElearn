@@ -550,11 +550,11 @@ double estimation::impuritySplit(construct &nodeConstruct, double &bestEstimatio
    bestEstimation = - FLT_MAX ;
    double est = 0, splitValue = - FLT_MAX ; // smaller than any value, so all examples will go into one branch
    // initially we move some left instance from right to left
-   for (j=0 ; j < eopt.minNodeWeight ; j++) {
+   for (j=0 ; j < eopt.minNodeWeightEst ; j++) {
 	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 1)++ ; // increase on the left
 	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 2)-- ;  // decrease on right
    }
-   int upperLimit = int(OKvalues - eopt.minNodeWeight) ;
+   int upperLimit = int(OKvalues - eopt.minNodeWeightEst) ;
    for ( ; j < upperLimit ; j++)
    {
    	   // only estimate for unique values 
@@ -638,11 +638,11 @@ double estimation::impuritySplitSample(construct &nodeConstruct, double &bestEst
    double est = 0, splitValue = - FLT_MAX ; // smaller than any value, so all examples will go into one branch
 
   // initially we move some left instance from right to left
-   for (j=0 ; j < eopt.minNodeWeight ; j++) {
+   for (j=0 ; j < eopt.minNodeWeightEst ; j++) {
 	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 1)++ ; // increase on the left
 	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 2)-- ;  // decrease on right
    }
-   int upperLimit = int(OKvalues - eopt.minNodeWeight) ;
+   int upperLimit = int(OKvalues - eopt.minNodeWeightEst) ;
    for ( ; j < upperLimit ; j++)
    {
    	   // only estimate for unique values 

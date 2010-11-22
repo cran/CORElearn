@@ -4,6 +4,7 @@
 #include "expr.h"
 #include "constrct.h"
 #include "contain.h"
+#include "mstring.h"
 #include "binnode.h"
 
 
@@ -32,9 +33,6 @@ public:
    int noLeaves(binnode *branch) const;
    int degreesOfFreedom(void) const { return degreesOfFreedom(root) ; }
    int degreesOfFreedom(binnode *branch) const ;
-   
-
-
 };
 
 

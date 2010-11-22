@@ -71,6 +71,7 @@ void Options::copy(const Options &cp) {
 
 	   // attribute evaluation
 	   attrEvaluationInstances  = cp.attrEvaluationInstances;
+	   minNodeWeightEst = cp.minNodeWeightEst;
 	   binaryEvaluation = cp.binaryEvaluation;
 	   binaryEvaluateNumericAttributes =cp.binaryEvaluateNumericAttributes;
 	   multiclassEvaluation = cp.multiclassEvaluation;
@@ -92,7 +93,8 @@ void Options::copy(const Options &cp) {
 	   attrWeights.copy(cp.attrWeights);
 
 	   // stopping options
-	   minNodeWeight = cp.minNodeWeight;
+	   minNodeWeightTree = cp.minNodeWeightTree;
+	   minNodeWeightRF = cp.minNodeWeightRF;
 	   relMinNodeWeight = cp.relMinNodeWeight;
 	   majorClassProportion =cp.majorClassProportion;
 	   rootStdDevProportion = cp.rootStdDevProportion;
@@ -164,6 +166,7 @@ void Options::setDefault(void) {
     rndSeedSplit = -1 ;
 
     attrEvaluationInstances = 0 ; // means all
+	minNodeWeightEst = 2.0 ;
     binaryEvaluation = mFALSE ;
     binaryEvaluateNumericAttributes = mTRUE ;
 	multiclassEvaluation = 1 ; // average of all pairs
@@ -196,7 +199,8 @@ void Options::setDefault(void) {
     estOnReg[ estRReliefFexpRank ] = mTRUE ;
     estOnReg[ estMSEofMean ] = mTRUE ;
 
-	minNodeWeight = 5.0 ;
+	minNodeWeightTree = 5.0 ;
+	minNodeWeightRF = 2.0 ;
     relMinNodeWeight = 0.0;
     majorClassProportion = 1.0 ;
     rootStdDevProportion = 0.0 ;
@@ -491,6 +495,9 @@ void Options::outConfig(FILE *to) const
 	// Number of examples  for estimation
 	fprintf(to,"attrEvaluationInstances=%d  # number of instances for attribute evaluation (0 means all)\n", attrEvaluationInstances) ;
 
+	// minimal leaf's weight
+	fprintf(to,"minNodeWeightEst=%.2f  # minimal split to be evaluated\n", minNodeWeightEst) ;
+
 
     // switches for clasification estimation
     fprintf(to, "# Classification estimators \n") ;
@@ -548,8 +555,11 @@ void Options::outConfig(FILE *to) const
 
     fprintf(to, "\n# ---------- Stopping options ----------\n") ;
 
-    // minimal leaf's weight
-	fprintf(to,"minNodeWeight=%.2f  # minimal weight of a tree node\n", minNodeWeight) ;
+    // minimal leaf's weight for trees
+	fprintf(to,"minNodeWeightTree=%.2f  # minimal weight of a decision or regression tree node\n", minNodeWeightTree) ;
+
+    // minimal leaf's weight for RF
+	fprintf(to,"minNodeWeightRF=%.2f  # minimal weight of a random forest tree node\n", minNodeWeightRF) ;
 
     // Proportion of all examples in a node to stop
 	fprintf(to,"relMinNodeWeight=%f  # minimal proportion of training instances in a tree node to stop\n",relMinNodeWeight) ;
@@ -718,7 +728,7 @@ void Options::outConfig(FILE *to) const
 	fprintf(to,"mEstPrediction=%f  # m-estimate for prediction\n",mEstPrediction) ;
 
 	// maxThreads - maximal number of active threads
-	fprintf(to,"maxThreads=%d  # maximal number of active threads (0-allow openMP to set defaults)\n",maxThreads) ;
+	fprintf(to,"maxThreads=%d  # maximal number of active threads (0-allow OpenMP to set defaults)\n",maxThreads) ;
 
     // print tree also in dot format
 	fprintf(to,"printTreeInDot=%s  # print tree also in dot format\n", (printTreeInDot ? "Y" : "N")) ;
@@ -1023,13 +1033,29 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
 	// stopping options
 
-    else if (strcmp(keyword, "minNodeWeight")==0) {
-       // Minimal weight of a node to split
+    else if (strcmp(keyword, "minNodeWeightTree")==0) {
+       // Minimal weight of a tree node to split
        sscanf(key,"%lf", &dtemp) ;
        if (dtemp >= 0.0)
-         minNodeWeight = dtemp ;
+         minNodeWeightTree = dtemp ;
        else
-          merror("minNodeWeight (minimal weight of a tree node) should be non-negative","") ;
+          merror("minNodeWeightTree (minimal weight of a tree node) should be non-negative","") ;
+	}
+    else if (strcmp(keyword, "minNodeWeightRF")==0) {
+       // Minimal weight of a node in RF tree to split
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0.0)
+         minNodeWeightRF = dtemp ;
+       else
+          merror("minNodeWeightRF (minimal weight of a tree node in random forests) should be non-negative","") ;
+	}
+    else if (strcmp(keyword, "minNodeWeightEst")==0) {
+       // Minimal split to consider in attribute evaluation
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0.0)
+         minNodeWeightEst = dtemp ;
+       else
+          merror("minNodeWeightEst (minimal split to consider in attribute evaluation) should be non-negative","") ;
 	}
     else if (strcmp(keyword, "relMinNodeWeight")==0) {
        // Proportion of all examples in a node to stop

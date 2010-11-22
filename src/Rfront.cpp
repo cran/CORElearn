@@ -204,17 +204,17 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		dT->constructTree();
 	} else if (data->opt->action == "bayes") {
 		dT->learnRF = mFALSE;
-		dT->opt->minNodeWeight = dT->NoCases + 1;
+		dT->opt->minNodeWeightTree = dT->NoCases + 1;
 		dT->opt->modelType = 4;
 		dT->constructTree();
 	} else if (data->opt->action == "knn") {
 		dT->learnRF = mFALSE;
-		dT->opt->minNodeWeight = dT->NoCases + 1;
+		dT->opt->minNodeWeightTree = dT->NoCases + 1;
 		dT->opt->modelType = 2;
 		dT->constructTree();
 	} else if (data->opt->action == "knnKernel") {
 		dT->learnRF = mFALSE;
-		dT->opt->minNodeWeight = dT->NoCases + 1;
+		dT->opt->minNodeWeightTree = dT->NoCases + 1;
 		dT->opt->modelType = 3;
 		dT->constructTree();
 	} else if (data->opt->action == "rf") {
@@ -897,6 +897,38 @@ void readRF(char **fileName, int *modelID) {
 }
 
 #if defined(R_PORT)
+/*
+SEXP getModelDescription(SEXP modelID, SEXP rfTreeIdx) {
+	int mi = INTEGER(modelID)[0];
+	// is modelID valid
+	if (mi < 0 || mi >= allModels.len() || allModels[mi] == 0)
+		return (R_NilValue);
+
+	int noLeaves  = 0 ;
+	char* description ;
+
+	dataStore *data = allModels[mi]; // select model
+
+	if (data->isRegression) {
+		noLeaves = ((regressionTree*) data)->noLeaves() ;
+
+	}
+	else {
+		if ( ((featureTree*)data)->learnRF ) {
+		   int treeIdx = INTEGER(modelID)[0];
+		   noLeaves =  ((featureTree*) data)->forest[treeIdx].t.noLeaves() ;
+
+		}
+		else {
+			noLeaves = ((featureTree*) data)->noLeaves() ;
+		}
+
+	}
+    return
+
+}
+*/
+
 SEXP exportSizesRF(SEXP modelID) {
 	int mi;
 	mi = INTEGER(modelID)[0];

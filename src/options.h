@@ -54,8 +54,10 @@ public:
    marray<double> attrWeights ;
 
    // stopping options
-   double minNodeWeight ; // minimum number of examples in a node to split further on
-   double relMinNodeWeight ; // minimal proportion of examples in a leaf to spit further
+   double minNodeWeightTree ; // minimum number of examples in a node to split further; used  for decision and regression trees
+   double minNodeWeightRF ; // minimum number of examples in a node to split further; used in random forest
+   double minNodeWeightEst ; // minimum number of examples in a split to consider it valid; used in all attribute estimation tasks: trees, RF, binarization, discretization
+   double relMinNodeWeight ; // minimal proportion of examples in a leaf to spit further; used in decision trees, regression trees, and random forests
    double majorClassProportion ;
    double rootStdDevProportion ;
 

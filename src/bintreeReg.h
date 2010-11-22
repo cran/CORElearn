@@ -4,6 +4,7 @@
 #include "exprReg.h"
 #include "constrctReg.h"
 #include "contain.h"
+#include "mstring.h"
 #include "binnodeReg.h"
 
 
@@ -30,8 +31,6 @@ public:
    int noLeaves(binnodeReg *branch) const;
    int degreesOfFreedom(void) const { return degreesOfFreedom(root) ; }
    int degreesOfFreedom(binnodeReg *branch) const ;
-
-
 };
 
 

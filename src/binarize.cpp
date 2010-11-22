@@ -111,7 +111,7 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 						noRight ++ ;
 					}
 			}
-			if (noLeft >= eopt.minNodeWeight && noRight > eopt.minNodeWeight) {
+			if (noLeft >= eopt.minNodeWeightEst && noRight > eopt.minNodeWeightEst) {
 			  prepareDiscAttr(firstFreeDiscSlot + noIncrements, 2) ;
 			  noIncrements++ ;
 			}
@@ -177,7 +177,7 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 			if (DiscEstimation[bestIdx] > bestEstimation)
 			{
 				// check if split is valid
-				if ( noLeft[bestIdx - firstFreeDiscSlot] >= eopt.minNodeWeight && noRight[bestIdx - firstFreeDiscSlot] >= eopt.minNodeWeight ) {
+				if ( noLeft[bestIdx - firstFreeDiscSlot] >= eopt.minNodeWeightEst && noRight[bestIdx - firstFreeDiscSlot] >= eopt.minNodeWeightEst ) {
 				   bestEstimation = DiscEstimation[bestIdx] ;
 				   nodeConstruct.leftValues =  currentBest ;
 				}
@@ -227,7 +227,7 @@ double estimation::bestSplitGeneral(construct &nodeConstruct, int firstFreeDiscS
 	sortedAttr.qsortAsc() ;
 
 	// select only unique values but skip also smallest and largest values - we do not want split there
-	int lastUnique = 0, lower = int(eopt.minNodeWeight+0.5), upper =  int(OKvalues - eopt.minNodeWeight) ;
+	int lastUnique = 0, lower = int(eopt.minNodeWeightEst+0.5), upper =  int(OKvalues - eopt.minNodeWeightEst) ;
 	sortedAttr[lastUnique] = sortedAttr[lower] ;
 	for ( i = lower+1; i < upper ; i++)
 	{

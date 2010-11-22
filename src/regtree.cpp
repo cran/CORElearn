@@ -178,7 +178,7 @@ binnodeReg* regressionTree::buildTree(marray<int> &DTrain, marray<double> &pDTra
 
       Node->weightLeft = wLeft ;
       // is the resulting split inappropriate
-      if (LeftSize==0 || RightSize==0) //  || wLeft < opt->minNodeWeight || wRight < opt->minNodeWeight)
+      if (LeftSize==0 || RightSize==0  || wLeft < opt->minNodeWeightTree || wRight < opt->minNodeWeightTree)
       {
          createLeaf(Node) ;
          DTrain.destroy() ;
@@ -230,7 +230,7 @@ binnodeReg* regressionTree::buildTree(marray<int> &DTrain, marray<double> &pDTra
 booleanT regressionTree::time2stop(binnodeReg *Node)
 {
    // absolute training weight (number of examples) is too small
-   if (Node->weight <= opt->minNodeWeight)
+   if (Node->weight <= opt->minNodeWeightTree)
       return mTRUE ;
 
    // proportion of training examples is too small

@@ -70,6 +70,7 @@ protected:
    void rfWriteTree(FILE* fout, int indent, int treeIdx) const;
    void rfWriteSubTree(FILE* fout, int indent, binnode *branch) const;
    void rfConsolidateTree(binnode *branch) ;
+   booleanT rfTime2stop(binnode *Node) ;
 
    double oobAccuracy(mmatrix<int> &oob) ;
    void oobEvaluate(mmatrix<int> &oob) const ;

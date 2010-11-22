@@ -202,7 +202,7 @@ binnode* featureTree::buildForestTree(int TrainSize, marray<int> &DTrain, int at
 	binnode* Node = rfPrepareLeaf(TrainSize, DTrain);
 
    // stopping criterion
-   if (time2stop(Node) )
+   if (rfTime2stop(Node) )
    {
 	   rfRevertToLeaf(Node);
        return Node ;
@@ -229,7 +229,7 @@ binnode* featureTree::buildForestTree(int TrainSize, marray<int> &DTrain, int at
       rfSplit(DTrain, TrainSize, Node, LeftTrain, LeftSize, RightTrain, RightSize) ;
 
       Node->weightLeft = LeftSize ;
-	  if (LeftSize==0 || RightSize==0 || LeftSize < opt->minNodeWeight || RightSize < opt->minNodeWeight){
+	  if (LeftSize==0 || RightSize==0 || LeftSize < opt->minNodeWeightRF || RightSize < opt->minNodeWeightRF){
 	  //if (LeftSize==0 || RightSize==0) {
           rfRevertToLeaf(Node) ;
           return Node;
@@ -254,7 +254,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
    // create root node and put it into priority list
 
    binnode *rtNode = rfPrepareLeaf(TrainSize, DTrain) ;
-   if (time2stop(rtNode)) {
+   if (rfTime2stop(rtNode)) {
 	   rfRevertToLeaf(rtNode) ;
 	   return rtNode ;
    }
@@ -286,7 +286,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 	  // split the data according to attribute (call by reference)
       rfSplit(DTrain, TrainSize, Node, LeftTrain, LeftSize, RightTrain, RightSize) ;
       Node->weightLeft = LeftSize ;
-	  if (LeftSize==0 || RightSize==0 || LeftSize < opt->minNodeWeight || RightSize < opt->minNodeWeight){
+	  if (LeftSize==0 || RightSize==0 || LeftSize < opt->minNodeWeightRF || RightSize < opt->minNodeWeightRF){
 	  //if (LeftSize==0 || RightSize==0) {   // is the resulting split inappropriate
    	     rfRevertToLeaf(Node) ;
   		 --noTerminal ;
@@ -332,6 +332,33 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 
    return rtNode ;
 
+}
+
+//************************************************************
+//
+//                        rfTime2stop
+//                        ---------
+//
+//            check the various stopping criteria
+//
+//************************************************************
+booleanT featureTree::rfTime2stop(binnode *Node)
+{
+   // absolute training weight (number of examples) is too small
+   if (Node->weight < opt->minNodeWeightRF)
+      return mTRUE ;
+
+   // proportion of training examples is too small
+   if (Node->weight/rootWeight < opt->relMinNodeWeight)
+      return mTRUE ;
+
+
+   // proportion of majority class is bigger than parameter
+   if (Node->Classify[Node->majorClass]/Node->weight >= opt->majorClassProportion)
+      return mTRUE ;
+
+
+   return mFALSE ;
 }
 
 
