@@ -343,7 +343,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
 	eopt.binaryEvaluation = mFALSE ;
 
 	int sampleSize ;
-	// we use all the available values only if explicitely demanded
+	// we use all the available values only if explicitly demanded
 	if (eopt.discretizationSample==0)
 		sampleSize = OKvalues -1;
 	else

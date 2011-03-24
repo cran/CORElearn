@@ -1,3 +1,4 @@
+CORElearn-0.9.33, 2011-03-24: bug fixes, adaptation for OpenMP at different platforms, additional data checks   
 CORElearn-0.9.32, 2010-11-22: feature evaluation enhancements, bug fixes,   
 CORElearn-0.9.31, 2010-10-01: bug fixes, extraction of additional information from trees and random forests models   
 CORElearn-0.9.30, 2010-09-14: reorganizing testCore, so that it is less dependent on random seed and platform   

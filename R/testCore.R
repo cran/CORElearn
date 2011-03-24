@@ -245,6 +245,10 @@ allTests <- function(verbose=1,timed=FALSE)
     t4 <- system.time(r4 <- testCoreOrdEval(1))
     cat("testCoreOrdEval()  : ", asTxt(r4), "\n")
     if (timed) cat("Elapsed", t4["elapsed"],"sec\n")
+    if (timed) {
+        cat("system.time() summary\n")
+        print(rbind(t1, t2, t3, t4)[, 1:3])
+    }
     r5 <- testCoreNA(1)
     cat("testCoreNA()       : ", asTxt(r5), "\n")
     r6 <- testCoreRPORT(1)
