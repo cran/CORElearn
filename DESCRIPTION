@@ -1,8 +1,8 @@
 Package: CORElearn
 Title: CORElearn - classification, regression, feature evaluation and
         ordinal evaluation
-Version: 0.9.33
-Date: 2011-03-24
+Version: 0.9.34
+Date: 2011-04-01
 Author: Marko Robnik-Sikonja <marko.robnik@fri.uni-lj.si>, Petr Savicky
         <savicky@cs.cas.cz>
 Maintainer: Marko Robnik-Sikonja <marko.robnik@fri.uni-lj.si>
@@ -23,6 +23,6 @@ Description: CORElearn is machine learning suite ported to R from
         level documentation is reachable through ?CORElearn.
 License: GPL-3
 URL: http://lkm.fri.uni-lj.si/rmarko/software/
-Packaged: 2011-03-24 12:09:06 UTC; rmarko
+Packaged: 2011-04-01 12:04:38 UTC; rmarko
 Repository: CRAN
-Date/Publication: 2011-03-26 15:43:24
+Date/Publication: 2011-04-04 07:36:23

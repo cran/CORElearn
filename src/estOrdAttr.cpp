@@ -74,7 +74,7 @@ void estimation::ordAVdAeqNorm(int discAttrFrom, int discAttrTo, oeDistanceType 
    numUpper = noNumeric ;
 
    double distanceSum, normDistance, Adiff, clDiff ;
-   int current, neighbourIdx, iAttr, currentClass ;
+   int current, neighbourIdx, iAttr ;
    diffEsorted.create(TrainSize) ;
    distanceEarray.create(TrainSize) ;
 
@@ -93,7 +93,7 @@ void estimation::ordAVdAeqNorm(int discAttrFrom, int discAttrTo, oeDistanceType 
    for (int iterIdx=0 ; iterIdx < NoIterations ; iterIdx++)  {
 
 	   current = sampleIdx[iterIdx] ;
-       currentClass =  DiscValues(current, 0) ;
+       //currentClass =  DiscValues(current, 0) ;
       // first we compute distances of  all other examples to current
       computeDistancesOrd(current) ;
 
@@ -329,7 +329,7 @@ void estimation::ordAVdAeqNormClDiff1(int discAttrFrom, int discAttrTo, oeDistan
    numUpper = noNumeric ;
 
    double distanceSum, normDistance, Adiff, clDiff ;
-   int current, neighbourIdx, iAttr, currentClass ;
+   int current, neighbourIdx, iAttr ;
    diffEsorted.create(TrainSize) ;
    distanceEarray.create(TrainSize) ;
 
@@ -348,7 +348,7 @@ void estimation::ordAVdAeqNormClDiff1(int discAttrFrom, int discAttrTo, oeDistan
    for (int iterIdx=0 ; iterIdx < NoIterations ; iterIdx++)  {
 
 	   current = sampleIdx[iterIdx] ;
-       currentClass =  DiscValues(current, 0) ;
+       // currentClass =  DiscValues(current, 0) ;
       // first we compute distances of  all other examples to current
       computeDistancesOrdClDiff1(current) ;
 
@@ -585,7 +585,7 @@ void estimation::ordAVdAeqNormAttrDiff1(int discAttrFrom, int discAttrTo, oeDist
    numUpper = noNumeric ;
 
    double distanceSum, normDistance, Adiff, clDiff ;
-   int current, neighbourIdx, iAttr, currentClass ;
+   int current, neighbourIdx, iAttr ;
    diffEsorted.create(TrainSize) ;
    distanceEarray.create(TrainSize) ;
 
@@ -605,7 +605,7 @@ void estimation::ordAVdAeqNormAttrDiff1(int discAttrFrom, int discAttrTo, oeDist
    for (int iterIdx=0 ; iterIdx < NoIterations ; iterIdx++)  {
 
 	   current = sampleIdx[iterIdx] ;
-       currentClass =  DiscValues(current, 0) ;
+       // currentClass =  DiscValues(current, 0) ;
       // first we compute distances of  all other examples to current
       computeDistancesOrd(current) ;
 
@@ -844,7 +844,7 @@ void estimation::ordEvalInst(int selectedInstance, int discAttrFrom, int discAtt
 	numUpper = noNumeric ;
 
 	double distanceSum, normDistance, Adiff, clDiff ;
-	int current, neighbourIdx, iAttr, currentClass ;
+	int current, neighbourIdx, iAttr ;
 	diffEsorted.create(TrainSize) ;
 	distanceEarray.create(TrainSize) ;
 
@@ -860,7 +860,7 @@ void estimation::ordEvalInst(int selectedInstance, int discAttrFrom, int discAtt
 	    return ;
 	}
 
-	currentClass =  DiscValues(current, 0) ;
+	//currentClass =  DiscValues(current, 0) ;
 	// first we compute distances of  all other examples to current
 	computeDistancesOrd(current) ;
 
@@ -1060,7 +1060,7 @@ void estimation::ordEvalInst3(int selectedInstance, int discAttrFrom, int discAt
 	numUpper = noNumeric ;
 
 	double distanceSum, normDistance, Adiff, clDiff ;
-	int current, neighbourIdx, iAttr, currentClass, iClass ;
+	int current, neighbourIdx, iAttr, iClass ;
 	//diffEsorted.create(TrainSize) ;
 	//distanceEarray.create(TrainSize) ;
 
@@ -1076,7 +1076,7 @@ void estimation::ordEvalInst3(int selectedInstance, int discAttrFrom, int discAt
 	    return ;
 	}
 
-	currentClass =  DiscValues(current, 0) ;
+	// currentClass =  DiscValues(current, 0) ;
 	// first we compute distances of  all other examples to current
 	computeDistancesOrd(current) ;
 
@@ -1270,7 +1270,7 @@ void estimation::ordAVdAeq(int discAttrFrom, int discAttrTo,
    numUpper = noNumeric ;
 
    double distanceSum, normDistance, Adiff, clDiff ;
-   int current, neighbourIdx, iAttr, currentClass ;
+   int current, neighbourIdx, iAttr ;
    diffEsorted.create(TrainSize) ;
    distanceEarray.create(TrainSize) ;
 
@@ -1289,7 +1289,7 @@ void estimation::ordAVdAeq(int discAttrFrom, int discAttrTo,
    for (int iterIdx=0 ; iterIdx < NoIterations ; iterIdx++)  {
 
 	   current = sampleIdx[iterIdx] ;
-       currentClass =  DiscValues(current, 0) ;
+       // currentClass =  DiscValues(current, 0) ;
       // first we compute distances of  all other examples to current
       computeDistancesOrd(current) ;
 
