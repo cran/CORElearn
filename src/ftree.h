@@ -78,6 +78,8 @@ protected:
    double oobSTD(marray<int> &maxOther) ;
    void oobMarginAV(mmatrix<int> &oob, int noVal, marray<int> &origVal,
 								marray<double> &avMargin) ;
+   void oobEvaluateCluster(mmatrix<int> &oob, marray<booleanT> &cluster) ;
+
    void shuffleChange(int noValues, marray<int> &valArray) ;
    void rfRegularize() ;
    void rfRegFrprmn(double lambda, marray<double> &p, int &iter, double &fret) ;
@@ -115,6 +117,8 @@ public:
    void rfResultLine(FILE *to, int idx, double oobAccuracy, double oobMargin, double oobCorrelation,
         double TestAccuracy, double TestCost, double TestInf, double TestAuc, double TestSens, double TestSpec, double TestBrier, double TestKappa) const ;
    void varImportance(marray<double> &varEval) ;
+   void varImportanceCluster(marray<double> &varEval, marray<booleanT> &cluster) ;
+
    void printAttrEval(FILE *to, marray<int> &idx, marray<marray<double> > &attrEval) ;
    void avImportance(marray<marray<double> > &avEval) ;
    int writeRF(const char* TreeFileName) const;
@@ -130,6 +134,12 @@ public:
    SEXP exportSumOverLeaves(void);
    SEXP RF2R(void) ;
    SEXP RFtree2R(binnode *branch);
+
+   SEXP T2Rpart(void) ;
+   SEXP proximity(bool distance) ;
+   SEXP importance2R(void) ;
+   SEXP importance2RCluster(marray<double> &varEval, marray<booleanT> &cluster) ;
+
 #endif
 
 

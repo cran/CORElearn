@@ -1,5 +1,6 @@
 \name{rfAttrEval}
 \alias{rfAttrEval}
+\alias{rfAttrEvalClustering}
 \title{ Attribute evaluation with random forest }
 \description{
   The method evaluates the quality of the features/attributes/dependent variables
@@ -8,21 +9,29 @@
 }
 \usage{
 rfAttrEval(model) 
- }
+rfAttrEvalClustering(model, dataset, clustering=NULL)  }
 
 \arguments{
   \item{model}{ The model of type \code{rf} or \code{rfNear} as returned by \code{\link{CoreModel}}. }
+  \item{dataset}{ Training instances that produced random forest \code{model}.}
+  \item{clustering}{ A clustering vector of \code{dataset} training instances used in \code{model}.}   
   }
 \details{
   The attributes are evaluated via provided random forest's out-of-bag sets. Values for each attribute in turn
   are randomly shuffled and classified with random forest. The difference between average margin of
-  non-shuffled and shuffled instances serves as a quality estimate of the attribute.   
+  non-shuffled and shuffled instances serves as a quality estimate of the attribute.
+  The function \code{rfAttrEvalClustering} uses a clustering of the training instances to produce importance score of attributes 
+  for each cluster separately. If parameter \code{clustering} is set to \code{NULL} 
+  the actual class values of the instances are used as clusters thereby  producing the evaluation of attributes 
+  specific for each of the class values.  
 }
 \value{
-  Vector of evaluations for the features in the order specified by the formula used to generate provided \code{model}.
+  In case of \code{rfAttrEval} a vector of evaluations for the features in the order specified by the formula used to generate the provided \code{model}.
+  In case of \code{rfAttrEvalClustering} a matrix is returned, where each row contains evaluations for one of the cluster values. 
 }
 
-\author{ Marko Robnik-Sikonja }
+\author{ Marko Robnik-Sikonja (thesis supervisor) and John Adeyanju Alao (as a part of his BSc thesis)}
+
 
 \keyword{ models }
 \keyword{ nonlinear }
@@ -31,21 +40,15 @@ rfAttrEval(model)
 
 \seealso{
 \code{\link{CORElearn}},
-\code{\link{CoreModel}}.
+\code{\link{CoreModel}},
 \code{\link{attrEval}}.
 }
 
 \examples{
-# use iris data set
-
 # build random forests model with certain parameters
 modelRF <- CoreModel(Species ~ ., iris, model="rf", 
-              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
-
-estRF <- rfAttrEval(modelRF) 
-
-print(estRF)
-
+              selectionEstimator="MDL", minNodeWeightRF=5, rfNoTrees=100)
+rfAttrEval(modelRF) 
 }
 \references{ 
 Marko Robnik-Sikonja: Improving Random Forests. In J.-F. Boulicaut et al.(Eds): ECML 2004, 

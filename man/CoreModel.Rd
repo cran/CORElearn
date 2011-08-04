@@ -143,7 +143,7 @@ for (i in unique(ind)) {
     # Delete the previous model, if there is one.
     if (!is.null(fit)) destroyModels(fit)
     fit <- CoreModel(Species ~ ., iris[ind!=i,], model="rf", rfNoTrees=20)
-    pred[ind==i] <- predict.CoreModel(fit, iris[ind==i,], type="class")
+    pred[ind==i] <- predict(fit, iris[ind==i,], type="class")
 }
 table(pred,iris$Species)
 }

@@ -42,7 +42,7 @@ model <- CoreModel(Species ~ ., iris, model="rf",
               selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 
 # prediction 
-pred <- predict.CoreModel(model, iris, rfPredictClass=FALSE)
+pred <- predict(model, iris, rfPredictClass=FALSE)
 print(pred)
 
 # destruction of model's internal representation

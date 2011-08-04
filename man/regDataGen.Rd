@@ -63,5 +63,5 @@ print(modelRT)
 
 }
 
-
 \keyword{ data }
+\keyword{datagen}

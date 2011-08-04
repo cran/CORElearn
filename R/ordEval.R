@@ -214,8 +214,10 @@ avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), ciDispla
 
 
 
-avVisObject<- function(oe, attrIdx=0, graphTitle=NULL, xlabel = "attribute values", bw=FALSE)
+avSlopeObject<- function(oe, ci=c("two.sided","upper","lower","none"),attrIdx=0, graphTitle=NULL, xlabel = "attribute values", bw=FALSE)
 {
+    ci<-match.arg(ci)
+    
     noAttr <- oe$noAttr
     ordVal <- oe$ordVal
     
@@ -223,29 +225,49 @@ avVisObject<- function(oe, attrIdx=0, graphTitle=NULL, xlabel = "attribute value
         downColor <- "black"
         downOverColor <- gray(0.9)
         upColor <- "black"
-        upOverColor <- gray(0.3)        
+        upOverColor <- gray(0.3)     
+        ciColor = gray(0.9)
     }
     else {
         downColor <- "blue"
         downOverColor <- "lightblue"
         upColor <- "red"
         upOverColor <- "orange"
+        ciColor = gray(0.9)
     }
-    
+        
     yU<-matrix(nrow=noAttr,ncol=ordVal)
+    yUlow<-matrix(nrow=noAttr,ncol=ordVal)
+    yUhigh<-matrix(nrow=noAttr,ncol=ordVal)
     xU <- c(1:ordVal)
     yD<-matrix(nrow=noAttr,ncol=ordVal)
+    yDlow<-matrix(nrow=noAttr,ncol=ordVal)
+    yDhigh<-matrix(nrow=noAttr,ncol=ordVal)
     xD <- c(1:ordVal)
     for(iA in 1:noAttr) {
         yU[iA,1] <- 0
         for(i in 2:ordVal) {
             ySlope <- oe$reinfPosAV[iA,i]
+            stats <- oe$rndReinfPosAV[iA,i,]
+            
+            ySlopeLow <- stats[["lowPercentile"]]
+            ySlopeHigh <- stats[["highPercentile"]]            
+            
             yU[iA,i] <- yU[iA,i-1] + ySlope
+            yUlow[iA,i] <- yU[iA,i-1] + ySlopeLow
+            yUhigh[iA,i] <- yU[iA,i-1] + ySlopeHigh            
         }
         yD[iA,ordVal] <- 0
         for(i in (ordVal-1):1) {
             ySlope <- oe$reinfNegAV[iA,i]
+            stats <- oe$rndReinfNegAV[iA,i,]
+
+            ySlopeLow <- stats[["lowPercentile"]]
+            ySlopeHigh <- stats[["highPercentile"]]                        
+            
             yD[iA,i] <- yD[iA,i+1] - ySlope
+            yDlow[iA,i] <- yD[iA,i+1] - ySlopeLow
+            yDhigh[iA,i] <- yD[iA,i+1] - ySlopeHigh            
         }
     }
     yLimit <- c(min(yD,yU)-0.1, max(yU,yD) + 0.1)
@@ -279,8 +301,26 @@ avVisObject<- function(oe, attrIdx=0, graphTitle=NULL, xlabel = "attribute value
         lines(xU, yU[iA,], type = "o", pch = 15, col = upColor)
         lines(xD, yD[iA,], type = "o", pch = 15, col = downColor)
         for(i in 1:(ordVal - 1)) {
+
+            if (ci=="lower")
+              polygon(c(xU[i], xU[i+1],xU[i+1]), c(yU[iA,i], yUlow[iA,i+1],yU[iA,i]), col = ciColor, border=NA)
+            if (ci=="upper")
+              polygon(c(xU[i], xU[i+1],xU[i+1]), c(yU[iA,i], yUhigh[iA,i+1],yU[iA,i]), col = ciColor, border=NA)
+            if (ci=="two.sided")
+                polygon(c(xU[i], xU[i+1],xU[i+1]), c(yU[iA,i], yUhigh[iA,i+1],yUlow[iA,i+1]), col = ciColor, border=NA)
+
             arrows(xU[i], yU[iA,i], xU[i+1], yU[iA,i+1], col = upColor, angle=9, length=0.12)
+                       
+            
+            if (ci=="lower")
+                polygon(c(xD[i+1], xD[i],xD[i]), c(yD[iA,i+1], yD[iA,i+1],yDlow[iA,i]), col = ciColor, border=NA)
+            if (ci=="upper")
+               polygon(c(xD[i+1], xD[i],xD[i]), c(yD[iA,i+1], yD[iA,i+1],yDhigh[iA,i]), col = ciColor, border=NA)
+            if (ci=="two.sided")
+               polygon(c(xD[i+1], xD[i],xD[i]), c(yD[iA,i+1], yDhigh[iA,i],yDlow[iA,i]), col = ciColor, border=NA)
+            
             arrows(xD[i + 1], yD[iA,i+1], xD[i], yD[iA,i], col = downColor, angle=9, length=0.12)
+                    
         }
     }
     invisible()
@@ -314,7 +354,7 @@ attrNormBarObject<-function(oe, graphTitle = "OrdEval for all attributes",
     x <- c(0, 0)
     y <- c(1, noAttr+0.85)   
     ylabName <- "" ## "attributes"
-    plot(x, y, type = "l", xlim = c(-1, 1), ylim = c(0.9, noAttr+0.9), xlab = "decreasing        increasing",
+    plot(x, y, type = "l", xlim = c(-1, 1), ylim = c(0.9, noAttr+0.9), xlab = "downward            upward     ",
             ylab = ylabName, axes = FALSE)
     ## plot title
     subtitleName <- "reinforcement"

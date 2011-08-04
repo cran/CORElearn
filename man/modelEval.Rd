@@ -45,7 +45,7 @@ modelEval(model, correctClass, predictedClass, predictedProb=NULL, costMatrix=NU
   \item{predictionMatrix}{matrix of miss-classifications}
   \item{sensitivity}{sensitivity for two class problems}
   \item{specificity}{specificity for two class problems}
-  \item{brierScore}{Brier score of predicted probabilities}
+  \item{brierScore}{Brier score of predicted probabilities (the original Brier's definition which scores all the classes not only the correct one)}
   \item{kappa}{Kappa statistics measuring randomness of the predictions}
   \item{precision}{precision for two class problems}
   \item{recall}{recall for two class problems (the same as sensitivity) }
@@ -78,7 +78,7 @@ model <- CoreModel(Species ~ ., iris, model="rf",
               selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 
 # prediction with node distribution
-pred <- predict.CoreModel(model, iris, rfPredictClass=FALSE)
+pred <- predict(model, iris, rfPredictClass=FALSE)
 
 # Model evaluation
 mEval <- modelEval(model, iris[["Species"]], pred$class, pred$prob)

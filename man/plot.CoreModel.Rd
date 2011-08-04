@@ -1,0 +1,111 @@
+\name{plot.CoreModel}
+\alias{plot.CoreModel}
+\title{ Visualization of CoreModel models }
+\description{
+    The method \code{plot} visualizes the models returned by CoreModel()
+    function or summaries obtained by applying these models to data.
+    Different plots can be produced depending on the type of the model.
+}
+\usage{
+    \method{plot}{CoreModel}(x, trainSet, graphType=c("attrEval", "outliers", "scaling",
+    "prototypes", "attrEvalCluster"), clustering=NULL, ...) 
+}
+\arguments{
+    \item{x}{The model structure as returned by \code{\link{CoreModel}}.}          
+    \item{trainSet}{ The data frame containing training data which produced the model \code{x}. }
+    \item{graphType}{ The type of the graph to produce for random forest models. See details.}
+    \item{clustering}{The clustering of the training instances used in some model types. See details.}
+    \item{\dots }{ Other options controlling graphical output passed to additional graphical functions.}
+}
+\details{
+    The output of function \code{\link{CoreModel}} is visualized. Depending on the model type, different visualizations 
+    are produced. Currently, classification tree, regression tree, and random forests are supported 
+    (models "tree", "regTree", "rf", and "rfNear").
+    
+    For classification and regression trees (models "tree" and "regTree") the visualization produces a graph representing structure
+    of classification and regression tree, respectively. This process exploits graphical capabilities of 
+    \code{\link{plot.rpart}} function. Internal structures of 
+    \code{CoreModel} are converted to \code{\link{rpart.object}} and then visualized by calling
+    \code{\link{plot.rpart}} using some sensible values of graphical parameters. For more versatile
+    picture use \code{\link{getRpartModel}} and call \code{\link{plot.rpart}} and \code{\link{text.rpart}} 
+    directly modifying their graphical parameters (see an example below). 
+    
+    For random forest models (models "rf" and "rfNear") different types of visualizations can be produced depending on the
+    \code{graphType} parameter:
+    \itemize{
+    \item \code{"attrEval"} the attributes are evaluated with random forest model and the importance scores are then
+                          visualized. For details see \code{\link{rfAttrEval}}.
+    \item \code{"attrEvalClustering"} similarly to the \code{"attrEval"} the attributes are evaluated with random forest 
+                            model and the importance scores are then visualized, but the importance scores are generated
+                            for each cluster separately. The parameter \code{clustering} provides clustering information on
+                            the \code{trainSet}. If \code{clustering} parameter is set to NULL, the class values are used as 
+                            clustering information and visualization of attribute importance for each class separately is
+                             generated.
+                            For details see \code{\link{rfAttrEvalClustering}}.                         
+    \item \code{"outliers"} the random forest proximity measure of training instances in \code{trainSet}
+                         is visualized and outliers for each class separately can be detected.
+                         For details see \code{\link{rfProximity}} and \code{\link{rfOutliers}}.  
+    \item \code{"prototypes"} typical instances are found based on predicted class probabilities
+            and their values are visualized (see \code{\link{classPrototypes}}). 
+    \item \code{"scaling"} returns a scaling plot of training instances in a two dimensional space using
+                     random forest based proximity as the distance (see \code{\link{rfProximity}} 
+                     and a scaling function \code{\link{cmdscale}}).
+    }       
+}
+\value{
+    The method returns no value.
+}
+\examples{
+# decision tree
+dataset <- CO2
+md <- CoreModel(Plant ~ ., dataset, model="tree")
+plot(md, dataset)
+
+# more versatile graph can be obtained by explicit conversion to rpart.object 
+rpm <- getRpartModel(md,dataset)
+# and than setting additional graphical parameters in plot.rpart and text.rpart
+# set angle to tan(0.5)=45 (degrees) and length of branches at least 5, try to
+# make a dendrogram more compact
+plot(rpm, branch=0.5, minbranch=5, compress=TRUE)
+#(pretty=0) full names of attributes, numbers to 3 decimals, 
+text(rpm, pretty=0, digits=3)
+
+# regression tree
+dataset <- CO2
+md <- CoreModel(uptake ~ ., dataset, model="regTree")
+plot(md, dataset)
+
+#random forests
+dataset <- iris
+md <- CoreModel(Species ~ ., dataset, model="rf", rfNoTrees=30)
+plot(md, dataset, graphType="attrEval")
+plot(md, dataset, graphType="outliers")
+plot(md, dataset, graphType="scaling")
+plot(md, dataset, graphType="prototypes")
+plot(md, dataset, graphType="attrEvalCluster", clustering=NULL)
+}
+
+
+\author{ John Adeyanju Alao (as a part of his BSc thesis) and Marko Robnik-Sikonja (thesis supervisor)}
+
+
+\seealso{
+\code{\link{CoreModel}},
+\code{\link{rfProximity}},
+\code{\link{pam}},
+\code{\link{rfClustering}},
+\code{\link{rfAttrEvalClustering}},
+\code{\link{rfOutliers}},
+\code{\link{classPrototypes}},
+\code{\link{cmdscale}},
+\code{\link{rpart}}.
+}
+
+\references{
+Leo Breiman: Random Forests. \emph{Machine Learning Journal}, 45:5-32, 2001
+}
+
+
+\keyword{cluster}
+\keyword{robust}
+\keyword{tree}

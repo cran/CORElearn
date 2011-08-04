@@ -1,4 +1,7 @@
-CORElearn-0.9.34, 2011-04-01: code prettying to remove some warning   
+CORElearn-0.9.35, 2011-08-18: improving OrdEval graphs and documentation
+                              forcing the same levels for correctClass and predictedClass in modelEval (problem reported by Marcin Mironczuk)
+                              visualization of models
+CORElearn-0.9.34, 2011-04-01: code prettying to remove some warnings   
 CORElearn-0.9.33, 2011-03-24: bug fixes, adaptation for OpenMP at different platforms, additional data checks   
 CORElearn-0.9.32, 2010-11-22: feature evaluation enhancements, bug fixes,   
 CORElearn-0.9.31, 2010-10-01: bug fixes, extraction of additional information from trees and random forests models   

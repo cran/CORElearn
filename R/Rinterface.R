@@ -154,6 +154,55 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
     }
     returnList
 }
+
+plot.CoreModel<-function(x, trainSet, graphType=c("attrEval","outliers","scaling", "prototypes","attrEvalCluster"), clustering=NULL,...) 
+{    
+    graphType<-match.arg(graphType)
+    model <- x
+    rm(x)
+    # regression or decision tree
+    if (model$model == "regTree" || model$model == "tree"){           
+        rmodel <- getRpartModel(model, trainSet) ;
+        plot(rmodel,compress=T,branch=0.5);
+        text(rmodel, pretty=0);
+    }
+    else if (model$model == "rf" || model$model == "rfNear"){
+        if (graphType == "attrEval") {
+            imp<-rfAttrEval(model);
+            plotRFStats(imp, plotLine=TRUE, myAxes=attr(model$terms,"term.labels"));
+        }
+        else if (graphType == "attrEvalCluster") {
+            #importance by cluster
+            impc<-rfAttrEvalClustering(model, trainSet, clustering);
+            plotRFMulti(impc$imp, impc$levels, myAxes=attr(model$terms,"term.labels"));
+        }
+        else if (graphType == "outliers"){
+            out<-rfOutliers(model, trainSet);
+            plotRFStats(abs(out), cluster=as.character(trainSet[[as.character(attr(model$terms,"variables")[[2]])]]));
+        }
+        else if (graphType == "scaling"){
+            dis<-rfProximity(model, outProximity=F);
+            #get 4 most important components
+            space<-spaceScale(dis, 4);
+            #  display 1. in 2. component
+            subDim<-c(space$points[,1], space$points[,2]);
+            dim(subDim)<-c(length(space$points[,1]),2);
+            className <- attr(model$terms, "variables")[[2]];
+            cluster<-trainSet[as.character(className)];
+            plotRFStats(subDim, t(cluster));
+        }
+        else if (graphType == "prototypes"){
+            # 10 most typical cases for each class based on predicted class probability
+            best<-classPrototypes(model, trainSet, 10);
+            vnorm<-varNormalization(model, trainSet[best$prototypes,]);
+            plotRFNorm(vnorm, best$cluster, best$levels, 0.15, myHoriz=TRUE, myAxes=attr(model$terms,"term.labels"));
+        }
+    }
+    else {
+        warning("The model provided has no visualization.");
+    }
+    invisible(model)
+}
 attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
 {
     ## find the type of estimator
@@ -454,7 +503,7 @@ plot.ordEval<-function(x, graphType=c("avBar", "attrBar", "avSlope"), ...) {
     graphType<-match.arg(graphType)
     
     if (graphType=="avSlope")
-        avVisObject(x,  ...)
+        avSlopeObject(x,  ...)
     else if (graphType=="avBar" )
         avNormBarObject(x, ...)
     else if (graphType=="attrBar")
@@ -535,33 +584,40 @@ modelEval <- function(model, correctClass, predictedClass, predictedProb=NULL, c
     }
 }   
 modelEvaluationClass.Core <- function(correctClass, predictedClass, predictedProb=NULL, costMatrix=NULL, priorClassProb=NULL, beta=1) {
+    # common vector of levels
+    if (inherits(correctClass,"factor")) {
+        levelsCorrect<-levels(correctClass)
+    } else {
+        levelsCorrect<-sort(unique(correctClass))
+	}
+    if (inherits(predictedClass,"factor")) {
+        levelsPredicted<-levels(predictedClass)
+    } else {
+        levelsPredicted<-sort(unique(predictedClass))
+	}
+	levelsBoth<-union(levelsCorrect,levelsPredicted)
     # some data validity checks
-    if (!inherits(correctClass,"factor")) {
-        correctClass<-factor(correctClass)
-    }
-    if (length(correctClass[is.na(correctClass)])>0)
+    correctClass<-factor(correctClass,levels=levelsBoth)
+    if (any(is.na(correctClass)))
          stop("Correct class should not contain NA values.")
-    noClasses <- length(levels(correctClass)) ;
-    if (!inherits(predictedClass,"factor")) {
-        predictedClass<-factor(predictedClass)
-    }
-    if (length(predictedClass[is.na(predictedClass)])>0)
+    noClasses <- length(levelsBoth)
+    predictedClass<-factor(predictedClass,levels=levelsBoth)
+    if (any(is.na(predictedClass)))
         stop("Predicted class should not contain NA values.")
-    noInst <- length(correctClass) ;
+    noInst <- length(correctClass)
     if (is.null(predictedProb)){
         ## create and fill the prediction matrix
         predictedProb <- matrix(0, nrow=noInst, ncol=noClasses)
         for (i in 1:noInst)
-            predictedProb[i, predictedClass[i]] <- 1.0
+            predictedProb[i, predictedClass[i]] <- 1
     }
     if (is.null(costMatrix)) {
         ## create and fill uniform costs matrix
-        costMatrix <- 1 - diag(noClasses);
+        costMatrix <- 1 - diag(noClasses)
     }
     if (is.null(priorClassProb))
-        priorClassProb <- table(correctClass)/noInst ;
-    
-    tmp <- .C("modelEvaluate",
+        priorClassProb <- table(correctClass)/noInst
+        tmp <- .C("modelEvaluate",
             noInst = length(correctClass),
             correctClass = as.integer(correctClass),
             predictedClass = as.integer(predictedClass),

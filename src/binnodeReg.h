@@ -26,4 +26,6 @@ public:
     void copy(binnodeReg &Source) ;
 };
 
+typedef binnodeReg* PbinnodeReg ;
+
 #endif

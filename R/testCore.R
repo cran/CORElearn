@@ -141,7 +141,7 @@ testCoreReg <- function(verbose=1)
     train <- regDataGen(ncases)
     test<- regDataGen(ncases)
     model <- CoreModel(response~., train, model="regTree", minNodeWeightEst=1,minNodeWeightTree=5)
-    pred <- predict.CoreModel(model, test)
+    pred <- predict(model, test)
     # Model evaluation
     mEval <- modelEval(model, test[["response"]], pred)
     comp1<-c(0.7326231, 0.7194654, 0.4705813, 0.6805264) # c(0.765781, 0.786064, 0.4801148, 0.6943131)

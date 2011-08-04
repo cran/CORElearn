@@ -60,23 +60,6 @@ and RReliefF in regression and their variants.
          quotient in exponential rank distance attribute evaluation. }
 }
 }
-\section{Algorithm ordEval}{
- Algorithm \code{\link{ordEval}} uses all the parameters for context-sensitive attribute evaluation (as e.g. ReliefF),
-  and some additional ones.
-\describe{
-    \item{ordEvalNoRandomNormalizers}{type: integer, default value: 0, value range: 0, Inf, \cr
-       number of randomly shuffled attributes for normalization of each attribute (0=no normalization). }
-    \item{ordEvalBootstrapNormalize}{type: logical, default value: FALSE \cr
-       are features used for normalization constructed with bootstrap sampling or random permutation. }
-    \item{ordEvalNormalizingPercentile}{type: numeric, default value: 0.025, value range: 0, 0.5 \cr
-       percentile defines the length of confidence interval obtained with random normalization. Percentile \code{t} forms
-       interval by taking the \eqn{n\cdot t}{nt} and \eqn{n(1-t)} random evaluation as the confidence interval boundaries, thereby forming 
-       \eqn{100(1-2t)}\%  confidence interval (\code{t}=0.025 gives 95\% confidence interval). The value \eqn{n} is set by 
-       \code{ordEvalNoRandomNormalizers} parameter.}
-    \item{attrWeights}{type: character, \cr
-       a character vector representing a list of attribute weights in the ordEval distance measure. }
-}
-}
 \section{Decision/regression tree construction}{
 There are several parameters controlling a construction of the tree model. Some are described here,
 but also attribute evaluation, stop building, model, constructive induction, discretization, 
@@ -111,7 +94,9 @@ During tree construction the node is recursively split, until certain condition 
         proportion of majority class in a classification tree node to stop splitting it. }
     \item{rootStdDevProportion}{type: numeric, default value: 0, value range: 0, 1 \cr
          proportion of root's standard deviation in a regression tree node to stop splitting it. }
-}
+%   \item{minNonMajorityWeight}{type: numeric, default value: 0, value range: 0, Inf \cr
+%        minimal number of non-majority class instances (weight) in a node to allow further splitting. The default value 0 disables this stopping criterion. }
+ }
 }
 \section{Models in the tree leaves}{
 In leaves of the tree model there can be various prediction models controlling prediction. For example instead of classification with 
@@ -120,14 +105,14 @@ expressive power of the tree model.
 \describe{
     \item{modelType}{type: integer, default value: 1, value range: 1, 4 \cr
         type of models used in classification tree leaves (1=majority class, 2=k-nearest neighbors, 3=k-nearest neighbors with kernel, 4=naive Bayes). }
-    \item{modelTypeReg}{type: integer, default value: 1, value range: 1, 8 \cr
+    \item{modelTypeReg}{type: integer, default value: 3, value range: 1, 8 \cr
         type of models used in regression tree leaves (1=mean predicted value, 2=median predicted value, 3=linear by MSE, 
         4=linear by MDL, 5=linear as in M5, 6=kNN, 7=Gaussian kernel regression, 8=locally weighted linear regression). }
     \item{kInNN}{type: integer, default value: 10, value range: 0, Inf \cr
          number of neighbors in k-nearest neighbors models (0=all). }
     \item{nnKernelWidth}{type: numeric, default value: 2, value range: 0, Inf \cr  kernel width in k-nearest neighbors models. }
     \item{bayesDiscretization}{type: integer, default value: 2, value range: 1, 2 \cr
-       type of discretization for naive Bayes models (1=greedy with selection estimator, 2=equal frequency). }
+       type of discretization for naive Bayesian models (1=greedy with selection estimator, 2=equal frequency). }
     \item{bayesEqFreqIntervals}{type: integer, default value: 4, value range: 1, Inf \cr
         number of intervals in equal frequency discretization for naive Bayesian models. }
  }

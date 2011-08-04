@@ -98,6 +98,7 @@ void Options::copy(const Options &cp) {
 	   relMinNodeWeight = cp.relMinNodeWeight;
 	   majorClassProportion =cp.majorClassProportion;
 	   rootStdDevProportion = cp.rootStdDevProportion;
+	   minNonMajorityWeight = cp.minNonMajorityWeight ;
 
 	   //  models in trees
 	   modelType = cp.modelType ;
@@ -183,7 +184,7 @@ void Options::setDefault(void) {
 	ordEvalBootstrapNormalize = mFALSE ;
 	//oeCI = ciTwoSided ;
 	ordEvalNormalizingPercentile = 0.025 ;
-    // attrWeights remain uninstatiated
+    // attrWeights remain uninstantiated
 
 	minInstanceWeight = 0.05 ;
 	selectionEstimator = estMDL ;
@@ -204,6 +205,7 @@ void Options::setDefault(void) {
     relMinNodeWeight = 0.0;
     majorClassProportion = 1.0 ;
     rootStdDevProportion = 0.0 ;
+    minNonMajorityWeight = 0.0 ; // set to 0 to disable this rule
 
     selectedPruner = 1 ; // m-estimate
     selectedPrunerReg = 2 ; // m-estimate pruning
@@ -214,7 +216,7 @@ void Options::setDefault(void) {
     alphaErrorComplexity = 0.0 ; // breiman's error complexity pruning
 
 	modelType = 1 ;  // majority class
-    modelTypeReg = 3 ;  // linear as in M5
+    modelTypeReg = 3 ;  // linear
     kInNN = 10 ;
     nnKernelWidth = 2.0 ;
 	bayesDiscretization = 2 ; // equal frequency discretization
@@ -570,6 +572,8 @@ void Options::outConfig(FILE *to) const
     // Proportion of standard deviation to stop
 	fprintf(to,"rootStdDevProportion=%f  # proportion of root's standard deviation in a node\n",rootStdDevProportion) ;
 
+    // minimal weight of non-majority class in a node to continue splitting
+	fprintf(to,"minNonMajorityWeight=%.2f  # minimal weight of a non-majority class in a node to continue splitting\n", minNonMajorityWeight) ;
 
     fprintf(to, "# ---------- Building  options ----------\n") ;
 
@@ -1081,6 +1085,14 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
        else
           merror("rootStdDevProportion (proprtion of root's standard deviation in a tree node) should be between 0 and 1", "") ;
 	}
+    else if (strcmp(keyword, "minNonMajorityWeight")==0) {
+         // Minimal weight of a non majority class in a node to continue splitting
+         sscanf(key,"%lf", &dtemp) ;
+         if (dtemp >= 0.0)
+           minNonMajorityWeight = dtemp ;
+         else
+            merror("minNonMajorityWeight (minimal weight of non-majority class) should be non-negative","") ;
+  	}
 
     // Building options
 

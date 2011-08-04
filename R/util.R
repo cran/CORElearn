@@ -198,9 +198,10 @@ optionData <- function() {
     list("relMinNodeWeight", "numeric", 0, 0, 1),
     list("majorClassProportion", "numeric", 1, 0, 1),
     list("rootStdDevProportion", "numeric", 0, 0, 1),
+    list("minNonMajorityWeight", "numeric", 2, 0, Inf),
     ## \section{Models in the tree leaves}
     list("modelType", "integer", 1, 1, 4),
-    list("modelTypeReg", "integer", 1, 1, 8),
+    list("modelTypeReg", "integer", 3, 1, 8),
     list("kInNN", "integer", 10, 0, Inf),
     list("nnKernelWidth", "numeric", 2, 0, Inf),
     list("bayesDiscretization", "integer", 2, 1, 2),
@@ -418,7 +419,7 @@ checkModelOptions <- function(model, options) {
     miscOpts <-c("maxThreads") 
     treeModelOpts<-c("modelType",bayesOpts,knnOpts,knnKernelOpts,miscOpts)
     treeModelOptsReg<-c("modelTypeReg",knnKernelOpts,miscOpts)
-    treeStopOpts <- c("minNodeWeightTree","minNodeWeightRF","relMinNodeWeight","majorClassProportion","minInstanceWeight")  
+    treeStopOpts <- c("minNodeWeightTree","minNodeWeightRF","relMinNodeWeight","majorClassProportion","minInstanceWeight","minNonMajorityWeight")  
     treeStopOptsReg <- c("minNodeWeightTree","minNodeWeightRF","relMinNodeWeight","minInstanceWeight","rootStdDevProportion")  
     treePruneOpts <- c("selectedPruner","mEstPruning","mdlModelPrecision","mdlErrorPrecision")
     treePruneOptsReg <- c("selectedPrunerReg","mEstPruning","mdlModelPrecision","mdlErrorPrecision")

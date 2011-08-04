@@ -56,7 +56,7 @@ cal <-classDataGen(noInst=200)
 # build random forests model with certain parameters
 modelRF <- CoreModel(class~., train, model="rf",   selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 # prediction 
-pred <- predict.CoreModel(modelRF, cal, rfPredictClass=FALSE)
+pred <- predict(modelRF, cal, rfPredictClass=FALSE)
 
 # calibrate for a chosen class1 and method
 class1<-1

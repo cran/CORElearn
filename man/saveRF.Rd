@@ -51,7 +51,7 @@ modelRF <- CoreModel(Species ~ ., iris, model="rf",
 print(modelRF)
 
 # prediction with node distribution
-pred <- predict.CoreModel(modelRF, iris, rfPredictClass=FALSE, type="both")
+pred <- predict(modelRF, iris, rfPredictClass=FALSE, type="both")
 print(pred)
 
 
@@ -62,7 +62,7 @@ saveRF(modelRF, "tempRF.txt")
 loadedRF = loadRF(Species ~ ., iris, "tempRF.txt")
 
 # prediction should be the same
-predLoaded <- predict.CoreModel(loadedRF, iris, rfPredictClass=FALSE, type="both")
+predLoaded <- predict(loadedRF, iris, rfPredictClass=FALSE, type="both")
 print(predLoaded)
 
 

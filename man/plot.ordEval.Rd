@@ -56,6 +56,8 @@
          confidence percentiles.
          The value \code{"color"} displays only the upper limit of confidence interval, namely the value 
          (represented with a length of the bar) beyond the confidence interval is displayed with more intensive color or shade. 
+    \item \code{equalUpDown} a boolean specifying if upward and downward reinforcement of the same value are to be displayed side by side on the same level; it usually makes sense to 
+    set this parameter to \code{TRUE} when specifying a single value differences by setting \code{variant="attrDist1"} in \code{\link{ordEval}} function.  
     \item \code{graphTitle} specifies text to incorporate into the title.
     \item \code{attrIdx} displays plot for a single attribute with specified index.
     \item \code{xlabel}  label of lower horizontal axis. 

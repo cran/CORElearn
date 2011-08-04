@@ -14,7 +14,7 @@ ordEval(formula, data, file=NULL, rndFile=NULL, variant=c("allNear","attrDist1",
   \item{file}{ Name of file where evaluation results will be written to. }
   \item{rndFile}{ Name of file where evaluation of random normalizing attributes will be written to. }
   \item{variant}{ Name of the variant of ordEval algorithm. Can be any of \code{"allNear", "attrDist1"}, or \code{"classDist1"}. }
-  \item{\dots }{ Other options used also by other context-sensitive evaluation methods (e.g., ReliefF). }
+  \item{\dots }{ Other options specific to ordEval or common to other context-sensitive evaluation methods (e.g., ReliefF). }
 }
 \details{
   Parameter \code{formula} is used as a mechanism to select features (attributes) 
@@ -22,6 +22,8 @@ ordEval(formula, data, file=NULL, rndFile=NULL, variant=c("allNear","attrDist1",
   interaction expressed in formula syntax are not supported. The simplest way is
   to specify just response variable as parameter: \code{class ~ .}.
   In this case all the other columns in the data set are evaluated.
+  Take car to supply the ordinal data as factors and to provide equal levels for them
+  (this is not necessary what one gets with \code{\link{read.table}}).
   See example below.
   
   The output can be optionally written to files \code{file} and \code{rndFile},
@@ -32,15 +34,32 @@ ordEval(formula, data, file=NULL, rndFile=NULL, variant=c("allNear","attrDist1",
   is "allNear" which takes all nearest neighbors into account in evaluation of attributes.
   Variant "attrDist1" takes only  neighbors with attribute value at most 1 different from
   current case into account (for each attribute separately). This makes sense when we want to 
-  see the thresholds of reinforcement, and therefore observe just small change up or down.   
+  see the thresholds of reinforcement, and therefore observe just small change up or down
+  (it makes sense to combine this with \code{equalUpDown=TRUE} in \code{\link{plot.ordEval}} function).   
   The "classDist1" variant takes only  neighbors with class value at most 1 different from
   current case into account. This makes sense if we want to observe strictly small
   changes in upward/downward reinforcement and has little effect in practical applications.
   
   There are some additional parameters \bold{\dots } some of which are common with other context-sensitive evaluation methods (e.g., ReliefF). 
-  Their list and short description is available in \code{\link{helpCore}} (see subsection on ordEval algorithm and attribute evaluation therein).
+  Their list of common parameters is available in \code{\link{helpCore}} (see subsection on attribute evaluation therein).
+  The parameters specific to \code{\link{ordEval}} are: 
+  \describe{
+    \item{ordEvalNoRandomNormalizers}{type: integer, default value: 0, value range: 0, Inf, \cr
+       number of randomly shuffled attributes for normalization of each attribute (0=no normalization). This parameter should be set to 
+       a reasonably high value (e.g., 200) in order to produce reliable confidence intervals with \code{\link{plot.ordEval}}. The parameters 
+       \code{ordEvalBootstrapNormalize} and \code{ordEvalNormalizingPercentile} only make sense if this parameter is larger than 0.}
+    \item{ordEvalBootstrapNormalize}{type: logical, default value: FALSE \cr
+       are features used for normalization constructed with bootstrap sampling or random permutation. }
+    \item{ordEvalNormalizingPercentile}{type: numeric, default value: 0.025, value range: 0, 0.5 \cr
+       percentile defines the length of confidence interval obtained with random normalization. Percentile \code{t} forms
+       interval by taking the \eqn{n\cdot t}{nt} and \eqn{n(1-t)} random evaluation as the confidence interval boundaries, thereby forming 
+       \eqn{100(1-2t)}\%  confidence interval (\code{t}=0.025 gives 95\% confidence interval). The value \eqn{n} is set by 
+       \code{ordEvalNoRandomNormalizers} parameter.}
+    \item{attrWeights}{type: character, \cr
+       a character vector representing a list of attribute weights in the ordEval distance measure. }
+}
   
-  Evaluation of attributes without specifics of ordered attributes is covered in function \code{\link{attrEval}}.  
+ Evaluation of attributes without specifics of ordered attributes is covered in function \code{\link{attrEval}}.  
 }
 \value{
 The method returns a list with following components:

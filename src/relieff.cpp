@@ -90,7 +90,7 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
      sprintf(path,"%s%s.%02dei",fTree->resultsDirectory, fTree->domainName,fTree->currentSplitIdx) ; // estimation of weights at each iteration
      if ((fileRelief = fopen(path,"w"))==NULL)
      {
-        merror("estimation::ReliefF cannot open file for writting weights of each iteration: ", path)  ;
+        merror("estimation::ReliefF cannot open file for writing weights of each iteration: ", path)  ;
      }
      else {
         fprintf(fileRelief, "\nRelief weights changing with number of iterations\n") ;

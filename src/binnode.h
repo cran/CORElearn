@@ -26,4 +26,6 @@ public:
     void operator= (binnode &Source) ;
 };
 
+typedef binnode* Pbinnode ;
+
 #endif

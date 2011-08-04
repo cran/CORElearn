@@ -1246,7 +1246,7 @@ void modelEval(int SetSize, marray<int> &trueClass,
 				if (sa[k].value == i)
 					s0 += (k_lo + k_hi)/2.0;
 			}
-			Auc += double(s0 - n0*(n0-1)/2)/double(n0)/double(n1);
+			Auc += double(s0 - double(n0)*(n0-1)/2.0)/double(n0)/double(n1);
 			noPairs++;
 		}
 	}

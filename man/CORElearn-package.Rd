@@ -114,7 +114,7 @@ model <- CoreModel(Species ~ ., iris, model="rf",
 print(model)
 
 # prediction with node distribution
-pred <- predict.CoreModel(model, iris, rfPredictClass=FALSE)
+pred <- predict(model, iris, rfPredictClass=FALSE)
 print(pred)
 
 # Model evaluation

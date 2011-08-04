@@ -357,6 +357,10 @@ booleanT featureTree::rfTime2stop(binnode *Node)
    if (Node->Classify[Node->majorClass]/Node->weight >= opt->majorClassProportion)
       return mTRUE ;
 
+   // minimal weight of non-majority class to allow further splitting
+    if (Node->weight - Node->Classify[Node->majorClass] < opt->minNonMajorityWeight)
+       return mTRUE ;
+
 
    return mFALSE ;
 }

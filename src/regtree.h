@@ -97,6 +97,11 @@ public:
    double errorComplexityPrune(void) { int Size = 0 ; return errorComplexityPrune(root, Size) ; }
    int predictRreg(marray<double> &predicted) ;
 
+   int getSize(binnodeReg *branch);
+#if defined(R_PORT)
+   SEXP T2Rpart(void) ;
+#endif
+
 } ;
 
 #endif

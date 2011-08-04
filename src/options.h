@@ -60,6 +60,7 @@ public:
    double relMinNodeWeight ; // minimal proportion of examples in a leaf to spit further; used in decision trees, regression trees, and random forests
    double majorClassProportion ;
    double rootStdDevProportion ;
+   double minNonMajorityWeight ;
 
    //  models in trees
    int modelType, modelTypeReg ;  // type of models in leaves
