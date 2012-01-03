@@ -7,7 +7,8 @@
   classification problem and function value for regression problem.
  }
 \usage{
-\method{predict}{CoreModel}(object, newdata, ..., costMatrix=NULL, type=c("both","class","probability"))
+\method{predict}{CoreModel}(object, newdata, ..., costMatrix=NULL, 
+                            type=c("both","class","probability"))
 }
 
 \arguments{

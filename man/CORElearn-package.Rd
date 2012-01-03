@@ -36,6 +36,7 @@ The main functions are
 }
 \item \code{\link{predict.CoreModel}}  predicts with classification model labels and probabilities of new instances.
 For regression models it returns the predicted function value.
+\item \code{\link{plot.CoreModel}} graphically visualizes trees and random forest models
 \item \code{\link{modelEval}} computes some statistics from predictions  
 \item \code{\link{attrEval}}  evaluates the quality of the attributes (dependent variables)
 with the selected heuristic method.  
@@ -88,6 +89,7 @@ Majority of these references are available also from \url{http://lkm.fri.uni-lj.
 \seealso{
 \code{\link{CoreModel}},
 \code{\link{predict.CoreModel}},
+\code{\link{plot.CoreModel}},
 \code{\link{modelEval}},
 \code{\link{attrEval}},
 \code{\link{ordEval}},
@@ -112,6 +114,7 @@ cat(versionCore(),"\n")
 model <- CoreModel(Species ~ ., iris, model="rf", 
               selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 print(model)
+plot(model, iris, graphType="prototypes")
 
 # prediction with node distribution
 pred <- predict(model, iris, rfPredictClass=FALSE)
@@ -123,7 +126,7 @@ print(mEval)
  
 # evaluate features in given data set with selected method
 estReliefF <- attrEval(Species ~ ., iris, 
-                            estimator="ReliefFexpRank", ReliefIterations=30)
+                       estimator="ReliefFexpRank", ReliefIterations=30)
 print(estReliefF)
     
 # evaluate ordered features with ordEval

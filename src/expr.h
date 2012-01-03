@@ -59,7 +59,7 @@ public:
    void predict(binnode *treeNode, int Case, marray<double> &probDist) ;
    char* descriptionString(void)  ;
    int degreesOfFreedom(void) { return 1; }
-
+   double smoothingParameter(int smoothingType, double smoothingValue) ;
 } ;
 
 #endif

@@ -792,7 +792,8 @@ void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
 		double *predictedPr, double *costMx, int *noClasses,
 		double *priorClProbability, double *accuracy, double *avgCost,
 		double *infScore, double *auc, int *predictionMx, double *sensitivity,
-		double *specificity, double *brier, double *kappa, double *precision, double *Gmean) {
+		double *specificity, double *brier, double *kappa, double *precision, double *Gmean,
+		double *KS, double *TPR, double *FPR) {
 	// wrap arrays
 	marray<int> correctClass, predictedClass, predictionMatrix;
 	correctClass.wrap(*noInst, correctCl);
@@ -820,7 +821,7 @@ void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
 
 	modelEval(*noInst, correctClass, probDist, *noClasses, priorClassProb,
 			CostMatrix, *accuracy, *avgCost, *infScore, *auc, predMx, *kappa,
-			*sensitivity, *specificity, *brier, *precision, *Gmean);
+			*sensitivity, *specificity, *brier, *precision, *Gmean, *KS, *TPR, *FPR);
 
 	for (i = 1; i <= *noClasses; i++)
 		for (j = 1; j <= *noClasses; j++)

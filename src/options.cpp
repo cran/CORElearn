@@ -123,10 +123,13 @@ void Options::copy(const Options &cp) {
 	   selectedPruner = cp.selectedPruner;
 	   selectedPrunerReg = cp.selectedPrunerReg;
 	   mEstPruning = cp.mEstPruning ;
-	   mEstPrediction = cp.mEstPrediction;
 	   mdlModelPrecision = cp.mdlModelPrecision;
 	   mdlErrorPrecision = cp.mdlErrorPrecision;
 	   alphaErrorComplexity = cp.alphaErrorComplexity;
+
+	   // smoothing
+	   smoothingType = cp.smoothingType;
+	   smoothingValue = cp.smoothingValue ;
 
 	   // random forest options
 	   rfNoTrees = cp.rfNoTrees ;
@@ -210,13 +213,16 @@ void Options::setDefault(void) {
     selectedPruner = 1 ; // m-estimate
     selectedPrunerReg = 2 ; // m-estimate pruning
 	mEstPruning = 2.0 ;
-    mEstPrediction = 0.0 ;
+
+    smoothingType = 0 ; // no smoothing
+    smoothingValue = 0.0 ;
+
     mdlModelPrecision = 0.10 ;
     mdlErrorPrecision = 0.01 ;
     alphaErrorComplexity = 0.0 ; // breiman's error complexity pruning
 
 	modelType = 1 ;  // majority class
-    modelTypeReg = 3 ;  // linear
+    modelTypeReg = 5 ;  // linear as in M5
     kInNN = 10 ;
     nnKernelWidth = 2.0 ;
 	bayesDiscretization = 2 ; // equal frequency discretization
@@ -619,7 +625,7 @@ void Options::outConfig(FILE *to) const
     // Type of regression models used in the leafs
     fprintf(to,"# Available regression models: \n") ;
     fprintf(to,"#\t1-mean predicted value, 2-median predicted value, 3-linear by MSE, 4-linear by MDL,\n");
-    fprintf(to,"#\t5-linear as in M5, 6-kNN, 7-Gaussian kernel regression, 8-locally weighted linear regression\n") ;
+    fprintf(to,"#\t5-linear reduced as in M5, 6-kNN, 7-Gaussian kernel regression, 8-locally weighted linear regression\n") ;
 	fprintf(to,"modelTypeReg=%d  # type of regression models used in the leafs (1-8)\n", modelTypeReg) ;
 
     // k in k-nearest neighbour models
@@ -726,10 +732,15 @@ void Options::outConfig(FILE *to) const
 	fprintf(to,"rfRndSeed=%d  # random seed for random forest (0-take from clock)\n", rfRndSeed) ;
 
 
-    fprintf(to, "# ---------- Other  options ----------\n") ;
+	fprintf(to, "# ---------- Prediction parameters ----------\n") ;
 
-	// m - estimate for prediction
-	fprintf(to,"mEstPrediction=%f  # m-estimate for prediction\n",mEstPrediction) ;
+	// probability smoothing type
+	fprintf(to,"smoothingType=%d  # type of prediction smoothing (0 - no smoothing, 1 - additive smoothing, 2 - pure Laplace´s smoothing, 3 - m-estimate smoothing, 4 - Zadrozny-Elkan m-smoothing i.e., m * p_c)\n",smoothingType) ;
+
+	// probability smoothing parameter value
+	fprintf(to,"smoothingValue=%f  # additional parameter for some types of smoothing (additive, m-estimate, Zadrozny-Elkan)\n",smoothingValue) ;
+
+	fprintf(to, "# ---------- Other  options ----------\n") ;
 
 	// maxThreads - maximal number of active threads
 	fprintf(to,"maxThreads=%d  # maximal number of active threads (0-allow OpenMP to set defaults)\n",maxThreads) ;
@@ -787,10 +798,8 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
 	else if (strcmp(keyword, "optionFile")==0 || strcmp(keyword, "o")==0) {
 		printf("\nReading configuration file %s . . .", key) ;
- 		fflush(stdout) ;
-		if (readConfig(key))
-			printf(" done.") ;
-  	 	fflush(stdout) ;
+		readConfig(key) ;
+	    printf(" done.\n") ;
 	}
 	else if (strcmp(keyword, "domainName")==0) {
 		// domain name
@@ -820,7 +829,7 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
        if (temp >= 0 && temp <=5)
         splitSelection = (splitSelectionType)temp ;
        else
-		   merror("splitSelection (definiton of train/test data splits) should be one of supported (0-5)", "") ;
+		   merror("splitSelection (definition of train/test data splits) should be one of supported (0-5)", "") ;
 	}
 	else if (strcmp(keyword, "numberOfSplits")==0) {
        // Number of data splits to work on
@@ -886,7 +895,7 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
        if (temp >= 1 && temp <= 4)
          multiclassEvaluation = temp ;
        else
-          merror("multiclassEvaluation (multi-class extension for two-class-only evaluation measures) should be 1, 2, 3, or 4", "") ;
+          merror("multiclassEvaluation (multiclass extension for two-class-only evaluation measures) should be 1, 2, 3, or 4", "") ;
 	}
 	else {
         // switches for classification estimation
@@ -1222,7 +1231,7 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
        if (temp > 0 && temp <= NoEstimatorsReg)
           constructionEstimatorReg = temp ;
 	   else {
-         sprintf(errBuf, "constructionEstimatorReg (estimator of constructsin regression) should be one of existing (1-%d)", NoEstimatorsReg) ;
+         sprintf(errBuf, "constructionEstimatorReg (estimator of constructs in regression) should be one of existing (1-%d)", NoEstimatorsReg) ;
 		 merror(errBuf, "") ;
 	   }
 	}
@@ -1407,16 +1416,26 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
           rfRndSeed = -(long)time(NULL) ;
 	}
 
-	// Other options
+	// Prediction options
 
-    else if (strcmp(keyword, "mEstPrediction")==0) {
-	  // m - estimate for prediction
+    else if (strcmp(keyword, "smoothingType")==0) {
+	  // probability smoothing type
+	  sscanf(key,"%d", &temp) ;
+	  if (temp >= 0 && temp <= 4)
+         smoothingType = temp ;
+	  else
+		 merror("smoothingType (type of prediction smoothing) should be 0, 1, 2,3, or 4","") ;
+ 	}
+    else if (strcmp(keyword, "smoothingValue")==0) {
+	  // probability smoothing parameter value
 	  sscanf(key,"%lf", &dtemp) ;
-      if (dtemp>=0)
-        mEstPrediction = dtemp ;
-      else
-        merror("mEstPrediction (m-estimate for prediction) should be nonnegative","") ;
-	}
+	  if (dtemp >= 0)
+         smoothingValue = dtemp ;
+	  else
+		 merror("smoothingValue (parameter value of prediction smoothing) should be nonnegative","") ;
+ 	}
+
+	// Other options
     else if (strcmp(keyword, "maxThreads")==0) {
         // maximal number of active threads
         sscanf(key,"%d", &temp) ;

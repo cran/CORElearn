@@ -140,11 +140,11 @@ testCoreReg <- function(verbose=1)
     set.seed(0)
     train <- regDataGen(ncases)
     test<- regDataGen(ncases)
-    model <- CoreModel(response~., train, model="regTree", minNodeWeightEst=1,minNodeWeightTree=5)
+    model <- CoreModel(response~., train, model="regTree", modelTypeReg=5, minNodeWeightEst=1,minNodeWeightTree=5)
     pred <- predict(model, test)
     # Model evaluation
     mEval <- modelEval(model, test[["response"]], pred)
-    comp1<-c(0.7326231, 0.7194654, 0.4705813, 0.6805264) # c(0.765781, 0.786064, 0.4801148, 0.6943131)
+    comp1<-c(0.6964669, 0.650204, 0.4437024, 0.6416557) # for ModelTypeReg=5, for modelTypeReg = 3: c(0.7326231, 0.7194654, 0.4705813, 0.6805264) 
     res1 <- isTRUE(all.equal(c(mEval$MSE,mEval$RMSE,mEval$MAE,mEval$RMAE), comp1,tolerance=1e-6))
     # Attribute evaluation with RReliefFexpRank
     estReliefF <- attrEval(response~., train, estimator="RReliefFexpRank")

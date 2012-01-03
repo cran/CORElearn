@@ -144,7 +144,7 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
         code <- tmp$predicted;
         code[code==0] <- NA;
         pred <- factor(class.lev[code],levels=class.lev);
-        prob <- matrix(tmp$prob, nrow=noInst, ncol=noClasses);
+        prob <- matrix(tmp$prob, nrow=noInst, ncol=noClasses,dimnames=list(NULL,class.lev));
         if (type == "both")
             returnList <- list(class=pred,probabilities=prob)
         else if (type=="class")
@@ -560,16 +560,22 @@ printOrdEval<-function(x) {
 
 
 modelEval <- function(model, correctClass, predictedClass, predictedProb=NULL, costMatrix=NULL, priorClProb = NULL, avgTrainPrediction = NULL, beta=1) {
+    if (is.null(predictedClass) && is.null(predictedProb)) {
+        warning("Only one of the predictedClass and predictedProb parameters can be NULL")
+        return(NULL) ;
+    }      
     if (is.null(model)) {
         if (!is.null(avgTrainPrediction)) {
             return(modelEvaluationReg.Core(correctClass,predictedClass,avgTrainPrediction))
         }
         else { 
+            if (is.null(predictedClass))
+                predictedClass <- levels(correctClass)[apply(predictedProb, 1, which.max)]            
             return(modelEvaluationClass.Core(correctClass,predictedClass,predictedProb,costMatrix,priorClProb,beta))
         }
     }
     if (class(model) != "CoreModel"){
-        warning("Only models of type CoreModel can be evaluated with this type of call. Others shall supply NULL for argument model, and provide value of avgTrainPrediction in case of regression.")
+        warning("Only models of type CoreModel can be evaluated with this type of call. Others shall supply NULL for parameter model, and provide value of avgTrainPrediction in case of regression.")
         return(NULL) ;
     }
     if (model$model == "regTree") {
@@ -580,6 +586,8 @@ modelEval <- function(model, correctClass, predictedClass, predictedProb=NULL, c
     else {
         if (is.null(priorClProb))
             priorClProb <- model$priorClassProb
+        if (is.null(predictedClass))
+            predictedClass <- model$class.lev[apply(predictedProb, 1, which.max)]
         return(modelEvaluationClass.Core(correctClass,predictedClass,predictedProb,costMatrix,priorClProb,beta))
     }
 }   
@@ -635,7 +643,10 @@ modelEvaluationClass.Core <- function(correctClass, predictedClass, predictedPro
             brier = double(1),
             kappa = double(1), 
             precision = double(1),
-            Gmean = double(1),             
+            Gmean = double(1),    
+            KS = double(1),
+            TPR = double(1),
+            FPR = double(1),
             NAOK=TRUE,
             PACKAGE="CORElearn"
     )
@@ -649,7 +660,8 @@ modelEvaluationClass.Core <- function(correctClass, predictedClass, predictedPro
     list(accuracy = tmp$accuracy, averageCost = tmp$avgCost, informationScore = tmp$infScore,
             AUC = tmp$auc, predictionMatrix = predMx, sensitivity = tmp$sensitivity,
             specificity = tmp$specificity, brierScore = tmp$brier, kappa = tmp$kappa,
-            precision = tmp$precision, recall = tmp$sensitivity, Fmeasure = Fmeasure, Gmean = tmp$Gmean)
+            precision = tmp$precision, recall = tmp$sensitivity, Fmeasure = Fmeasure, 
+            Gmean = tmp$Gmean, KS = tmp$KS, TPR = tmp$TPR, FPR = tmp$FPR)
 }
 modelEvaluationReg.Core <- function(correct, predicted, avgTrainPredicted) {
     noInst <- length(correct) ;

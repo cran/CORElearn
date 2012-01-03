@@ -83,10 +83,13 @@ public:
    int selectedPruner ;
    int selectedPrunerReg ;
    double mEstPruning ; // parameter for m-estimate in pruning
-   double mEstPrediction ;
    double mdlModelPrecision ;
    double mdlErrorPrecision ;
    double alphaErrorComplexity ;
+
+   // probability smoothing
+   int smoothingType ;
+   double smoothingValue ;
 
    // random forest options
    int rfNoTrees  ;

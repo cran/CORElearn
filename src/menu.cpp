@@ -17,7 +17,8 @@ const int ScreenWidth = 80 ;
 
 int textMenu(const char* Title, char const* Item[],int NoItems)
 {
-    int MaxLen = (int)strlen(Title) ;
+#if !defined(RPORT)
+   int MaxLen = (int)strlen(Title) ;
     int i, pos ;
     for( i = 0 ; i < NoItems ; i++)
        if ((pos = (int)strlen(Item[i])) > MaxLen)
@@ -57,4 +58,5 @@ int textMenu(const char* Title, char const* Item[],int NoItems)
     } while (choice<1 || choice > NoItems) ;
 
     return choice ;
+#endif // if !defined(RPORT)
 }

@@ -66,7 +66,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 0.9.35, built on " __DATE__ " at " __TIME__
+" version 0.9.36, built on " __DATE__ " at " __TIME__
 #if defined(_OPENMP)
 " with OpenMP support"
 #endif
@@ -76,7 +76,7 @@ char VersionString[]="CORElearn, "
 ;
 
 int main(int argc, char *argv[]) {
-
+#if !defined(R_PORT)
     outVersion(stdout) ;
 
     featureTree *gFT = new featureTree ;
@@ -171,14 +171,15 @@ int main(int argc, char *argv[]) {
 #endif
 
 #if defined(DEBUG_NEW)
-   printf("Still alocated memory blocks: %ld\n",SetSize) ;
+   printf("Still allocated memory blocks: %ld\n",SetSize) ;
 #endif
-
+#endif // if !defined(R_PORT)
     return 0 ;
 }
 
 
 void mainMenu(featureTree* gFT) {
+#if !defined(R_PORT)
        char const* MainMenu[] = { "Estimate attributes on single split in classification" ,
                             "Estimate attributes on all splits in classification" ,
                             "Learning trees on single data split in classification",
@@ -288,6 +289,7 @@ void mainMenu(featureTree* gFT) {
              default: merror("Non existing menu option.","") ;
          }
        }  while (choice > 0 && choice != 16) ;
+#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -295,11 +297,12 @@ void mainMenu(featureTree* gFT) {
 //                      singleEstimation
 //                      ----------
 //
-//      dealing wih single split estimation
+//      dealing with single split estimation
 //
 //**********************************************************************
 void singleEstimation(featureTree* const Tree){
-   if (!Tree->readProblem(mTRUE, mTRUE))
+#if !defined(R_PORT)
+	if (!Tree->readProblem(mTRUE, mTRUE))
       return ;
    if (Tree->isRegression) {
 	   merror("Provided data is regressional", "") ;
@@ -360,7 +363,7 @@ void singleEstimation(featureTree* const Tree){
    //Tree->outConfig(fout) ;
 
    fclose(fout) ;
-
+#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -373,6 +376,7 @@ void singleEstimation(featureTree* const Tree){
 //**********************************************************************
 void singleEstimationReg(featureTree* const FTree)
 {
+#if !defined(R_PORT)
    regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
@@ -449,6 +453,7 @@ void singleEstimationReg(featureTree* const FTree)
    fprintf(stdout,"\nCPU time used: %f seconds\n", timeMeasureDiff(estStart, estEnd)) ;
 
    fclose(fout) ;
+#endif // if !defined(R_PORT)
 
 }
 
@@ -464,7 +469,8 @@ void singleEstimationReg(featureTree* const FTree)
 //**********************************************************************
 void allSplitsEstimation(featureTree* const Tree)
 {
-   if (!Tree->readProblem(mTRUE, mTRUE))
+#if !defined(R_PORT)
+  if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
 	   merror("Provided data is regressional", "") ;
@@ -477,8 +483,7 @@ void allSplitsEstimation(featureTree* const Tree)
    char path[MaxPath] ;
    sprintf(path,"%s%s.est", Tree->opt->resultsDirectory.getConstValue(), Tree->opt->domainName.getConstValue()) ;
    if ((fout = fopen(path,"w"))==NULL)   {
-      merror("allSplitsEstimation: cannot open results file: ", path)  ;
-      exit(1) ;
+      stop("allSplitsEstimation: cannot open results file: ", path)  ;
    }
 
    outVersion(fout) ;
@@ -544,6 +549,7 @@ void allSplitsEstimation(featureTree* const Tree)
 
    fflush(stdout) ;
    fclose(fout) ;
+#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -556,7 +562,8 @@ void allSplitsEstimation(featureTree* const Tree)
 //**********************************************************************
 void allSplitsEstimationReg(const featureTree *FTree)
 {
-   regressionTree *Tree = new regressionTree ;
+#if !defined(R_PORT)
+  regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
 	   Tree->opt = 0 ;
@@ -577,8 +584,7 @@ void allSplitsEstimationReg(const featureTree *FTree)
    sprintf(path,"%s%s.est",Tree->opt->resultsDirectory.getConstValue(), Tree->opt->domainName.getConstValue()) ;
    if ((fout = fopen(path,"w"))==NULL)
    {
-      merror("allSplitsEstimationReg: cannot open results file: ", path)  ;
-      exit(1) ;
+      stop("allSplitsEstimationReg: cannot open results file: ", path)  ;
    }
 
    Tree->opt->outConfig(fout) ;
@@ -662,6 +668,7 @@ void allSplitsEstimationReg(const featureTree *FTree)
 
    Tree->opt = 0 ;
    delete Tree ;
+#endif // if !defined(R_PORT)
 }
 
 
@@ -675,6 +682,7 @@ void allSplitsEstimationReg(const featureTree *FTree)
 //
 //**********************************************************************
 void singleTree(featureTree* const Tree) {
+#if !defined(R_PORT)
    if (!Tree->readProblem(mTRUE, mTRUE))
       return ;
    if (Tree->isRegression) {
@@ -692,15 +700,15 @@ void singleTree(featureTree* const Tree) {
        mmatrix<int> PMx(PMxSize,PMxSize) ;
        int Leaves = Tree->noLeaves() ;
        int freedom = Tree->degreesOfFreedom() ;
-       double Accuracy, Kappa, Inf, Cost, Auc, Brier, Sens, Spec, precision, Gmean ;
+       double Accuracy, Kappa, Inf, Cost, Auc, Brier, Sens, Spec, precision, Gmean, KS, TPR, FPR ;
 	   FILE *distrFile = prepareDistrFile(Tree->opt->splitIdx, Tree->opt) ;
  	   if (distrFile != NULL) {
 	  	 fprintf(distrFile, "# Training instances \n") ;
-         Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile);
+         Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, KS, TPR, FPR, distrFile);
  	   }
  	   if (distrFile != NULL)
 	 	 fprintf(distrFile, "# Testing instances \n") ;
-       Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile) ;
+       Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, KS, TPR, FPR, distrFile) ;
        if (distrFile != NULL)
           fclose(distrFile) ;
 
@@ -715,6 +723,7 @@ void singleTree(featureTree* const Tree) {
        fprintf(stdout,"\nCPU time used: %.2f seconds\n", timeMeasureDiff(buildStart, buildEnd)) ;
        fflush(stdout) ;
    }
+#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -727,6 +736,7 @@ void singleTree(featureTree* const Tree) {
 //**********************************************************************
 void singleTreeReg(featureTree* const FTree)
 {
+#if !defined(R_PORT)
    regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
@@ -768,6 +778,7 @@ void singleTreeReg(featureTree* const FTree)
    }
    Tree->opt = 0 ;
    delete Tree ;
+#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -779,6 +790,7 @@ void singleTreeReg(featureTree* const FTree)
 //
 //**********************************************************************
 void allSplitsTree(featureTree* const Tree) {
+#if !defined(R_PORT)
    if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
@@ -793,8 +805,7 @@ void allSplitsTree(featureTree* const Tree) {
    FILE *to, *distrFile ;
    if ((to=fopen(path,"w"))==NULL)
    {
-       merror("Cannot open decision tree output file",path) ;
-       exit(1) ;
+       stop("Cannot open decision tree output file",path) ;
    }
 
    outVersion(to) ;
@@ -822,6 +833,9 @@ void allSplitsTree(featureTree* const Tree) {
    marray<int> freedom(Tree->opt->numberOfSplits) ;
    marray<double> precision(Tree->opt->numberOfSplits) ;
    marray<double> Gmean(Tree->opt->numberOfSplits) ;
+   marray<double> KS(Tree->opt->numberOfSplits) ;
+   marray<double> TPR(Tree->opt->numberOfSplits) ;
+   marray<double> FPR(Tree->opt->numberOfSplits) ;
 
    int sizePMx = Tree->noClasses +1;
    mmatrix<int> PMx(sizePMx, sizePMx) ;
@@ -840,11 +854,11 @@ void allSplitsTree(featureTree* const Tree) {
 
 		 if (distrFile != NULL) {
 			fprintf(distrFile, "# Training instances \n") ;
-            Tree->test(Tree->DTraining, Tree->NoTrainCases,  Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], distrFile) ;
+            Tree->test(Tree->DTraining, Tree->NoTrainCases,  Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], KS[i], TPR[i], FPR[i],  distrFile) ;
 		 }
 		 if (distrFile != NULL)
 			fprintf(distrFile, "# ing instances \n") ;
-         Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], distrFile );
+         Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], KS[i], TPR[i], FPR[i], distrFile );
 
          if (distrFile != NULL)
             fclose(distrFile) ;
@@ -868,6 +882,7 @@ void allSplitsTree(featureTree* const Tree) {
 
    fclose(to) ;
    fflush(stdout) ;
+#endif // if !defined(R_PORT)
 }
 
 // **********************************************************************
@@ -880,6 +895,7 @@ void allSplitsTree(featureTree* const Tree) {
 // **********************************************************************
 void allTreeReg(featureTree* const FTree, demandType demand)
 {
+#if !defined(R_PORT)
    regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
@@ -899,8 +915,7 @@ void allTreeReg(featureTree* const FTree, demandType demand)
    FILE *to, *residFile ;
    if ((to=fopen(path,"w"))==NULL)
    {
-       merror("Cannot open regression tree output file",path) ;
-       exit(1) ;
+       stop("Cannot open regression tree output file",path) ;
    }
 
    fprintf(to,"Parameters:\n" ) ;
@@ -979,6 +994,7 @@ void allTreeReg(featureTree* const FTree, demandType demand)
 
    Tree->opt = 0 ;
    delete Tree ;
+#endif // if !defined(R_PORT)
 }
 
 
@@ -991,7 +1007,8 @@ void allTreeReg(featureTree* const FTree, demandType demand)
 //
 //**********************************************************************
 void singleRF(featureTree* const Tree) {
-   if (!Tree->readProblem(mTRUE, mTRUE))
+#if !defined(R_PORT)
+  if (!Tree->readProblem(mTRUE, mTRUE))
       return ;
    if (Tree->isRegression) {
 	   merror("Provided data is regressional", "") ;
@@ -1024,7 +1041,7 @@ void singleRF(featureTree* const Tree) {
        int PMxSize = Tree->noClasses+1 ;
        mmatrix<int> PMx(PMxSize,PMxSize) ;
 
-	   double Accuracy, Inf, Cost, Auc, Sens, Spec, Brier, Kappa, precision, Gmean ;
+	   double Accuracy, Inf, Cost, Auc, Sens, Spec, Brier, Kappa, precision, Gmean, KS, TPR, FPR ;
 
 	   FILE *distrFile = prepareDistrFile(Tree->opt->splitIdx, Tree->opt) ;
 
@@ -1033,11 +1050,11 @@ void singleRF(featureTree* const Tree) {
 
 	   if (distrFile != NULL) {
 	  	 fprintf(distrFile, "# Training instances \n") ;
-	     Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile);
+	     Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, KS, TPR, FPR, distrFile);
 	   }
  	   if (distrFile != NULL)
 	  	 fprintf(distrFile, "# testing instances \n") ;
-       Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile) ;
+       Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, KS, TPR, FPR, distrFile) ;
        if (distrFile != NULL)
           fclose(distrFile) ;
 
@@ -1055,9 +1072,9 @@ void singleRF(featureTree* const Tree) {
 		  attrEval.setFilled(1) ;
           marray<int> idx(1,Tree->opt->splitIdx) ;
 	      Tree->varImportance(attrEval[0]) ;
-		  // for attribute values evaluatioon
-		  //marray<marray<double> > avEval(Tree->noAttr+1) ;
-		  //for (int iA=1 ; iA <= Tree->noAttr ; iA++)
+		  // for attribute values evaluation
+		  // marray<marray<double> > avEval(Tree->noAttr+1) ;
+		  // for (int iA=1 ; iA <= Tree->noAttr ; iA++)
 		  //    if (Tree->AttrDesc[iA].continuous)
   		  //	     avEval[iA].create(1) ;
 		  // else
@@ -1071,6 +1088,7 @@ void singleRF(featureTree* const Tree) {
        fflush(stdout) ;
 	   fclose(to) ;
    }
+#endif // if !defined(R_PORT)
 }
 
 
@@ -1084,6 +1102,7 @@ void singleRF(featureTree* const Tree) {
 //
 //**********************************************************************
 void allSplitsRF(featureTree* const Tree) {
+#if !defined(R_PORT)
    if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
@@ -1097,8 +1116,7 @@ void allSplitsRF(featureTree* const Tree) {
    FILE *to, *distrFile ;
    sprintf(path,"%s%s.rfResult", Tree->opt->resultsDirectory.getConstValue(), Tree->opt->domainName.getConstValue());
    if ((to=fopen(path,"w"))==NULL) {
-       merror("Cannot open random forests report file",path) ;
-       exit(1) ;
+       stop("Cannot open random forests report file",path) ;
    }
 
    outVersion(to) ;
@@ -1127,6 +1145,10 @@ void allSplitsRF(featureTree* const Tree) {
    marray<double> oobCorrelation(Tree->opt->numberOfSplits) ;
    marray<double> precision(Tree->opt->numberOfSplits) ;
    marray<double> Gmean(Tree->opt->numberOfSplits) ;
+   marray<double> KS(Tree->opt->numberOfSplits) ;
+   marray<double> TPR(Tree->opt->numberOfSplits) ;
+   marray<double> FPR(Tree->opt->numberOfSplits) ;
+
    marray<marray<double> > attrEval(Tree->opt->numberOfSplits+1) ;
    attrEval[0].create(Tree->noAttr+1, 0.0) ; // for averages
    attrEval.setFilled(Tree->opt->numberOfSplits+1) ;
@@ -1148,11 +1170,11 @@ void allSplitsRF(featureTree* const Tree) {
  	     distrFile = prepareDistrFile(i, Tree->opt) ;
  	     if (distrFile != NULL) {
 	  	   fprintf(distrFile, "# Training instances \n") ;
-           Tree->test(Tree->DTraining, Tree->NoTrainCases,  Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], distrFile) ;
+           Tree->test(Tree->DTraining, Tree->NoTrainCases,  Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], KS[i], TPR[i], FPR[i], distrFile) ;
  	     }
  	     if (distrFile != NULL)
 	  	    fprintf(distrFile, "# Testing instances \n") ;
-         Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], distrFile);
+         Tree->test(Tree->DTesting, Tree->NoTestCases, Accuracy[i], Cost[i], Inf[i], Auc[i], PMx, Kappa[i], Sens[i], Spec[i], Brier[i], precision[i], Gmean[i], KS[i], TPR[i], FPR[i], distrFile);
 
  	     if (distrFile != NULL)
             fclose(distrFile) ;
@@ -1210,6 +1232,7 @@ void allSplitsRF(featureTree* const Tree) {
 
    fclose(to) ;
    fflush(stdout) ;
+#endif // if !defined(R_PORT)
 }
 
 
@@ -1224,6 +1247,7 @@ void allSplitsRF(featureTree* const Tree) {
 //**********************************************************************
 void domainCharacteristics(featureTree* const Tree)
 {
+#if !defined(R_PORT)
    if (!Tree->readProblem(mTRUE, mTRUE))
       return ;
    if (Tree->isRegression) {
@@ -1235,8 +1259,7 @@ void domainCharacteristics(featureTree* const Tree)
    FILE *to ;
    sprintf(path,"%s%s.dataCharacteristics", Tree->opt->resultsDirectory.getConstValue(), Tree->opt->domainName.getConstValue());
    if ((to=fopen(path,"w"))==NULL) {
-       merror("Cannot open data characteristics report file",path) ;
-       exit(1) ;
+       stop("Cannot open data characteristics report file",path) ;
    }
 
    Tree->setDataSplit(Tree->opt->splitIdx) ;
@@ -1311,6 +1334,7 @@ void domainCharacteristics(featureTree* const Tree)
    fprintf(stdout,"\nConcept variation (Robnik Sikonja variant): %10.4f\n", ConVar) ;
    fprintf(to,"\nConcept variation (Robnik Sikonja variant): %10.4f\n", ConVar) ;
    fclose(to) ;
+#endif // if !defined(R_PORT)
 }
 
 
@@ -1324,7 +1348,8 @@ void domainCharacteristics(featureTree* const Tree)
 //**********************************************************************
 void domainCharacteristicsReg(featureTree* const FTree)
 {
-   regressionTree *Tree = new regressionTree ;
+#if !defined(R_PORT)
+  regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
 	   Tree->opt = 0 ;
@@ -1387,6 +1412,7 @@ void domainCharacteristicsReg(featureTree* const FTree)
 
    Tree->opt = 0 ;
    delete Tree ;
+#endif // if !defined(R_PORT)
 }
 
 
@@ -1405,7 +1431,8 @@ void outVersion(FILE *fout)
 
 
 void evalOrdAttrValNorm(featureTree*  Tree, demandType demand)  {
-   if (!Tree->readProblem(mTRUE, mTRUE))
+#if !defined(R_PORT)
+  if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
 	   merror("Provided data is regressional", "") ;
@@ -1478,12 +1505,14 @@ void evalOrdAttrValNorm(featureTree*  Tree, demandType demand)  {
 
    fflush(stdout) ;
    fclose(fout) ;
+#endif // if !defined(R_PORT)
 }
 
 
 
 void runOrdEvalInst(featureTree*  Tree)  {
-   if (!Tree->readProblem(mTRUE, mTRUE))
+#if !defined(R_PORT)
+  if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
 	   merror("Provided data is regressional", "") ;
@@ -1544,71 +1573,11 @@ void runOrdEvalInst(featureTree*  Tree)  {
    fclose(foei) ;
    if (Tree->opt->ordEvalNoRandomNormalizers > 0)
       fclose(foeiR);
+#endif // if !defined(R_PORT)
 }
 
 
-/*
-void evalOrdClassNorm(featureTree*  Tree)  {
-   if (!Tree->readProblem(mTRUE, mTRUE))
-	   return ;
-   if (Tree->isRegression) {
-	   merror("Provided data is regressional", "") ;
-	   return ;
-   }
 
-   Tree->setDataSplit(Tree->opt->splitIdx) ;
-   FILE *fout ;
-   char path[MaxPath] ;
-
-   marray<double> weight ;
-   estimation *pEstimator=0 ;
-   int attrIdx,iV ;
-   marray<marray<double> > reinfPos(Tree->noNumeric), reinfNeg(Tree->noNumeric), anchor(Tree->noNumeric);
-
-   for (attrIdx=0 ; attrIdx < Tree->noNumeric ; attrIdx++) {
-	   // for each attribute we nees space for its values
-	   reinfPos[attrIdx].create(1, 0.0) ;
-	   reinfNeg[attrIdx].create(1, 0.0) ;
-	   anchor[attrIdx].create(1, 0.0) ;
-   }
-   mmatrix<marray<double> > reinfPosRnd(Tree->noNumeric, 1), reinfNegRnd(Tree->noNumeric, 1), anchorRnd(Tree->noNumeric, 1) ;
-   for (attrIdx=0 ; attrIdx < Tree->noNumeric ; attrIdx++) {
-	      iV = 0 ;
-	      reinfPosRnd(attrIdx, iV).create(noOEstats, 0.0) ;
-	      reinfNegRnd(attrIdx, iV).create(noOEstats, 0.0) ;
-	      anchorRnd(attrIdx, iV).create(noOEstats, 0.0) ;
-   }
-
-   double estStart = timeMeasure() ;
-   weight.create(Tree->NoTrainCases,1.0) ;
-   pEstimator = new estimation(Tree, Tree->DTraining,weight,Tree->NoTrainCases) ;
-
-	   pEstimator->ordClassdAeqNorm(0,Tree->noNumeric, estReliefEkEqual, reinfPos,reinfNeg,anchor, reinfPosRnd,reinfNegRnd,anchorRnd);
-	   if (Tree->opt->ordEvalNoRandomNormalizers > 0) {
-		   sprintf(path,"%s%s.ordEvalRnd", Tree->opt->resultsDirectory, Tree->opt->domainName) ;
-		   if ((fout = fopen(path,"w"))==NULL)
-			  merror("evalOrdClassNorm: cannot open results file: ", path)  ;
-		   printOrdClEstRnd(fout, reinfPosRnd, reinfNegRnd, anchorRnd, Tree) ;
-    	   fclose(fout) ;
-	   }
-
-   sprintf(path,"%s%s.ordEval", Tree->opt->resultsDirectory, Tree->opt->domainName) ;
-   if ((fout = fopen(path,"w"))==NULL)   {
-      merror("evalOrdClassNorm: cannot open results file: ", path)  ;
-   }
-   printOrdClEst(stdout, reinfPos, reinfNeg, anchor, Tree) ;
-   printOrdClEst(fout, reinfPos, reinfNeg, anchor, Tree) ;
-
-
-   delete pEstimator ;
-   double estEnd = timeMeasure() ;
-
-   fprintf(stdout,"\nCPU time used: %.2f seconds\n", timeMeasureDiff(estStart, estEnd)) ;
-
-   fflush(stdout) ;
-   fclose(fout) ;
-}
-*/
 
 FILE* prepareDistrFile(int fileIdx, Options *opt) {
   FILE *distrFile = NULL ;
@@ -1656,12 +1625,12 @@ void loadRF(featureTree* const Tree) {
 		printf("Random forest successfully loaded from %s", path) ;
 	else
 		printf("Loading random forest failed from file %s", path) ;
-	double Accuracy, Inf, Cost, Auc, Sens, Spec, Brier, Kappa, precision, Gmean ;
+	double Accuracy, Inf, Cost, Auc, Sens, Spec, Brier, Kappa, precision, Gmean, KS, TPR, FPR ;
 
 	FILE *distrFile = NULL;
 	int PMxSize = Tree->noClasses+1 ;
 	mmatrix<int> PMx(PMxSize,PMxSize) ;
 
-	Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, distrFile);
+	Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, KS, TPR, FPR, distrFile);
 
 }

@@ -6,7 +6,6 @@
   For given parameter name function prints its type, default value, and short description.
   If no \code{name} is given descriptions for all available parameters are printed out.
 }
-
 \details{
 There are many different parameters available. Some are general and can be used in many
 learning, or feature evaluation algorithms. All the values actually used by 
@@ -19,7 +18,8 @@ The parameters in this group may be used inside model construction
 via \code{\link{CoreModel}} and feature evaluation in \code{\link{attrEval}}. See \code{\link{attrEval}}
 for description of relevant evaluation methods. 
 
-Parameters \code{attrEvaluationInstances},\code{binaryEvaluation},\code{binarySplitNumericAttributes}
+Parameters \code{attrEvaluationInstances}, \code{binaryEvaluation}, 
+\code{binarySplitNumericAttributes}
 are applicable to all attribute evaluation methods. In models which need feature evaluation (e.g., trees,
 random forests) they affect the selection of splits in the nodes.
 Other parameters may be used only in context sensitive measures, i.e., ReliefF in classification
@@ -32,7 +32,8 @@ and RReliefF in regression and their variants.
           If \code{FALSE}, then multivalued discrete features are evaluated "as is" with multivalued versions
           of estimators. With ReliefF-type measures, numeric features are also evaluated "as is". For evaluation
           of numeric features with other (non-ReliefF-type) measures, they are first binarized or discretized.
-          The choice between binarization and discretization is controlled by \code{binaryEvaluateNumericAttributes}.
+          The choice between binarization and discretization is controlled by 
+          \code{binaryEvaluateNumericAttributes}.
           See also \code{discretizationSample}. }
     \item{binaryEvaluateNumericAttributes}{type: logical, default value: TRUE \cr
           ReliefF like measures can evaluate numeric attributes intrinsically, others
@@ -105,9 +106,9 @@ expressive power of the tree model.
 \describe{
     \item{modelType}{type: integer, default value: 1, value range: 1, 4 \cr
         type of models used in classification tree leaves (1=majority class, 2=k-nearest neighbors, 3=k-nearest neighbors with kernel, 4=naive Bayes). }
-    \item{modelTypeReg}{type: integer, default value: 3, value range: 1, 8 \cr
+    \item{modelTypeReg}{type: integer, default value: 5, value range: 1, 8 \cr
         type of models used in regression tree leaves (1=mean predicted value, 2=median predicted value, 3=linear by MSE, 
-        4=linear by MDL, 5=linear as in M5, 6=kNN, 7=Gaussian kernel regression, 8=locally weighted linear regression). }
+        4=linear by MDL, 5=linear reduced as in M5, 6=kNN, 7=Gaussian kernel regression, 8=locally weighted linear regression). }
     \item{kInNN}{type: integer, default value: 10, value range: 0, Inf \cr
          number of neighbors in k-nearest neighbors models (0=all). }
     \item{nnKernelWidth}{type: numeric, default value: 2, value range: 0, Inf \cr  kernel width in k-nearest neighbors models. }
@@ -169,11 +170,25 @@ After the tree is constructed, to reduce noise it is beneficial to prune it.
     }
     }
 \section{Prediction}{
-For some models (trees and naive Bayes) one can control prediction. 
+For some models (decision trees, random forests, naive Bayes, and regression trees) one can smoothe the output predictions.
+In classification models output probabilities are smoothed and in case of regression prediction value is smoothed. 
 \describe{
-    \item{mEstPrediction}{type: numeric, default value: 0, value range: 0, Inf \cr m-estimate for prediction. }
+    \item{smoothingType}{type: integer, default value: 0, value range: 0, 4 \cr default value 0
+      means no smoothing  (in case classification one gets relative frequencies),
+      value 1 stands for additive smoothing, 2 is pure Laplace's smoothing, 3 is m-estimate smoothing, and 4 means
+      Zadrozny-Elkan type of m-estimate smoothing where \code{smoothingValue} is interpreted as 
+      \eqn{m\cdot p_c}{m * Pc} and \eqn{p_c}{Pc} is the prior probability of
+      the least probable class value; 
+      for regression \code{smoothingType} has no effect, as the smoothing is controlled solely by \code{smoothingValue}.
+      }
+    \item{smoothingValue}{type: numeric, default value: 0, value range: 0, Inf \cr 
+      additional parameter for some sorts of smoothing; in classification it is needed for additive, m-estimate, 
+      and Zadrozny-Elkan type of smoothing; 
+      in case of regression trees 0 means no smoothing and values larger than 0 change prediction value towards
+      the prediction of the models in ascendant nodes.
+      }
     }
-    }
+}
 \section{Random forests}{
 Random forest is quite complex model, whose construction one can control with several parameters.
 Momentarily only classification version of the algorithm is implemented.
@@ -221,7 +236,10 @@ Besides parameters in this section one can apply majority of parameters for cont
          \cr As side effect, this parameter changes the number of active threads in all subsequent execution (till \code{maxThreads} is set again). }
     }
     }
-
+\references{
+B. Zadrozny, C. Elkan. Learning and making decisions when costs and probabilities are both unknown.
+In Proceedings of the Seventh International Conference on Knowledge Discovery and Data Mining, 2001.
+}
 \author{ Marko Robnik-Sikonja, Petr Savicky }
 
 \keyword{ models }

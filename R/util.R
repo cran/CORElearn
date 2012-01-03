@@ -201,7 +201,7 @@ optionData <- function() {
     list("minNonMajorityWeight", "numeric", 2, 0, Inf),
     ## \section{Models in the tree leaves}
     list("modelType", "integer", 1, 1, 4),
-    list("modelTypeReg", "integer", 3, 1, 8),
+    list("modelTypeReg", "integer", 5, 1, 8),
     list("kInNN", "integer", 10, 0, Inf),
     list("nnKernelWidth", "numeric", 2, 0, Inf),
     list("bayesDiscretization", "integer", 2, 1, 2),
@@ -225,7 +225,8 @@ optionData <- function() {
     list("mEstPruning", "numeric", 2, 0, Inf),
     list("alphaErrorComplexity", "numeric", 0, 0, Inf),
     ## \section{Prediction}
-    list("mEstPrediction", "numeric", 0, 0, Inf),
+    list("smoothingType", "integer", 0, 0, 4),
+    list("smoothingValue", "numeric", 0, 0, Inf),
     ## \section{Random forests}
     list("rfNoTrees", "integer", 100, 1, Inf),
     list("rfNoSelAttr", "integer", 0, -2, Inf),
@@ -463,8 +464,9 @@ checkPredictOptions <- function(model, options) {
     bayesOpts <- c()
     knnOpts <- c("kInNN")
     knnKernelOpts <- c("kInNN","nnKernelWidth")
-    treeOpts <- c(knnKernelOpts,"mEstPrediction",miscOpts)
-    rfOpts <- c("rfPredictClass",miscOpts)
+    smoothingOpts <- c("smoothingType","smoothingValue")
+    treeOpts <- c(knnKernelOpts,smoothingOpts,miscOpts)
+    rfOpts <- c("rfPredictClass",smoothingOpts,miscOpts)
     rfNearOpts <- c(rfOpts,"rfkNearestEqual")
     regOpts <- treeOpts 
     

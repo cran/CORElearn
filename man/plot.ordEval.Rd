@@ -79,7 +79,8 @@
     plot(oe)
     printOrdEval(oe)
     # the same effect we achieve by storing results to files
-    ordEval(class ~ ., dat, file="profiles.oe", rndFile="profiles.oer", ordEvalNoRandomNormalizers=200)
+    ordEval(class ~ ., dat, file="profiles.oe", rndFile="profiles.oer", 
+            ordEvalNoRandomNormalizers=200)   
     plotOrdEval(file="profiles.oe", rndFile="profiles.oer",graphType="attrBar")
     
 }

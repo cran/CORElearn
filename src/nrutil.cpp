@@ -9,7 +9,6 @@
 void nrmerror(const char *error_text)
 {
    stop("Numerical library run-time error",error_text);
-   exit(1);
 }
 
 double *vector(long nl, long nh)

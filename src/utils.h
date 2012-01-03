@@ -115,7 +115,8 @@ void modelEval(int SetSize, marray<int> &trueClass,
 		marray<marray<double> > &probDist, int noClasses, marray<double> &priorProbability,
 		mmatrix<double> &CostMatrix, double &Accuracy, double &avgCost,
 		double &Inf, double &Auc, mmatrix<int> &PredictionMatrix, double &kappa,
-		double &sensitivity, double &specificity, double &brier, double &precision, double &Gmean)  ;
+		double &sensitivity, double &specificity, double &brier, double &precision, double &Gmean,
+		double &KS, double &TPR, double &FPR)  ;
 void modelEvalReg(int SetSize, marray<double> &truePrediction,
       marray<double> &prediction, double avgPredicted, double &SE, double &RSE,double &AE, double &RAE) ;
 void costMxFromR(int noClasses, marray<double> &costs, mmatrix<double> &CostMatrix) ;

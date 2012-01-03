@@ -6,7 +6,8 @@
    specified by the formula with ordEval algorithm.
 }
 \usage{
-ordEval(formula, data, file=NULL, rndFile=NULL, variant=c("allNear","attrDist1","classDist1"), ...)
+ordEval(formula, data, file=NULL, rndFile=NULL, 
+        variant=c("allNear","attrDist1","classDist1"), ...)
 }
 \arguments{
   \item{formula}{ Formula specifies the attributes to be evaluated and the target variable. }

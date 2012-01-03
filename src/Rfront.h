@@ -36,7 +36,8 @@ void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
 		double *predictedPr, double *costMx, int *noClasses, double *priorClProbability,
 		double *accuracy, double *avgCost,
 		double *infScore, double *auc, int *predictionMx, double *sensitivity,
-		double *specificity, double *brier, double *kappa, double *precision, double *Gmean) ;
+		double *specificity, double *brier, double *kappa, double *precision, double *Gmean,
+		double *KS, double *TPR, double *FPR) ;
 void modelEvaluateReg(int *noInst, double *truePred,
 		double *pred, double *avgPrediction, double *MSE, double *RMSE, double *MAE, double *RMAE) ;
 void calibrate(int *calMethod, int *noInst, int *correctCl, double *predictedPr, double *wght, int *noBins,

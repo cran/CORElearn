@@ -1,3 +1,5 @@
+CORElearn-0.9.36, 2012-01-03: using several smoothing techniques in class distribution prediction,
+                              improved documentation, bug fixes
 CORElearn-0.9.35, 2011-08-18: improving OrdEval graphs and documentation
                               forcing the same levels for correctClass and predictedClass in modelEval (problem reported by Marcin Mironczuk)
                               visualization of models

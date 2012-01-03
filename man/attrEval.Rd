@@ -78,11 +78,11 @@
     \item{"ImpurityHellinger"}{Hellinger distance as impurity function on within node class distributions.}
     \item{"UniformDKM"}{Dietterich-Kearns-Mansour (DKM) with uniform priors. }
     \item{"UniformGini"}{Gini index with uniform priors.}                      
-    \item{"UniformInf"}{Information score with uniform priors.} 
+    \item{"UniformInf"}{Information gain with uniform priors.} 
     \item{"UniformAccuracy"}{Accuracy with uniform priors. }               
     \item{"EqualDKM"}{Dietterich-Kearns-Mansour (DKM) with equal weights for splits. }
     \item{"EqualGini"}{Gini index with equal weights for splits.}                      
-    \item{"EqualInf"}{Information score with equal weights for splits. }              
+    \item{"EqualInf"}{Information gain with equal weights for splits. }              
     \item{"EqualHellinger"}{Two equally weighted splits based Hellinger distance.} 
     \item{"DistHellinger"}{Hellinger distance between class distributions in branches.}
     \item{"DistAUC"}{AUC distance between splits.}               

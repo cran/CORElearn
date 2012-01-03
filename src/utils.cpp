@@ -1126,7 +1126,7 @@ void modelEval(int SetSize, marray<int> &trueClass,
 		mmatrix<double> &CostMatrix, double &Accuracy, double &avgCost,
 		double &Inf, double &Auc, mmatrix<int> &PredictionMatrix, double &kappa,
 		double &sensitivity, double &specificity, double &brier,
-		double &precision, double &Gmean) {
+		double &precision, double &Gmean, double &KS, double &TPR, double &FPR) {
 
 	int correct = 0;
 	int i, j, c, cMin, cPredicted, cTrue;
@@ -1192,7 +1192,9 @@ void modelEval(int SetSize, marray<int> &trueClass,
 	Accuracy = double(correct)/double(SetSize);
 	Inf = infi/double(SetSize);
 	avgCost = Cost/double(SetSize);
-	sensitivity = specificity = precision = Gmean = 0 ;
+	sensitivity = specificity = precision = Gmean = KS = FPR = TPR = 0.0 ;
+	sortRec tRec;
+
 	if (noClasses == 2) {
 		if (PredictionMatrix(1,0) > 0)
 			sensitivity = double(PredictionMatrix(1,1))/double(PredictionMatrix(1,0)); // the same as recall
@@ -1202,13 +1204,50 @@ void modelEval(int SetSize, marray<int> &trueClass,
 			precision = double(PredictionMatrix(1,1))/double(PredictionMatrix(0,1));
 		if (PredictionMatrix(1,0) > 0 && PredictionMatrix(2,0) > 0)
 			Gmean = sqrt(double(PredictionMatrix(1,1))/double(PredictionMatrix(1,0)) * double(PredictionMatrix(2,2))/double(PredictionMatrix(2,0)));
+
+		// Kolmogorov-Smirnov statistics (D.J.Hand, 2005, Journal of Operational Research Society)
+		// let class 1 be the positive class, and class 2 the negative class
+		double P = PredictionMatrix(1,0) ;
+	    double N = PredictionMatrix(2,0) ;
+		marray<sortRec> prob(SetSize) ;
+		for (i=0; i<SetSize; i++) {
+				tRec.key = probDist[i][1]; // probability of positive class
+				tRec.value = i ;
+				prob.addEnd(tRec) ;
+		}
+		prob.qsortDsc() ;
+
+		double tKS  ;
+		int	FP = 0, TP = 0 ;
+        double probPrev = -1.0 ;
+		for (int k=0; k < prob.filled() ; k++) {
+		  if (prob[k].key != probPrev) {
+			tKS = fabs(TP/P - FP/N) ;
+			if (tKS > KS){
+				FPR = FP/N ;
+				TPR = TP/P ;
+				KS = tKS ;
+			}
+			probPrev = prob[k].key ;
+		  }
+		  if (trueClass[prob[k].value] == 1) // positive
+			 ++ TP ;
+		  else // k is a negative example
+			 ++ FP ;
+		}
+		// for last position
+		tKS = fabs(TP/P - FP/N) ;
+		if (tKS > KS){
+		   FPR = FP/N ;
+		   TPR = TP/P ;
+		   KS = tKS ;
+		}
 	}
 	brier /= double(SetSize);
 
-	// AUC, M measure
+	// AUC, AUC-Multiclass measure (Hand & Till, 2001)
 	Auc = 0.0;
 	marray<sortRec> sa(SetSize*2);
-	sortRec tRec;
 	int k, k_lo=0, k_hi, n0, n1, noPairs=0;
 	double s0;
 	for (i=1; i<= noClasses; i++) {
@@ -1250,8 +1289,9 @@ void modelEval(int SetSize, marray<int> &trueClass,
 			noPairs++;
 		}
 	}
-	if (noPairs >0)
+	if (noPairs >0) {
 		Auc /= double(noPairs); // double(noClasses*(noClasses-1)) ;
+	}
 
 	// Cohen's kappa k = (accuracy - p_c) / (1 - p_c)
 	kappa = 0.0 ;

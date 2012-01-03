@@ -281,25 +281,28 @@ double regressionTree::check(binnodeReg *branch, int caseIdx)
            default:
                 merror("regressionTree::check", "invalid branch identification") ;
    }
+   double ret = 0 ;
    if ((branch->Identification == continuousAttribute && isNAcont(contValue)) ||
        (branch->Identification == discreteAttribute  && discValue == NAdisc) )
    {   // missing value
-       return ( branch->weightLeft * check(branch->left, caseIdx) +
+       ret = ( branch->weightLeft * check(branch->left, caseIdx) +
                 (branch->weight - branch->weightLeft) * check(branch->right, caseIdx) +
-                 opt->mEstPrediction * branch->Model.predictSafe(branch, caseIdx) )
-                      / (branch->weight + opt->mEstPrediction) ;
+                 opt->smoothingValue* branch->Model.predictSafe(branch, caseIdx) )
+                      / (branch->weight + opt->smoothingValue) ;
    }
-   else
+   else {
      if ( (branch->Identification == continuousAttribute && (contValue <= branch->Construct.splitValue)) // || fabs(contValue - branch->Construct.splitValue)<epsilon) )
            ||(branch->Identification == discreteAttribute &&  branch->Construct.leftValues[discValue]) )
          // going left
-         return  (opt->mEstPrediction * branch->Model.predictSafe(branch, caseIdx) +
+         ret =  (opt->smoothingValue * branch->Model.predictSafe(branch, caseIdx) +
                   branch->weightLeft * check(branch->left, caseIdx))
-                 / (branch->weightLeft + opt->mEstPrediction) ;
+                 / (branch->weightLeft + opt->smoothingValue) ;
       else // going right
-         return  ( opt->mEstPrediction * branch->Model.predictSafe(branch, caseIdx) +
+         ret =  ( opt->smoothingValue * branch->Model.predictSafe(branch, caseIdx) +
                   (branch->weight - branch->weightLeft) * check(branch->right, caseIdx))
-                   / (branch->weight - branch->weightLeft + opt->mEstPrediction);
+                   / (branch->weight - branch->weightLeft + opt->smoothingValue);
+   }
+   return ret ;
 }
 
 

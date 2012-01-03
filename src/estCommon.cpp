@@ -36,11 +36,11 @@ estDsc estName[38]={
 	{"ImpurityHellinger", "Hellinger distance as impurity function on within node class distributions"}, // 25
     {"UniformDKM",        "Dietterich-Kearns-Mansour (DKM) with uniform priors" }, // 26
     {"UniformGini",       "Gini index with uniform priors"},                      // 27
-    {"UniformInf",        "Information score with uniform priors" }, // 28
+    {"UniformInf",        "Information gain with uniform priors" }, // 28
     {"UniformAccuracy",   "Accuracy with uniform priors" }, // 29
     {"EqualDKM",          "Dietterich-Kearns-Mansour (DKM) with equal weights for splits" }, // 30
     {"EqualGini",         "Gini index with equal weights for splits"},                      // 31
-    {"EqualInf",          "Information score with equal weights for splits" },               // 32
+    {"EqualInf",          "Information gain with equal weights for splits" },               // 32
     {"EqualHellinger",    "Two equally weighted splits based Hellinger distance"}, // 33
     {"DistHellinger",     "Hellinger distance between class distributions in branches"}, // 34
     {"DistAUC",           "AUC distance between splits" },                // 35

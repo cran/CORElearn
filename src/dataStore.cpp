@@ -122,6 +122,8 @@ dataStore::~dataStore()
 // ************************************************************
 int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 {
+#if !defined(RPORT)
+
 	if (! opt->domainName[0])
 	{
 		merror("Uninitialised domain name","") ;
@@ -244,6 +246,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 			return 0 ;
 		}
 	}
+#endif // if !defined(RPORT)
 	return 1 ;
 }
 
@@ -1057,8 +1060,16 @@ void dataStore::SetValueProbabilities(void)
      for (j=0 ; j < NoTrainCases ; j++)
        valueProb[DiscData(DTraining[j],i)] ++ ;
 
+     // set prior probabilities with Laplace smoothing
      for (j=0 ; j <= AttrDesc[DiscIdx[i]].NoValues ; j++)
         AttrDesc[DiscIdx[i]].valueProbability[j] = double(valueProb[j]+1.0)/double(NoTrainCases + AttrDesc[DiscIdx[i]].NoValues ) ;
+
+   }
+   if (! isRegression) {
+	   minClass = 1 ;
+       for (j=2; j <= AttrDesc[0].NoValues ; j++)
+    	   if (AttrDesc[0].valueProbability[j] < AttrDesc[0].valueProbability[minClass])
+    		   minClass = j ;
    }
 }
 

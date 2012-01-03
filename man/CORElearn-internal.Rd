@@ -45,17 +45,10 @@ Marko Robnik-Sikonja
 \keyword{ classif }
 
 \seealso{
-\code{\link{CORElearn}},
-\code{\link{CoreModel}},
-\code{\link{predict.CoreModel}},
-\code{\link{modelEval}},
-\code{\link{attrEval}},
-\code{\link{ordEval}},
-\code{\link{plot.ordEval}},
-\code{\link{helpCore}}, 
-\code{\link{paramCoreIO}},
-\code{\link{infoCore}},
-\code{\link{versionCore}}.
+\code{\link{CORElearn}}, \code{\link{CoreModel}}, \code{\link{predict.CoreModel}},
+\code{\link{modelEval}}, \code{\link{attrEval}}, \code{\link{ordEval}},
+\code{\link{plot.ordEval}}, \code{\link{helpCore}}, \code{\link{paramCoreIO}},
+\code{\link{infoCore}}, \code{\link{versionCore}}.
 }
 
 

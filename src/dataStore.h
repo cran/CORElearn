@@ -63,7 +63,7 @@ public:
    marray<attribute> AttrDesc;  // contains descriptions of all the attributes in the order as defined
                                 // DiscIdx and ContIdx contain indexes to this structure
 
-   int NoCases, NoTrainCases, NoTestCases, noClasses, NoPredict ;
+   int NoCases, NoTrainCases, NoTestCases, noClasses, NoPredict, minClass ;
    marray<int> DTraining, DTesting; // storage for indexes of instances of the training/testing data, set before training
                               // they are indexes of rows for *dData, *nData, DiscData, NumData, ...
    booleanT isRegression ;  // the type of problem: classification or regression

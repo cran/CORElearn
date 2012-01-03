@@ -269,7 +269,22 @@ void expr::createSimpleBayes(estimation &Estimator, binnode *treeNode)
 	}
 }
 
-
+double expr::smoothingParameter(int smoothingType, double smoothingValue){
+	double m = 0 ;
+	switch (smoothingType){
+				case 0: // no smoothing
+					    m= 0; break;
+				case 1: // additive smoothing
+				case 3: // m-estimate smoothing
+					    m = gFT->opt->smoothingValue; break ;
+				case 2: // pure Laplace
+					    m = 1 ; break ;
+				case 4: // Zadrozny-Elkan form of m-estimate: m*p_min=smoothingValue
+            		    m = gFT->opt->smoothingValue / gFT->AttrDesc[0].valueProbability[gFT->minClass]; break ;
+                default: m = 0 ;
+				}
+	return m ;
+}
 
 void expr::predict(binnode *treeNode, int Case, marray<double> &probDist)
 {
@@ -279,13 +294,22 @@ void expr::predict(binnode *treeNode, int Case, marray<double> &probDist)
         case majority:
 			{
 				int i ;
-                double m = gFT->opt->mEstPrediction ; 
-
-				for (i=1 ; i < probDist.len() ; i++)
-				{
-                   probDist[i] = (treeNode->Classify[i] + m*gFT->AttrDesc[0].valueProbability[i] ) 
-					              /  (treeNode->weight + m) ;
-				}
+				double m = smoothingParameter(gFT->opt->smoothingType, gFT->opt->smoothingValue) ;
+                if (gFT->opt->smoothingType == 0 || gFT->opt->smoothingType == 1 || gFT->opt->smoothingType == 2) {
+                	// use additive (Laplace) smoothing
+                	for (i=1 ; i < probDist.len() ; i++){
+                           probDist[i] = (treeNode->Classify[i] + m)
+        					              /  (treeNode->weight + m * gFT->noClasses) ;
+        			}
+                }
+                else if (gFT->opt->smoothingType == 3 || gFT->opt->smoothingType == 4){
+                	//  m-estimate smoothing
+                	for (i=1 ; i < probDist.len() ; i++)
+                	{
+                		probDist[i] = (treeNode->Classify[i] + m * gFT->AttrDesc[0].valueProbability[i] )
+					            		  /  (treeNode->weight + m) ;
+                	}
+                }
 				return ;
             }
 
@@ -356,7 +380,7 @@ void expr::predict(binnode *treeNode, int Case, marray<double> &probDist)
 				int noAttr = gFT->noAttr ;
                 int iClass, iAttr, valueIdx, iCont, iDisc ;
 				double contValue, denominator, factor ;
-                double m = gFT->opt->mEstPrediction ; 
+                double m = smoothingParameter(gFT->opt->smoothingType, gFT->opt->smoothingValue) ;
                 double pAll = 0.0 ;
 
 				for (iClass = 1 ; iClass <= noClasses ; iClass++)
@@ -380,10 +404,20 @@ void expr::predict(binnode *treeNode, int Case, marray<double> &probDist)
 							valueIdx = (*(gFT->dData))(Case, iDisc) ;
 							iDisc ++ ;
 						}
-						denominator =  (SBattrVal[iAttr][valueIdx] + m) * SBcl[iClass] ;
-						if (denominator > 0)
-						   factor = (SBclAttrVal[iClass][iAttr][valueIdx] + m * SBcl[iClass]) / denominator ;
-                        else factor = 0 ;
+            			if (gFT->opt->smoothingType == 0 || gFT->opt->smoothingType == 1 || gFT->opt->smoothingType == 2) {
+            				// use additive and Laplace smoothing
+     						denominator =  (SBattrVal[iAttr][valueIdx] + m * gFT->noClasses) * SBcl[iClass] ;
+    						if (denominator > 0)
+    						   factor = (SBclAttrVal[iClass][iAttr][valueIdx] + m) / denominator ;
+                            else factor = 0 ;
+           			}
+            			else {
+            				// m-estimate smoothing
+            				denominator =  (SBattrVal[iAttr][valueIdx] + m) * SBcl[iClass] ;
+            				if (denominator > 0)
+            					factor = (SBclAttrVal[iClass][iAttr][valueIdx] + m * SBcl[iClass]) / denominator ;
+            				else factor = 0 ;
+            			}
 						if (factor > 0)
 						  probDist[iClass] *= factor ;
 					}

@@ -5,7 +5,8 @@
   The generator produces classification data with 2 classes, 7 discrete and 3 numeric attributes.
 }
 \usage{
-  classDataGen(noInst, t1=0.7, t2=0.9, t3=0.34, t4=0.32, p1=0.5, classNoise=0)
+  classDataGen(noInst, t1=0.7, t2=0.9, t3=0.34, t4=0.32, 
+               p1=0.5, classNoise=0)
 }
 \arguments{
   \item{noInst}{Number of instances to generate.}
