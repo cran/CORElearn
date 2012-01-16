@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <float.h>
 
+#include "general.h"
+#include "error.h"
 #include "dataStore.h"
 #include "printUtil.h"
 

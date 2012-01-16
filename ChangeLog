@@ -1,3 +1,4 @@
+CORElearn-0.9.37, 2012-01-17: code cleaning to remove warnings and notes in CRAN compilation report 
 CORElearn-0.9.36, 2012-01-03: using several smoothing techniques in class distribution prediction,
                               improved documentation, bug fixes
 CORElearn-0.9.35, 2011-08-18: improving OrdEval graphs and documentation

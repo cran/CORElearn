@@ -2,6 +2,7 @@
 #include <float.h>
 #include <math.h>
 
+#include "general.h"
 #include "error.h"
 #include "ftree.h"
 #include "mathutil.h"

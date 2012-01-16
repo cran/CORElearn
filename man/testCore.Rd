@@ -14,7 +14,7 @@ Performs a partial check of the classification part of CORElearn.
 }
 \usage{
 testCoreClass(verbose=1)
-testCoreAttrEval(verbose=1)
+testCoreAttrEval(continue=TRUE)
 testCoreReg(verbose=1)
 testCoreOrdEval(verbose=1)
 testCoreNA(verbose=1)
@@ -27,6 +27,8 @@ allTests(verbose=1, timed=FALSE)
 \item{verbose}{An integer determining the level of verbosity. If 0, an error
   is generated, if any of the tests fails. Otherwise, only the result of the
   test is printed.}
+\item{continue}{ Logical. Whether the test should continue or \code{stop()}
+  should be called after a difference is found.}
 \item{timed}{Logical. Whether the time usage should be printed.}
 }
 

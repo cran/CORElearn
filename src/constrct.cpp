@@ -9,6 +9,7 @@
 #include <string.h>
 #include <math.h>
 
+#include "general.h"
 #include "estimator.h"
 #include "constrct.h"
 #include "ftree.h"
@@ -341,7 +342,7 @@ int construct::degreesOfFreedom(constructNode *Node)
 // *********************************************************************/
 double construct::continuousValue(mmatrix<int> &DiscData, mmatrix<double> &NumData, int caseIdx) 
 {
-#ifdef DEBUG
+#if defined(DEBUG)
   if (countType != aCONTINUOUS) 
     merror("construct::continuousValue", "invalid count of construct") ;
 #endif
@@ -413,7 +414,7 @@ double construct::continuousValue(mmatrix<int> &DiscData, mmatrix<double> &NumDa
 // *********************************************************************/
 int construct::discreteValue(mmatrix<int> &DiscData, mmatrix<double> &NumData, int caseIdx)
 {
-#ifdef DEBUG
+#if defined(DEBUG)
   if (countType != aDISCRETE) 
     merror("construct::discreteValue", "invalid count of construct") ;
 #endif

@@ -9,6 +9,7 @@
 
 #include <float.h>
 
+#include "general.h"
 #include "expr.h"
 #include "bintree.h"
 #include "dataStore.h"
@@ -441,7 +442,7 @@ void expr::predict(binnode *treeNode, int Case, marray<double> &probDist)
 /*
 void expr::predict(binnode *treeNode, int Case, exprNode* Node)
 {
-    #ifdef DEBUG
+    #if defined(DEBUG)
        if (!Node)
           merror("expr::predict", "Invalid structure of model") ;
     #endif
@@ -482,7 +483,7 @@ char* expr::descriptionString(void)
 /*
 char* expr::descriptionString(exprNode* Node)
 {
-    #ifdef DEBUG
+    #if defined(DEBUG)
        if (!Node)
           merror("expr::descriptionString", "Invalid structure of model") ;
     #endif

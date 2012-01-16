@@ -1095,7 +1095,7 @@ double genNAcont()
 	return(-1e308);
 }
 
-#ifdef R_PORT
+#if defined(R_PORT)
 
 int isNaN(double x)
 {

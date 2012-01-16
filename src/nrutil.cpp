@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+
+#include "general.h"
 #include "error.h"
 
 #define NR_END 1

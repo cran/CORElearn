@@ -1,6 +1,7 @@
 #include <float.h>
 
 #include "general.h"
+#include "error.h"
 #include "contain.h"
 #include "utils.h"
 #include "estimatorReg.h"

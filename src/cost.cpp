@@ -1,9 +1,9 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <float.h>
 
 #include "general.h"
+#include "error.h"
 #include "estimator.h"
 #include "contain.h"
 #include "utils.h"
@@ -875,7 +875,7 @@ void estimation::ReliefFcostKukar(int contAttrFrom, int contAttrTo, int discAttr
    {
       idx = iAttr - contAttrFrom ;
       NumEstimation[iAttr] = PCont[idx]/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefCostKukar", "computed weights of nominal attribute are out of scope") ;
       #endif
@@ -884,7 +884,7 @@ void estimation::ReliefFcostKukar(int contAttrFrom, int contAttrTo, int discAttr
    {
       idx = iAttr - discAttrFrom ;
       DiscEstimation[iAttr] = PDisc[idx]/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefCostKukar", "computed weights of discrete attribute are out of scope") ;
       #endif
@@ -1361,7 +1361,7 @@ void estimation::ReliefFsmp(int contAttrFrom, int contAttrTo,
    {
       idx = iAttr - contAttrFrom ;
       NumEstimation[iAttr] = (PmissCont[idx] - PhitCont[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed weights of numeric attribute are out of scope") ;
       #endif
@@ -1370,7 +1370,7 @@ void estimation::ReliefFsmp(int contAttrFrom, int contAttrTo,
    {
       idx = iAttr - discAttrFrom ;
       DiscEstimation[iAttr] = (PmissDisc[idx] - PhitDisc[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed weights of nominal attribute are out of scope") ;
       #endif

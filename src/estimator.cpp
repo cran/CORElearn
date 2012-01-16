@@ -4,8 +4,9 @@
 #include <omp.h>
 #endif
 
-#include "estimator.h"
 #include "general.h"
+#include "error.h"
+#include "estimator.h"
 #include "contain.h"
 #include "utils.h"
 #include "binpart.h"

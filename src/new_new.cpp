@@ -1,6 +1,6 @@
 
 #include "general.h"
-#ifdef DEBUG_NEW
+#if defined(DEBUG_NEW)
 #include "new_new.h"
 #include "error.h"
  

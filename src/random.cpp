@@ -5,6 +5,8 @@
  *      Author: rmarko
  */
 
+#include "general.h"
+#include "error.h"
 #include "random.h"
 
 // ******** mrg32k5a from L'Ecuyer99  **********

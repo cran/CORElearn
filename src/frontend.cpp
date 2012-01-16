@@ -66,7 +66,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 0.9.36, built on " __DATE__ " at " __TIME__
+" version 0.9.37, built on " __DATE__ " at " __TIME__
 #if defined(_OPENMP)
 " with OpenMP support"
 #endif
@@ -75,8 +75,23 @@ char VersionString[]="CORElearn, "
 #endif
 ;
 
-int main(int argc, char *argv[]) {
+//**********************************************************************
+//
+//                      outVersion
+//                      ----------
+//
+//                prints version information
+//
+//**********************************************************************
+void outVersion(FILE *fout)
+{
+    fprintf(fout,"%s\n",VersionString) ;
+}
+
+
 #if !defined(R_PORT)
+
+int main(int argc, char *argv[]) {
     outVersion(stdout) ;
 
     featureTree *gFT = new featureTree ;
@@ -146,11 +161,11 @@ int main(int argc, char *argv[]) {
 		//else if (gFT->opt->action == "ordClassEvalNorm")
 		//	evalOrdClassNorm(gFT) ;
 		else if (gFT->opt->action == "rfSave")
-            saveRF(gFT) ;
+            saveSingleRF(gFT) ;
 		//else if (gFT->opt->action == "rfSaveLarge")
         //    saveLargeRF(gFT) ;
 		else if (gFT->opt->action == "rfLoad")
-            loadRF(gFT) ;
+            loadSingleRF(gFT) ;
 		else if (gFT->opt->action == "simRcall")
             simRcall() ;
 
@@ -173,13 +188,11 @@ int main(int argc, char *argv[]) {
 #if defined(DEBUG_NEW)
    printf("Still allocated memory blocks: %ld\n",SetSize) ;
 #endif
-#endif // if !defined(R_PORT)
     return 0 ;
 }
 
 
 void mainMenu(featureTree* gFT) {
-#if !defined(R_PORT)
        char const* MainMenu[] = { "Estimate attributes on single split in classification" ,
                             "Estimate attributes on all splits in classification" ,
                             "Learning trees on single data split in classification",
@@ -289,7 +302,6 @@ void mainMenu(featureTree* gFT) {
              default: merror("Non existing menu option.","") ;
          }
        }  while (choice > 0 && choice != 16) ;
-#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -301,7 +313,6 @@ void mainMenu(featureTree* gFT) {
 //
 //**********************************************************************
 void singleEstimation(featureTree* const Tree){
-#if !defined(R_PORT)
 	if (!Tree->readProblem(mTRUE, mTRUE))
       return ;
    if (Tree->isRegression) {
@@ -363,7 +374,6 @@ void singleEstimation(featureTree* const Tree){
    //Tree->outConfig(fout) ;
 
    fclose(fout) ;
-#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -376,7 +386,6 @@ void singleEstimation(featureTree* const Tree){
 //**********************************************************************
 void singleEstimationReg(featureTree* const FTree)
 {
-#if !defined(R_PORT)
    regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
@@ -453,8 +462,6 @@ void singleEstimationReg(featureTree* const FTree)
    fprintf(stdout,"\nCPU time used: %f seconds\n", timeMeasureDiff(estStart, estEnd)) ;
 
    fclose(fout) ;
-#endif // if !defined(R_PORT)
-
 }
 
 
@@ -469,7 +476,6 @@ void singleEstimationReg(featureTree* const FTree)
 //**********************************************************************
 void allSplitsEstimation(featureTree* const Tree)
 {
-#if !defined(R_PORT)
   if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
@@ -549,7 +555,6 @@ void allSplitsEstimation(featureTree* const Tree)
 
    fflush(stdout) ;
    fclose(fout) ;
-#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -562,7 +567,6 @@ void allSplitsEstimation(featureTree* const Tree)
 //**********************************************************************
 void allSplitsEstimationReg(const featureTree *FTree)
 {
-#if !defined(R_PORT)
   regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
@@ -668,7 +672,6 @@ void allSplitsEstimationReg(const featureTree *FTree)
 
    Tree->opt = 0 ;
    delete Tree ;
-#endif // if !defined(R_PORT)
 }
 
 
@@ -682,7 +685,6 @@ void allSplitsEstimationReg(const featureTree *FTree)
 //
 //**********************************************************************
 void singleTree(featureTree* const Tree) {
-#if !defined(R_PORT)
    if (!Tree->readProblem(mTRUE, mTRUE))
       return ;
    if (Tree->isRegression) {
@@ -723,7 +725,6 @@ void singleTree(featureTree* const Tree) {
        fprintf(stdout,"\nCPU time used: %.2f seconds\n", timeMeasureDiff(buildStart, buildEnd)) ;
        fflush(stdout) ;
    }
-#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -736,7 +737,6 @@ void singleTree(featureTree* const Tree) {
 //**********************************************************************
 void singleTreeReg(featureTree* const FTree)
 {
-#if !defined(R_PORT)
    regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
@@ -778,7 +778,6 @@ void singleTreeReg(featureTree* const FTree)
    }
    Tree->opt = 0 ;
    delete Tree ;
-#endif // if !defined(R_PORT)
 }
 
 //**********************************************************************
@@ -790,7 +789,6 @@ void singleTreeReg(featureTree* const FTree)
 //
 //**********************************************************************
 void allSplitsTree(featureTree* const Tree) {
-#if !defined(R_PORT)
    if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
@@ -882,7 +880,6 @@ void allSplitsTree(featureTree* const Tree) {
 
    fclose(to) ;
    fflush(stdout) ;
-#endif // if !defined(R_PORT)
 }
 
 // **********************************************************************
@@ -895,7 +892,6 @@ void allSplitsTree(featureTree* const Tree) {
 // **********************************************************************
 void allTreeReg(featureTree* const FTree, demandType demand)
 {
-#if !defined(R_PORT)
    regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
@@ -994,7 +990,6 @@ void allTreeReg(featureTree* const FTree, demandType demand)
 
    Tree->opt = 0 ;
    delete Tree ;
-#endif // if !defined(R_PORT)
 }
 
 
@@ -1003,11 +998,10 @@ void allTreeReg(featureTree* const FTree, demandType demand)
 //                      singleRF
 //                      ----------
 //
-//      dealing wih single random forest construction and testing
+//      dealing with single random forest construction and testing
 //
 //**********************************************************************
 void singleRF(featureTree* const Tree) {
-#if !defined(R_PORT)
   if (!Tree->readProblem(mTRUE, mTRUE))
       return ;
    if (Tree->isRegression) {
@@ -1088,7 +1082,6 @@ void singleRF(featureTree* const Tree) {
        fflush(stdout) ;
 	   fclose(to) ;
    }
-#endif // if !defined(R_PORT)
 }
 
 
@@ -1102,7 +1095,6 @@ void singleRF(featureTree* const Tree) {
 //
 //**********************************************************************
 void allSplitsRF(featureTree* const Tree) {
-#if !defined(R_PORT)
    if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
@@ -1232,7 +1224,6 @@ void allSplitsRF(featureTree* const Tree) {
 
    fclose(to) ;
    fflush(stdout) ;
-#endif // if !defined(R_PORT)
 }
 
 
@@ -1247,7 +1238,6 @@ void allSplitsRF(featureTree* const Tree) {
 //**********************************************************************
 void domainCharacteristics(featureTree* const Tree)
 {
-#if !defined(R_PORT)
    if (!Tree->readProblem(mTRUE, mTRUE))
       return ;
    if (Tree->isRegression) {
@@ -1334,7 +1324,6 @@ void domainCharacteristics(featureTree* const Tree)
    fprintf(stdout,"\nConcept variation (Robnik Sikonja variant): %10.4f\n", ConVar) ;
    fprintf(to,"\nConcept variation (Robnik Sikonja variant): %10.4f\n", ConVar) ;
    fclose(to) ;
-#endif // if !defined(R_PORT)
 }
 
 
@@ -1348,7 +1337,6 @@ void domainCharacteristics(featureTree* const Tree)
 //**********************************************************************
 void domainCharacteristicsReg(featureTree* const FTree)
 {
-#if !defined(R_PORT)
   regressionTree *Tree = new regressionTree ;
    Tree->opt = FTree->opt ;
    if (!Tree->readProblem(mTRUE, mTRUE)) {
@@ -1412,26 +1400,10 @@ void domainCharacteristicsReg(featureTree* const FTree)
 
    Tree->opt = 0 ;
    delete Tree ;
-#endif // if !defined(R_PORT)
-}
-
-
-//**********************************************************************
-//
-//                      outVersion
-//                      ----------
-//
-//                prints version information
-//
-//**********************************************************************
-void outVersion(FILE *fout)
-{
-    fprintf(fout,"%s\n",VersionString) ;
 }
 
 
 void evalOrdAttrValNorm(featureTree*  Tree, demandType demand)  {
-#if !defined(R_PORT)
   if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
@@ -1505,13 +1477,11 @@ void evalOrdAttrValNorm(featureTree*  Tree, demandType demand)  {
 
    fflush(stdout) ;
    fclose(fout) ;
-#endif // if !defined(R_PORT)
 }
 
 
 
 void runOrdEvalInst(featureTree*  Tree)  {
-#if !defined(R_PORT)
   if (!Tree->readProblem(mTRUE, mTRUE))
 	   return ;
    if (Tree->isRegression) {
@@ -1573,7 +1543,6 @@ void runOrdEvalInst(featureTree*  Tree)  {
    fclose(foei) ;
    if (Tree->opt->ordEvalNoRandomNormalizers > 0)
       fclose(foeiR);
-#endif // if !defined(R_PORT)
 }
 
 
@@ -1594,7 +1563,7 @@ FILE* prepareDistrFile(int fileIdx, Options *opt) {
   return distrFile ;
 }
 
-void saveRF(featureTree* const Tree) {
+void saveSingleRF(featureTree* const Tree) {
    singleRF(Tree) ;
    char path[MaxPath] ;
    sprintf(path,"%s%s.rf", Tree->opt->resultsDirectory.getConstValue(), Tree->opt->domainName.getConstValue());
@@ -1614,7 +1583,7 @@ void saveLargeRF(featureTree* const Tree) {
 	   printf("Saving random forest failed to file %s", path) ;
 }
 */
-void loadRF(featureTree* const Tree) {
+void loadSingleRF(featureTree* const Tree) {
 	char path[MaxPath] ;
 	sprintf(path,"%s%s.rf", Tree->opt->resultsDirectory.getConstValue(), Tree->opt->domainName.getConstValue());
 	if (!Tree->readProblem(mTRUE, mTRUE))
@@ -1632,5 +1601,6 @@ void loadRF(featureTree* const Tree) {
 	mmatrix<int> PMx(PMxSize,PMxSize) ;
 
 	Tree->test(Tree->DTraining, Tree->NoTrainCases, Accuracy, Cost, Inf, Auc, PMx, Kappa, Sens, Spec, Brier, precision, Gmean, KS, TPR, FPR, distrFile);
-
 }
+#endif // if !defined(R_PORT)
+

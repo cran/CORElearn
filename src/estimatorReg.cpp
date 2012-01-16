@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <float.h>
 
-#include "estimatorReg.h"
 #include "general.h"
+#include "error.h"
+#include "estimatorReg.h"
 #include "contain.h"
 #include "utils.h"
 #include "binpart.h"

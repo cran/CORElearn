@@ -3,6 +3,7 @@
 #include <float.h>
 #include <math.h>
 
+#include "general.h"
 #include "error.h"
 #include "regtree.h"
 #include "mathutil.h"

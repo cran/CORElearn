@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <float.h>
 
+#include "general.h"
 #include "utils.h"
 #include "error.h"
 #include "dataStore.h"
@@ -122,7 +123,7 @@ dataStore::~dataStore()
 // ************************************************************
 int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 {
-#if !defined(RPORT)
+#if !defined(R_PORT)
 
 	if (! opt->domainName[0])
 	{
@@ -246,7 +247,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 			return 0 ;
 		}
 	}
-#endif // if !defined(RPORT)
+#endif // if !defined(R_PORT)
 	return 1 ;
 }
 

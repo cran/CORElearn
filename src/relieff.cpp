@@ -5,6 +5,7 @@
 //#define PRINT_EACH_ITERATION
 
 #include "general.h"
+#include "error.h"
 #include "contain.h"
 #include "options.h"
 #include "estimator.h"                
@@ -97,7 +98,7 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
         fTree->printEstimationHead(fileRelief) ;
      }
 
-   #endif 
+   #endif
 
    // prepare order of iterations
    marray<int> sampleIdx(NoIterations);
@@ -225,13 +226,13 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
           discCount++ ;
         }
         fprintf(fileRelief, "\n") ;
-      #endif 
+      #endif
    }  
    for (iAttr=contAttrFrom ; iAttr < contAttrTo ; iAttr ++)
    {
       idx = iAttr - contAttrFrom ;
       NumEstimation[iAttr] = (PmissCont[idx] - PhitCont[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed numeric weights are out of scope") ;
       #endif
@@ -240,14 +241,14 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
    {
       idx = iAttr - discAttrFrom ;
       DiscEstimation[iAttr] = (PmissDisc[idx] - PhitDisc[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed nominal weights are out of scope") ;
       #endif
    }
    #if defined(PRINT_EACH_ITERATION)
      fclose(fileRelief) ;
-   #endif 
+   #endif
  
 }
 /* without OpenMP
@@ -424,7 +425,7 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
    {
       idx = iAttr - contAttrFrom ;
       NumEstimation[iAttr] = (PmissCont[idx] - PhitCont[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed numeric weights are out of scope") ;
       #endif
@@ -433,7 +434,7 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
    {
       idx = iAttr - discAttrFrom ;
       DiscEstimation[iAttr] = (PmissDisc[idx] - PhitDisc[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed nominal weights are out of scope") ;
       #endif
@@ -636,7 +637,7 @@ void estimation::ReliefFbestK(int contAttrFrom, int contAttrTo, int discAttrFrom
              bestEst = est ;
       }
       NumEstimation[iAttr] = bestEst ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed numeric weights are out of scope") ;
       #endif
@@ -652,7 +653,7 @@ void estimation::ReliefFbestK(int contAttrFrom, int contAttrTo, int discAttrFrom
              bestEst = est ;
       }
       DiscEstimation[iAttr] = bestEst ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed nominal weights are out of scope") ;
       #endif
@@ -759,7 +760,7 @@ void estimation::Relief(int contAttrFrom, int contAttrTo, int discAttrFrom, int 
    {
       idx = iAttr - contAttrFrom ;
       NumEstimation[iAttr] = (PmissCont[idx] - PhitCont[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
         merror("estimation::Relief", "computed numeric weights are out of scope") ;
       #endif
@@ -768,7 +769,7 @@ void estimation::Relief(int contAttrFrom, int contAttrTo, int discAttrFrom, int 
    {
       idx = iAttr - discAttrFrom ;
       DiscEstimation[iAttr] = (PmissDisc[idx] - PhitDisc[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed nominal weights are out of scope") ;
       #endif
@@ -976,7 +977,7 @@ void estimation::ReliefFmerit(int contAttrFrom, int contAttrTo,
    {
       idx = iAttr - contAttrFrom ;
       NumEstimation[iAttr] = (PmissCont[idx] - PhitCont[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed numeric weights are out of scope") ;
       #endif
@@ -985,7 +986,7 @@ void estimation::ReliefFmerit(int contAttrFrom, int contAttrTo,
    {
       idx = iAttr - discAttrFrom ;
       DiscEstimation[iAttr] = (PmissDisc[idx] - PhitDisc[idx])/double(NoIterations) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
         merror("estimation::ReliefF", "computed nominal weights are out of scope") ;
       #endif

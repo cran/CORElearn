@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <float.h>
 
+#include "general.h"
 #include "utils.h"
 #include "error.h"
 #include "regtree.h"

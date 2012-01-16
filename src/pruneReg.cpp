@@ -7,8 +7,9 @@
 
 #include <stdlib.h>
 
+#include "general.h"
+#include "error.h"
 #include "utils.h"
-//#include "error.h"
 #include "regtree.h"
 
 //************************************************************

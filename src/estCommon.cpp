@@ -1,8 +1,9 @@
 //#include <stdlib.h>
 #include <float.h>
 
-#include "estimator.h"
 #include "general.h"
+#include "error.h"
+#include "estimator.h"
 #include "contain.h"
 #include "options.h"
 
@@ -166,7 +167,7 @@ void estimation::initialize(marray<int> &inDTrain, marray<double> &inpDTrain,
    //-------------------------------------------------------------
    // set slopes and distances for ramp function of numeric attributes and class
    //-------------------------------------------------------------
-#ifdef RAMP_FUNCTION
+#if defined(RAMP_FUNCTION)
    DifferentDistance.create(noNumeric) ;
    EqualDistance.create(noNumeric) ;
    CAslope.create(noNumeric) ;
@@ -360,7 +361,7 @@ void estimation::adjustTables(int newContSize, int newDiscSize)
       step.enlarge(newContSize) ;
       NAnumValue.addColumns(newContSize) ;
 
-#ifdef RAMP_FUNCTION
+#if defined(RAMP_FUNCTION)
       DifferentDistance.enlarge(newContSize) ;
       EqualDistance.enlarge(newContSize) ;
       CAslope.enlarge(newContSize) ;
@@ -453,7 +454,7 @@ void estimation::prepareContAttr(int attrIdx)
        NAnumValue(k, attrIdx)[0] = double(1.0) - NAnumValue(k, attrIdx)[0] ;
    }
 
-#ifdef RAMP_FUNCTION
+#if defined(RAMP_FUNCTION)
    // differemt, equal, slope
    DifferentDistance[attrIdx] = valueInterval[attrIdx] * eopt.numAttrProportionEqual ;
    EqualDistance[attrIdx] = valueInterval[attrIdx] * eopt.numAttrProportionDifferent  ;

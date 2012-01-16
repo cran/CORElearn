@@ -9,6 +9,7 @@
 
 #include <float.h>
 
+#include "general.h"
 #include "exprReg.h"
 #include "bintreeReg.h"
 #include "dataStore.h"

@@ -1,5 +1,6 @@
 #include <math.h>
 #include <float.h>
+
 #include "general.h"
 #include "error.h"
 #include "dataStore.h"
@@ -9,7 +10,7 @@
 #include "binnode.h"
 #include "binnodeReg.h"
 
-
+#if defined(R_PORT)
 SEXP featureTree::T2Rpart()
 {
         int nProtected = 0;
@@ -814,6 +815,7 @@ SEXP featureTree::proximity(bool distance)
         UNPROTECT(nProtected);
         return out;
 }
+#endif
 int regressionTree::getSize(binnodeReg *branch)
 {
         if (branch->Identification==leaf)
@@ -869,6 +871,7 @@ void featureTree::varImportanceCluster(marray<double> &varEval, marray<booleanT>
 
         }
 }
+#if defined(R_PORT)
 SEXP featureTree::importance2RCluster(marray<double> &varEval, marray<booleanT> &cluster)
 {
         int nProtected = 0;
@@ -886,3 +889,4 @@ SEXP featureTree::importance2RCluster(marray<double> &varEval, marray<booleanT> 
         UNPROTECT(nProtected);
         return out;
 }
+#endif

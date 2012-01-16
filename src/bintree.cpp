@@ -1,3 +1,6 @@
+#include "general.h"
+#include "error.h"
+
 /********************************************************************
 *
 *   Name:   class bintree

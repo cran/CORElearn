@@ -735,7 +735,7 @@ void Options::outConfig(FILE *to) const
 	fprintf(to, "# ---------- Prediction parameters ----------\n") ;
 
 	// probability smoothing type
-	fprintf(to,"smoothingType=%d  # type of prediction smoothing (0 - no smoothing, 1 - additive smoothing, 2 - pure Laplace´s smoothing, 3 - m-estimate smoothing, 4 - Zadrozny-Elkan m-smoothing i.e., m * p_c)\n",smoothingType) ;
+	fprintf(to,"smoothingType=%d  # type of prediction smoothing (0 - no smoothing, 1 - additive smoothing, 2 - pure Laplace's smoothing, 3 - m-estimate smoothing, 4 - Zadrozny-Elkan m-smoothing i.e., m * p_c)\n",smoothingType) ;
 
 	// probability smoothing parameter value
 	fprintf(to,"smoothingValue=%f  # additional parameter for some types of smoothing (additive, m-estimate, Zadrozny-Elkan)\n",smoothingValue) ;

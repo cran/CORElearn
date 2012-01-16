@@ -2,6 +2,7 @@
 #include <float.h>
 
 #include "general.h"
+#include "error.h"
 #include "dataStore.h"
 #include "utils.h"
 #include "kdtree.h"

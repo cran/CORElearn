@@ -8,6 +8,7 @@
 #include <float.h>
 #include <string.h>
 
+#include "general.h"
 #include "estimatorReg.h"
 #include "constrctReg.h"
 #include "regtree.h"

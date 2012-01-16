@@ -1,4 +1,7 @@
 #include <math.h>
+
+#include "general.h"
+#include "error.h"
 #include "nrutil.h"
 #include "contain.h"
 #include "mathutil.h"

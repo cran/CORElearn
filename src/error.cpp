@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include "general.h"
+#include "error.h"
 
 void merror(const char* Msg1, const char* Msg2)
 {

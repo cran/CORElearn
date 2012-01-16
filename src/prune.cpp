@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 
+#include "general.h"
+#include "error.h"
 #include "utils.h"
 #include "ftree.h"
 #include "options.h"

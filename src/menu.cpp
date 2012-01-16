@@ -10,14 +10,15 @@
 #include <string.h>
 
 #include "general.h"
+#include "error.h"
 #include "menu.h"
 
 const int ScreenWidth = 80 ;
 
-
+#if !defined(R_PORT)
 int textMenu(const char* Title, char const* Item[],int NoItems)
 {
-#if !defined(RPORT)
+
    int MaxLen = (int)strlen(Title) ;
     int i, pos ;
     for( i = 0 ; i < NoItems ; i++)
@@ -58,5 +59,6 @@ int textMenu(const char* Title, char const* Item[],int NoItems)
     } while (choice<1 || choice > NoItems) ;
 
     return choice ;
-#endif // if !defined(RPORT)
+
 }
+#endif // if !defined(R_PORT)

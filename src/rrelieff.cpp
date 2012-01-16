@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <float.h>
 
-#include "estimatorReg.h"
 #include "general.h"
+#include "error.h"
+#include "estimatorReg.h"
 #include "contain.h"
 #include "utils.h"
 #include "mathutil.h"
@@ -1128,7 +1129,7 @@ void estimationReg::RReliefFbestK(int contAttrFrom, int contAttrTo, int discAttr
              bestEst = est ;
       }
       NumEstimation[iAttr] = bestEst ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
         merror("estimationReg::RReliefFbestK", "computed continuous weights are out of scope") ;
       #endif
@@ -1144,7 +1145,7 @@ void estimationReg::RReliefFbestK(int contAttrFrom, int contAttrTo, int discAttr
              bestEst = est ;
       }
       DiscEstimation[iAttr] = bestEst ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
         merror("estimationReg::RReliefFbestK", "computed estimationRegs are out of scope") ;
       #endif
@@ -1269,7 +1270,7 @@ void estimationReg::RReliefF(int contAttrFrom, int contAttrTo, int discAttrFrom,
       idx = iAttr - contAttrFrom ;
       NumEstimation[iAttr] = NdCdAcont[idx]/NdC - (NdAcont[idx] - NdCdAcont[idx])/(NoIterations - NdC) ;
 
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (NumEstimation[iAttr] > 1.00001 || NumEstimation[iAttr] < -1.00001)
         merror("estimationReg::RReliefFbestK", "computed continuous weights are out of scope") ;
       #endif
@@ -1278,7 +1279,7 @@ void estimationReg::RReliefF(int contAttrFrom, int contAttrTo, int discAttrFrom,
    {
       idx = iAttr - discAttrFrom ;
       DiscEstimation[iAttr] = NdCdAdisc[idx]/NdC - (NdAdisc[idx] - NdCdAdisc[idx])/(NoIterations - NdC) ;
-      #ifdef DEBUG
+      #if defined(DEBUG)
       if (DiscEstimation[iAttr] > 1.00001 || DiscEstimation[iAttr] < -1.00001)
         merror("estimationReg::RReliefFbestK", "computed estimationRegs are out of scope") ;
       #endif

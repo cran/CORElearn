@@ -82,6 +82,27 @@ outputResult <- function(testName, status, verbose, failMessage=NULL)
 	}
 }
 
+approxComp <- function(valueName, obtained, stored, continue)
+{
+	obtained <- unname(obtained)
+    res <- isTRUE(all.equal(obtained, stored))
+	if (!res) {
+		cat("Comparison FAILED for ", valueName, "\n", sep="")
+		cat("stored\n")
+		print(stored)
+		cat("difference\n")
+		print(obtained - stored)
+		cat("obtained\n")
+		print(obtained)
+		if (continue) {
+			warning("comparison FAILED for ", valueName)
+		} else {
+			stop("Comparison FAILED for ", valueName)
+		}
+	}
+	res
+}
+
 asTxt <- function(ok)
 {
 	if (all(ok)) {
@@ -112,25 +133,21 @@ testCoreClass <- function(verbose=1)
 	all(ok)
 }
 
-testCoreAttrEval <- function(verbose=1)
+testCoreAttrEval <- function(continue=TRUE)
 {
     ncases <- 1000
     RNGversion("2.9.2")
     set.seed(0)
     train <- classDataGen(ncases)
-    #test <- classDataGen(ncases)
     estReliefF <- attrEval(class ~ ., train, estimator="ReliefFexpRank")
     comp1<-c(0.050083407,0.078033329,0.042187049,0.034625011,0.064074820,0.057376281,
              0.007454174,0.136318607,0.109862236,0.001486706)
-    res1 <- isTRUE(all.equal(unname(estReliefF), comp1))
+    res1 <- approxComp("testCoreAttrEval/estReliefF", estReliefF, comp1, continue)
     estMdl <- attrEval(class ~ ., train, estimator="MDL",minNodeWeightEst=5)
     comp2 <- c(0.0430367148311, 0.0726888549425, 0.0315160729442, 0.0280291538191, 0.0581082266459,
             0.0413914181947, -0.0095497415727, 0.1069959122855, 0.1045578033412, 0.0008384525753)
-    res2 <- isTRUE(all.equal(unname(estMdl), comp2))
-	#res2 <- FALSE # simulate an error
-    ok <- c(res1, res2)
-	outputResult("testCoreAttrEval", ok, verbose, paste(res1, res2))
-	all(ok)
+    res2 <- approxComp("testCoreAttrEval/estMdl", estMdl, comp2, continue)
+    all(res1, res2)
 }
 
 testCoreReg <- function(verbose=1)
@@ -236,7 +253,7 @@ allTests <- function(verbose=1,timed=FALSE)
     t1 <- system.time(r1 <- testCoreClass(1))
     cat("testCoreClass()    : ", asTxt(r1), "\n")
     if (timed) cat("Elapsed", t1["elapsed"],"sec\n")
-    t2 <- system.time(r2 <- testCoreAttrEval(1))
+    t2 <- system.time(r2 <- testCoreAttrEval(FALSE))
     cat("testCoreAttrEval() : ", asTxt(r2), "\n")
     if (timed) cat("Elapsed", t2["elapsed"],"sec\n")
     t3 <- system.time(r3 <- testCoreReg(1))

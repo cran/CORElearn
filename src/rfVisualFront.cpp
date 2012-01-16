@@ -3,14 +3,15 @@
 #include <string.h>
 #include <time.h>
 
-#include "general.h"  // general constants and data type definitions
-// here you specify weather to compile for  Windows or UNIX
+// general constants and data type definitions
+// here you specify whether to compile for  Windows or UNIX
+#include "general.h"
+// joint method of reporting errors
+#include "error.h"
 
 #if defined(R_PORT)
 #include <R.h>
 #include <Rinternals.h>
-#else
-#define Rprintf printf
 #endif
 #if defined(DEBUG)
 #if defined(MICROSOFT)
@@ -18,7 +19,6 @@
 #endif
 #endif
 
-#include "error.h"    // joint method of reporting errors
 #include "dataStore.h"  // frame for data
 #include "ftree.h"    // decision tree with feature construction
 #include "regtree.h"

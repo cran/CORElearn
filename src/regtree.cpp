@@ -11,6 +11,7 @@
 #include <string.h>
 #include <float.h>
 
+#include "general.h"
 #include "error.h"
 #include "regtree.h"
 #include "utils.h"

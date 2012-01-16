@@ -1,10 +1,10 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <float.h>
 #include <math.h>
 
 #include "general.h"
+#include "error.h"
 #include "contain.h"
 #include "estimator.h"
 #include "utils.h"
@@ -1631,7 +1631,7 @@ void estimation::aVReliefF(int discAttrFrom, int discAttrTo, marray<marray<doubl
    for (iAttr=discAttrFrom ; iAttr < discAttrTo ; iAttr ++)
 	   for (iV=0 ; iV <= discNoValues[iAttr] ; iV++) {
           result[iAttr][iV] /= double(NoIterations) ;
-          #ifdef DEBUG
+          #if defined(DEBUG)
           if (result[iAttr][iV] > 1.00001 || result[iAttr][iV] < -1.00001)
              merror("estimation::avReliefF", "computed nominal weights are out of scope") ;
           #endif
