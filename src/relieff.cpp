@@ -48,7 +48,7 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
       probClass[ DiscValues(i,0) ] += weight[i] ;
    }
 
-   // obtain the greatest sensible k (nubmer of nearest hits/misses)
+   // obtain the greatest sensible k (number of nearest hits/misses)
    // and the total weight of examples
    int maxK = noExInClass[1] ;
    double wAll = probClass[1] ;

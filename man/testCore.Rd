@@ -13,22 +13,19 @@
 Performs a partial check of the classification part of CORElearn.
 }
 \usage{
-testCoreClass(verbose=1)
+testCoreClass(continue=TRUE)
 testCoreAttrEval(continue=TRUE)
-testCoreReg(verbose=1)
-testCoreOrdEval(verbose=1)
-testCoreNA(verbose=1)
-testCoreRPORT(verbose=1)
-testCoreRand(verbose=1)
-allTests(verbose=1, timed=FALSE)
+testCoreReg(continue=TRUE)
+testCoreOrdEval(continue=TRUE)
+testCoreNA(continue=TRUE)
+testCoreRPORT(continue=TRUE)
+testCoreRand(continue=TRUE)
+allTests(continue=TRUE, timed=FALSE)
 }
 
 \arguments{
-\item{verbose}{An integer determining the level of verbosity. If 0, an error
-  is generated, if any of the tests fails. Otherwise, only the result of the
-  test is printed.}
-\item{continue}{ Logical. Whether the test should continue or \code{stop()}
-  should be called after a difference is found.}
+\item{continue}{ Logical. Whether a warning or an error should be generated
+  when a test fails.}
 \item{timed}{Logical. Whether the time usage should be printed.}
 }
 
@@ -43,8 +40,10 @@ Functions \code{testCoreRPORT()} and \code{testCoreRand()} test, whether the
 \code{R_PORT} directive is defined in C code and whether R random number
 generator is used. These tests are mostly for debugging.
 
-Function \code{allTests()} calls all the above functions with \code{verbose=0}
-and prints a table of the results.
+Function \code{allTests()} calls all the above functions and prints a table
+of the results. If an error is found, a more detailed information
+is printed and the continuation of the tests depends on the argument
+\code{continue}.
 }
 \value{
 The functions have no output value. The result OK or FAILED is printed.
@@ -58,6 +57,6 @@ The functions have no output value. The result OK or FAILED is printed.
 \code{\link{CORElearn}}.
 }
 \examples{
-allTests(verbose=0) # generate an error, if any of the tests fails
+allTests() # run all tests and generate an error, if any of the tests fails
 }
 

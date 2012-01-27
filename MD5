@@ -1,5 +1,5 @@
-42baf81ca2ead17835e6612d55c10363 *ChangeLog
-4252716165c2c69144661c89e27ded0e *DESCRIPTION
+3e5ef092a786fe54c2fbead0a60bef45 *ChangeLog
+855d2f96c04b5732b075fe888cd86b5d *DESCRIPTION
 f9d224650ce30ba0000f7baf3490d996 *LICENCE
 0af6d701f04d07f4c62cb93f977efd7f *NAMESPACE
 8bfaae7104f7a23ca1efbab65413dcea *R/Rinterface.R
@@ -7,10 +7,9 @@ f9d224650ce30ba0000f7baf3490d996 *LICENCE
 7bf8fc467ddf8fde2eb084aa4cf88a1d *R/init.R
 72066a63dd06d8f67d36df1c9b1cc402 *R/ordEval.R
 fb3fd466a1c81fd151d689e328be62eb *R/rfVisualize.R
-27f1531dd330ec907a67e776c7bdd5d0 *R/testCore.R
+3cb4638aa1c6bc7dafe8c0259fbb683b *R/testCore.R
 f577033ce4c569e0aae9458de598f34b *R/util.R
 f05e659e6eb0c17626fd37f776ddbf1b *configure
-c35328af5a03fa538b3dc2fb92a77472 *configure.win
 de1408f43de0c2118a13b8f15f723fc5 *gpl-3.0-standalone.html
 5fd500ba302a125dd003e0c50c5304fa *man/CORElearn-internal.Rd
 6ed9eaace203503d727ca492ff6ff2e1 *man/CORElearn-package.Rd
@@ -40,9 +39,9 @@ a66bf386b642c45e2f65d315a33f86fa *man/regDataGen.Rd
 0369f2dc8c9688842e82224c1f8fe556 *man/rfOutliers.Rd
 93f31760e277448b17f0da2d27468997 *man/rfProximity.Rd
 e0ef66566eb8e1b7a790ee8dbd3eb51c *man/saveRF.Rd
-6d2dc4c2c805f2625bef9a77523a339c *man/testCore.Rd
+034b63d1118f2d6cb97e1007a1a4e4a2 *man/testCore.Rd
 cbcefa7b7781f888da06a7759112bd65 *man/versionCore.Rd
-57ce2d4a6a9ae84ffa8bc7ebfe346eb0 *src/Makevars
+ed3a1aa1a8a3581dc50b56a512abc5ac *src/Makevars
 c375b0b742e09208af5d8e999e45f1e5 *src/Rconvert.cpp
 ebe0cd1c989409d8b951374fdb435934 *src/Rfront.cpp
 79452683d0aa8f4afc9b29bd4bd00ba2 *src/Rfront.h
@@ -82,7 +81,7 @@ e9b6df08ffc1af589a6e662b92d3393b *src/estimatorReg.h
 cc2631c6abf1fc6235bd9066d858fc8e *src/expr.h
 2c5757874c6ecd799f7b307c3b8011d9 *src/exprReg.cpp
 3a2c2c06d2f020ddbee5cd70134aac3d *src/exprReg.h
-2c16fc10cd8f1d5bb9a9085227429cb0 *src/frontend.cpp
+4ec2c8271bbc137bbd86949f824ba511 *src/frontend.cpp
 5a80b57755b993363d70a206562be30d *src/frontend.h
 4badf677675ec92973f1cad3b662d05a *src/ftree.cpp
 d81d0e00e46b376629abe4bb0bfc4072 *src/ftree.h
@@ -115,7 +114,7 @@ c511fc0d123c910c13a253e84ecb5c1a *src/platform_unix.h
 69ed23309a6e1255695827610d2f268c *src/random.h
 14ea479fc0ee25faf44e102719f39980 *src/regtree.cpp
 13441b491f20c23fe450a57b5f832421 *src/regtree.h
-310b20cb5c1d4d2d3934d2391fcaafa8 *src/relieff.cpp
+c8cefcb3a74e4c29056f56870ca1c06a *src/relieff.cpp
 aa9a1868d57213dc525e4b8dab53d7a0 *src/rfRegularize.cpp
 2909cc07dea86d4b97ae91dad4a96953 *src/rfUtil.cpp
 fb349f2129383b2fd719707a621a371e *src/rfUtil.h
