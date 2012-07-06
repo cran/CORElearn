@@ -136,6 +136,10 @@ prepare.Options <- function(...)
         }
       }
     }  
+    if (is.null(opt)) {
+        opt <- character(0)
+        names(opt) <- character(0)
+    }
     opt                
 }
  convert.Options <- function(opt) {

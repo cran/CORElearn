@@ -13,6 +13,14 @@
 #include "error.h"
 
 
+void forestTree::copy(forestTree &Source)
+{
+	ib = Source.ib ;
+	oob = Source.oob ;
+	oobIdx = Source.oobIdx ;
+	t = Source.t ;
+}
+
 //************************************************************
 //
 //                      buildForest
@@ -377,7 +385,7 @@ booleanT featureTree::rfTime2stop(binnode *Node)
 //************************************************************
 void featureTree::rfConsolidateTree(binnode *branch) {
 	   if (branch->Identification != leaf) {
-				branch->DTrain.destroy() ;
+				//branch->DTrain.destroy() ;
 				branch->Classify.destroy();
 				rfConsolidateTree(branch->left) ;
 				rfConsolidateTree(branch->right) ;
@@ -958,7 +966,7 @@ int featureTree::rfTreeCheck(binnode *branch, int caseIdx, marray<double> &probD
 //                      rfNearCheck
 //                      ----------
 //
-//        computes classification a for single case with a forest
+//        computes classification for a single case with a forest
 //        but taking locality into account
 //
 //************************************************************

@@ -97,7 +97,7 @@ void bintree::operator=(bintree &Source)
 void bintree::dup(binnode *Source, binnode* &Target)
 {
     Target = new binnode ;
-    Target = Source ;
+    Target->copy(*Source) ;
 
     if (Source->left)
       dup(Source->left, Target->left) ;

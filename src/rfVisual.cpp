@@ -757,7 +757,119 @@ SEXP regressionTree::T2Rpart()
 
         return out;
 }
+// clear DTrain array in all the nodes
+void featureTree::rfClearDTrain(binnode *branch) {
+	if (branch) {
+		branch->DTrain.clear() ;
+	    rfClearDTrain(branch->left) ;
+	    rfClearDTrain(branch->right) ;
+	}
+}
+// store cases passing through nodes in DTrain array
+void featureTree::rfMarkCaseInTree(binnode *branch, int caseIdx) {
+	if (branch) {
+		branch->DTrain.addEndAutoResize(caseIdx) ;
+
+  	    switch (branch->Identification)  {
+		        case leaf: break ;
+		        case continuousAttribute:
+					  {
+						double contValue = branch->Construct.continuousValue(*dData, *nData, caseIdx) ;
+		                if (isNAcont(contValue))
+							contValue = branch->NAnumValue[branch->Construct.root->attrIdx] ;
+		                if (contValue <= branch->Construct.splitValue)
+		                   rfMarkCaseInTree(branch->left, caseIdx) ;
+		                else
+		                   rfMarkCaseInTree(branch->right, caseIdx) ;
+					  }
+					  break ;
+				case discreteAttribute:
+					   {
+		                int discValue = branch->Construct.discreteValue(*dData, *nData, caseIdx) ;
+		                if (discValue == NAdisc)
+							discValue = branch->NAdiscValue[branch->Construct.root->attrIdx] ;
+		                if (branch->Construct.leftValues[discValue])
+		                    rfMarkCaseInTree(branch->left, caseIdx) ;
+		                else
+		                    rfMarkCaseInTree(branch->right, caseIdx) ;
+					   }
+					   break ;
+		        default:
+		                merror("featureTree::rfMarkCaseInTree", "invalid branch identification") ;
+						return ;
+		   }
+	}
+}
+
+void featureTree::rfLeafCooccurence(binnode *branch,  int outDim, SEXP out) {
+	if (branch) {
+
+  	    switch (branch->Identification)  {
+		        case leaf:
+		        	int i, j ;
+		        	for (i=0 ; i < branch->DTrain.filled(); i++)
+			        	for (j = i+1 ; j < branch->DTrain.filled(); j++) {
+		        		   REAL(out)[ branch->DTrain[i]*outDim + branch->DTrain[j] ] += 1.0 ;
+	        		       REAL(out)[ branch->DTrain[j]*outDim + branch->DTrain[i] ] += 1.0 ;
+			        	}
+		        	break ;
+		        case continuousAttribute:
+				case discreteAttribute:
+				    rfLeafCooccurence(branch->left, outDim, out) ;
+		            rfLeafCooccurence(branch->right, outDim, out) ;
+					break ;
+		        default:
+		                merror("featureTree::rrfLeafCooccurence", "invalid branch identification") ;
+						return ;
+		   }
+	}
+}
+
+
+
+//   Breiman's proximity measure:
+//   number of trees where instances are in the same leaf
 SEXP featureTree::proximity(bool distance)
+{
+        int nProtected = 0;
+
+        SEXP out;
+        PROTECT(out = allocMatrix(REALSXP, NoCases, NoCases));
+        nProtected++;
+
+        // initialize proximity matrix
+        int i, j ;
+        for (i=0 ; i < NoCases ; i++) {
+            for (j=0 ; j < NoCases ; j++)
+            	 REAL(out)[i*NoCases+j] = 0.0 ;
+        }
+
+        // make a copy of the forest
+        marray<forestTree> forestCopy(forest) ;
+        // classify all the cases with all the trees and
+        // use DTrain in each node to store cases reaching that node
+        for (int iT=0 ; iT < opt->rfNoTrees ; iT++){
+        	rfClearDTrain(forestCopy[iT].t.root) ;
+            // put all the cases down the tree
+            for(int caseIdx = 0; caseIdx < NoCases; caseIdx++)
+            	rfMarkCaseInTree(forestCopy[iT].t.root, caseIdx) ;
+        }
+
+        // fill in the proximity matrix with the cooccurence data from tree leaves
+        for (int iT=0 ; iT < opt->rfNoTrees ; iT++)
+           rfLeafCooccurence(forestCopy[iT].t.root, NoCases, out) ;
+
+        for (i=0 ; i < NoCases ; i++) {
+            for (j=0 ; j < NoCases ; j++)
+           	    REAL(out)[i*NoCases+j] /= opt->rfNoTrees ;
+        	REAL(out)[i*NoCases+i] = 1.0 ; // diagonal
+        }
+
+        UNPROTECT(nProtected);
+        return out;
+}
+
+SEXP featureTree::proximityM(bool distance)
 {
         int nProtected = 0;
 
@@ -789,7 +901,7 @@ SEXP featureTree::proximity(bool distance)
                                 REAL(out)[caseIdx*(NoCases+1)] = diag;
                         }
                         else{
-                                REAL(out)[caseIdx*NoCases+i] = near[i].key/ 2.0 / opt->rfNoTrees;
+                                REAL(out)[caseIdx*NoCases+i] = near[i].key/ 2.0 / opt->rfNoTrees; // !!! check if division  by 2 is still necessary
                         }
                 }
         }

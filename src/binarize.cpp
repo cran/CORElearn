@@ -785,7 +785,7 @@ void estimation::discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marr
 		if (isNAcont(NumValues(j, ContAttrIdx)))
 			continue ;
 		sortedAttr[OKvalues].key = NumValues(j, ContAttrIdx) ;
-		sortedAttr[OKvalues].value = 1 ;
+		sortedAttr[OKvalues].value = 1 ;  // later used as a counter for number of unique values
 		OKvalues ++ ;
 	}
 	if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
@@ -835,7 +835,7 @@ void estimation::discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marr
 	for (j = 0 ; j < unique ; j++)
 	{
 		if (grouped + sortedAttr[j].value < noDesired)
-			grouped =+ sortedAttr[j].value ;
+			grouped += sortedAttr[j].value ;
 		else {
 			// form new boundry
 			boundry = (sortedAttr[j].key + sortedAttr[j+1].key) / 2.0 ;

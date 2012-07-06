@@ -90,6 +90,12 @@ protected:
    double rfBrent(double ax, double bx, double cx, double tol, double &xmin);
    double f1dim(double x);
 
+#if defined(R_PORT)
+  void rfMarkCaseInTree(binnode *branch, int caseIdx) ;
+   void rfClearDTrain(binnode *branch) ;
+   void rfLeafCooccurence(binnode *branch,  int outDim, SEXP out) ;
+#endif
+
 public:
    booleanT learnRF ;
    double avgOobAccuracy, avgOobMargin, avgOobCorrelation ;
@@ -137,8 +143,10 @@ public:
 
    SEXP T2Rpart(void) ;
    SEXP proximity(bool distance) ;
+   SEXP proximityM(bool distance) ;
    SEXP importance2R(void) ;
    SEXP importance2RCluster(marray<double> &varEval, marray<booleanT> &cluster) ;
+
 
 #endif
 

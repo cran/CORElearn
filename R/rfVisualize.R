@@ -1,6 +1,5 @@
 getRpartModel <- function(model, dataset) {
     m <- getRpart(model);
-    browser()
     ee <-list();
     class(ee)<-"rpart";
     ee$method<-"class";

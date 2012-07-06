@@ -23,7 +23,8 @@ public:
     binnode *left,*right;
 
     binnode(void) { left = right = 0 ; } 
-    void operator= (binnode &Source) ;
+    void copy(binnode &Source) ;
+    void operator=(binnode &Source)  { copy(Source) ; };
 };
 
 typedef binnode* Pbinnode ;

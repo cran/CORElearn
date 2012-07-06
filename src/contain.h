@@ -58,6 +58,7 @@ public:
    int memberPlace(T &X) const ;
    int lessEqPlace(T &X) const ;
    void addEnd(T& X) ;
+   void addEndAutoResize(T& X) ;
    int addToAscSorted(T& X) ;
    inline void incEdge(void)
       {
@@ -250,7 +251,7 @@ template<class T> int marray<T>::lessEqPlace(T &X) const
 }
 
 
-// adds X to nthe end of filled array
+// adds X to the end of filled array
 template<class T> void marray<T>::addEnd(T& X)
 {
    #if defined(DEBUG)
@@ -260,6 +261,14 @@ template<class T> void marray<T>::addEnd(T& X)
    table[edge++] = X ;
 }
 
+
+// adds X to the end of filled array, resize if necessary
+template<class T> void marray<T>::addEndAutoResize(T& X)
+{
+      if (edge >= size)
+         enlarge(2 * size) ;
+      table[edge++] = X ;
+}
 
 
 // returns the place to which the X was inserted

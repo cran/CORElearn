@@ -165,7 +165,7 @@ testCoreAttrEval <- function(continue=TRUE)
     estMdl1 <- attrEval(class ~ ., train, estimator="MDL", minNodeWeightEst=5, maxThreads=1)
     set.seed(0)
     estMdl0 <- attrEval(class ~ ., train, estimator="MDL", minNodeWeightEst=5, maxThreads=0)
-    resB1 <- compareApprox("testCoreAttrEval/estMdl/threads", estMdl0, estMdl1, 0, continue)
+    resB1 <- compareApprox("testCoreAttrEval/estMdl/threads", estMdl0, estMdl1, 1e-9, continue)
     stored <- c(0.0430367148311, 0.0726888549425, 0.0315160729442, 0.0280291538191, 0.0581082266459,
             0.0413914181947, -0.0095497415727, 0.1069959122855, 0.1045578033412, 0.0008384525753)
     resB2 <- compareApprox("testCoreAttrEval/estMdl/stored", stored, estMdl0, 1e-9, continue)

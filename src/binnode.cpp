@@ -4,7 +4,7 @@
 
 
 
-void binnode::operator=(binnode &Source)
+void binnode::copy(binnode &Source)
 {
     Identification = Source.Identification ;
     Model = Source.Model ;
