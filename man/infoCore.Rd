@@ -4,7 +4,8 @@
 \title{ Description of certain CORElearn parameters}
 \description{
  Depending on parameter \code{what} the function prints some information on CORElearn,
- for example codes of available classification aor regression attribute evaluation heuristics.
+ for example codes of available classification (or regression) attribute evaluation heuristics.
+ For more complete description of the parameters see \code{\link{helpCore}}.
   }
 \usage{
 infoCore(what=c("attrEval","attrEvalReg"))
@@ -18,13 +19,17 @@ infoCore(what=c("attrEval","attrEvalReg"))
    Depending on the parameter \code{what} the function some information on CORElearn.
     \describe{
     \item{"attrEval"}{Prints codes of all available classification attribute evaluation heuristics. 
-              These codes can be used as parameters for attribute evaluation methods in learning. It is internally used for validation of parameters.}
+              These codes can be used as parameters for attribute evaluation methods in learning. 
+              It is internally used for validation of parameters. For more complete 
+              information see \code{\link{attrEval}}. }
     \item{"attrEvalReg"}{prints codes of all available regression attribute evaluation heuristics. These codes can be used as parameters for attribute evaluation 
-   methods in learning. It is internally used for validation of parameters.}
+   methods in learning. It is internally used for validation of parameters. For more complete 
+              information see \code{\link{attrEval}}.}
    }
 }
 \value{
-  Returns vector of codes for all implemented classification or regression attribute evaluation heuristics. 
+  For \code{what="attrEval"} or \code{"attrEvalReg"} function returns vector of codes for all 
+  implemented classification or regression attribute evaluation heuristics, respectively. 
 }
 
 \author{ Marko Robnik-Sikonja}

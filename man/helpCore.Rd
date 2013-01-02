@@ -3,8 +3,7 @@
 \alias{help.Core}
 \title{ Description of parameters. }
 \description{
-  For given parameter name function prints its type, default value, and short description.
-  If no \code{name} is given descriptions for all available parameters are printed out.
+  The behavior of CORElearn is controlled by several parameters. This is a short overview.  
 }
 \details{
 There are many different parameters available. Some are general and can be used in many

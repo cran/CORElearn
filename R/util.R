@@ -50,12 +50,12 @@ prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrd
           if (nrow(data) > 1 && (length(sc) <= 1 || sc[1]==sc[length(sc)]) ) { # all equal
                if (skipEqualColumn) {
                   skipmap <- c(skipmap,i)  
-                  warning(sprintf("Variable %s has all values equal to NA and has beeen skipped.",names(data)[i]))
+                  warning(sprintf("Variable %s has all values equal and has beeen skipped.",names(data)[i]))
                   formulaIn <- update.formula(formulaIn, paste(". ~ . - ",names(data)[i],sep=""))
                   next
               }
               else {
-                  warning(sprintf("Variable %s has all values equal to NA.",names(data)[i]))
+                  warning(sprintf("Variable %s has all values equal.",names(data)[i]))
               }
           }
         }

@@ -74,9 +74,9 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
             noNumeric = ncol(numdata),
             numericData = as.double(numdata), # vector of length noInst*noNumeric, column-wise
             costs = as.double(costMatrix),
-            discAttrNames = discAttrNames,
-            discValNames = discValCompressed,
-            numAttrNames = numAttrNames,
+            discAttrNames = as.character(discAttrNames),
+            discValNames = as.character(discValCompressed),
+            numAttrNames = as.character(numAttrNames),
             numOptions = length(options),
             optionsName = names(options),
             optionsVal = options,
@@ -91,7 +91,8 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
         return(NULL)
     }
     res <- list(modelID=tmp$modelID, terms=terms, class.lev=class.lev, model=model, formula=aux$formulaOut,
-            noClasses = tmp$noClasses, priorClassProb = tmp$priorClassProb[1:tmp$noClasses],avgTrainPrediction = tmp$avgTrainPrediction,
+            noClasses = tmp$noClasses, priorClassProb = tmp$priorClassProb[1:tmp$noClasses],
+			avgTrainPrediction = tmp$avgTrainPrediction,
             noNumeric = tmp$noNumeric, noDiscrete=tmp$noDiscrete, discAttrNames = discAttrNames,
             discValNames = discValues, numAttrNames = numAttrNames,   
             discmap = discmap, nummap = nummap, skipmap = skipmap
@@ -236,7 +237,7 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
     attributes(trms) <- NULL
     formulaExpanded <- as.formula(trms)
     
-    aux <- prepare.Data(dat,formulaExpanded,dependent=TRUE,skipNAcolumn=TRUE,skipEqualColumn=TRUE);
+    aux <- prepare.Data(dat,formulaExpanded,dependent=TRUE,skipNAcolumn=TRUE,skipEqualColumn=FALSE);
     discnumvalues <- aux$discnumvalues;
     discdata <- aux$discdata;
     discmap <- aux$discmap;
@@ -259,9 +260,9 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
                 discreteData = as.integer(discdata), # vector of length noInst*noDiscrete, columnwise
                 noNumeric = ncol(numdata),
                 numericData = as.double(numdata), # vector of length noInst*noNumeric, columnwise
-                discAttrNames = discAttrNames,
-                discValNames = discValCompressed,
-                numAttrNames = numAttrNames,
+                discAttrNames = as.character(discAttrNames),
+                discValNames = as.character(discValCompressed),
+                numAttrNames = as.character(numAttrNames),
                 numOptions = length(options),
                 optionsName = names(options),
                 optionsVal = options,
@@ -283,9 +284,9 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
                 noNumeric = ncol(numdata),
                 numericData = as.double(numdata), # vector of length noInst*noNumeric, columnwise
                 costs = as.double(costMatrix),
-                discAttrNames = discAttrNames,
-                discValNames = discValCompressed,
-                numAttrNames = numAttrNames,            
+                discAttrNames = as.character(discAttrNames),
+                discValNames = as.character(discValCompressed),
+                numAttrNames = as.character(numAttrNames),            
                 numOptions = length(options),
                 optionsName = names(options),
                 optionsVal = options,
@@ -354,8 +355,8 @@ ordEval <- function(formula, data, file=NULL, rndFile=NULL, variant=c("allNear",
             noDiscrete = ncol(discdata),
             noDiscreteValues = as.integer(discnumvalues),
             discreteData = as.integer(discdata), # vector of length noInst*noDiscrete, columnwise
-            discAttrNames = discAttrNames,
-            discValNames = discValNames,
+            discAttrNames = as.character(discAttrNames),
+            discValNames = as.character(discValNames),
             numOptions = length(options),
             optionsName = names(options),
             optionsVal = options,
@@ -374,22 +375,42 @@ ordEval <- function(formula, data, file=NULL, rndFile=NULL, variant=c("allNear",
     )
     attrNames <- names(dat)[-1]
     attrMap <- (discmap[-1]) - 1
+	attrMapLen <- length(attrMap)
     avNames <- c(1:(maxAttrValues-1),"all")
     avMap <- 1:(maxAttrValues-1)
-    reinfPos <- matrix(tmp$reinfPos, nrow=noAttr, ncol=maxAttrValues,dimnames=list(attrNames,avNames));
+    avMapLen <- length(avMap)
+	reinfPos <- matrix(tmp$reinfPos, nrow=noAttr, ncol=maxAttrValues,dimnames=list(attrNames,avNames));
     reinfNeg <- matrix(tmp$reinfNeg, nrow=noAttr, ncol=maxAttrValues,dimnames=list(attrNames,avNames));
     anchor <- matrix(tmp$anchor, nrow=noAttr, ncol=maxAttrValues,dimnames=list(attrNames,avNames));
     noAV <- matrix(tmp$noAV, nrow=noAttr, ncol=maxAttrValues,dimnames=list(attrNames,avNames));
     rndReinfPos <- array(tmp$rndReinfPos, dim=c(noAttr, maxAttrValues,noStats), dimnames=list(attrNames, avNames, statNames));
     rndReinfNeg <- array(tmp$rndReinfNeg, dim=c(noAttr, maxAttrValues,noStats), dimnames=list(attrNames, avNames, statNames)) ;
     rndAnchor <- array(tmp$rndAnchor, dim=c(noAttr, maxAttrValues,noStats), dimnames=list(attrNames, avNames, statNames));
-    res<-list(reinfPosAV=reinfPos[attrMap,avMap], reinfNegAV=reinfNeg[attrMap,avMap], anchorAV=anchor[attrMap,avMap], noAV = noAV[attrMap,avMap],
-            reinfPosAttr=reinfPos[attrMap,maxAttrValues], reinfNegAttr=reinfNeg[attrMap,maxAttrValues], anchorAttr=anchor[attrMap,maxAttrValues],
-            noAVattr = noAV[attrMap,maxAttrValues], 
-            rndReinfPosAV=rndReinfPos[attrMap,avMap,], rndReinfNegAV=rndReinfNeg[attrMap,avMap,], rndAnchorAV=rndAnchor[attrMap,avMap,],
-            rndReinfPosAttr=rndReinfPos[attrMap,maxAttrValues,], rndReinfNegAttr=rndReinfNeg[attrMap,maxAttrValues,], rndAnchorAttr=rndAnchor[attrMap,maxAttrValues,],
-            attrNames= attrNames, valueNames=aux$discValues[-1], noAttr=length(attrNames),ordVal=maxAttrValues-1,variant=variant,file=file, rndFile=rndFile,
-            formula=aux$formulaOut
+	rndReinfPosAttr=matrix(rndReinfPos[attrMap,maxAttrValues,],nrow=noAttr, ncol=noStats,dimnames=list(attrNames,statNames))
+	rndReinfNegAttr=matrix(rndReinfNeg[attrMap,maxAttrValues,],nrow=noAttr, ncol=noStats,dimnames=list(attrNames,statNames))
+	rndAnchorAttr=matrix(rndAnchor[attrMap,maxAttrValues,],nrow=noAttr, ncol=noStats,dimnames=list(attrNames,statNames))
+	res<-list(reinfPosAV=reinfPos[attrMap,avMap, drop=FALSE], 
+			  reinfNegAV=reinfNeg[attrMap,avMap, drop=FALSE], 
+			  anchorAV=anchor[attrMap,avMap, drop=FALSE], 
+			  noAV = noAV[attrMap,avMap, drop=FALSE],
+              reinfPosAttr=reinfPos[attrMap,maxAttrValues, drop=FALSE], 
+			  reinfNegAttr=reinfNeg[attrMap,maxAttrValues, drop=FALSE], 
+			  anchorAttr=anchor[attrMap,maxAttrValues, drop=FALSE],
+              noAVattr = noAV[attrMap,maxAttrValues, drop=FALSE], 
+              rndReinfPosAV=rndReinfPos[attrMap,avMap, , drop=FALSE], 
+			  rndReinfNegAV=rndReinfNeg[attrMap,avMap, , drop=FALSE], 
+			  rndAnchorAV=rndAnchor[attrMap,avMap, , drop=FALSE],
+              rndReinfPosAttr=rndReinfPosAttr,
+			  rndReinfNegAttr=rndReinfNegAttr, 
+			  rndAnchorAttr=rndAnchorAttr,
+              attrNames= attrNames, 
+			  valueNames=aux$discValues[-1], 
+			  noAttr=length(attrNames),
+			  ordVal=maxAttrValues-1,
+			  variant=variant,
+			  file=file, 
+			  rndFile=rndFile,
+              formula=aux$formulaOut
     );
     class(res) <- "ordEval"  
     return(res)
