@@ -109,10 +109,13 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
     isRegression <- model$model == "regTree"
     class.lev <- model$class.lev;
     noClasses <- length(class.lev);
-    #terms <- delete.response(model$terms);
-    dat <- model.frame(model$formula, data=newdata, na.action=na.pass);
-    aux <- prepare.Data(dat[-1], model$formula, dependent=FALSE,class.lev, skipNAcolumn=FALSE, skipEqualColumn=FALSE);
-    noInst <- aux$noInst
+    terms <- delete.response(model$terms);
+	newdata <- as.data.frame(newdata)
+	#dat <- model.frame(model$formula, data=newdata, na.action=na.pass);
+	dat <- model.frame(terms, data=newdata, na.action=na.pass);
+    aux <- prepare.Data(dat, model$formula, dependent=FALSE,class.lev, skipNAcolumn=FALSE, skipEqualColumn=FALSE);
+	#aux <- prepare.Data(dat[-1], model$formula, dependent=FALSE,class.lev, skipNAcolumn=FALSE, skipEqualColumn=FALSE);
+	noInst <- aux$noInst
     discnumvalues <- aux$discnumvalues;
     discdata <- aux$discdata;
     numdata <- aux$numdata;
@@ -307,7 +310,7 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
     est[-c(1,skipmap)];
 }
 rfAttrEval <- function(model) {
-    if (model$model != "rf") stop("Only random forest model can evaluate attributes with this function.");
+    if (! model$model %in% c("rf","rfNear") ) stop("Only random forest model can evaluate attributes with this function.");
     modelID <- model$modelID
     tmp <- .C("rfAttrEval",
             modelID = as.integer(modelID),
@@ -321,6 +324,22 @@ rfAttrEval <- function(model) {
     names(est)[model$nummap] <- model$numAttrNames   
     est[-c(1,model$skipmap)];
 }
+
+rfOOB <- function(model) {
+	if (! model$model %in% c("rf","rfNear") ) 
+		stop("Only random forest models can output out of bag performance estimators. Current model is of type ", model$model);
+	modelID <- model$modelID
+	tmp <- .C("rfOOB",
+			modelID = as.integer(modelID),
+			oobAccuracy = double(1),  
+			oobMargin = double(1),
+			oobCorrelation = double(1),
+			PACKAGE="CORElearn"
+	)
+	res<-list(accuracy=tmp$oobAccuracy, margin=tmp$oobMargin, correlation=tmp$oobCorrelation)
+	return(res)
+}
+
 
 ordEval <- function(formula, data, file=NULL, rndFile=NULL, variant=c("allNear","attrDist1","classDist1"), ...)
 {
@@ -580,7 +599,7 @@ printOrdEval<-function(x) {
 }
 
 
-modelEval <- function(model, correctClass, predictedClass, predictedProb=NULL, costMatrix=NULL, priorClProb = NULL, avgTrainPrediction = NULL, beta=1) {
+modelEval <- function(model=NULL, correctClass, predictedClass, predictedProb=NULL, costMatrix=NULL, priorClProb = NULL, avgTrainPrediction = NULL, beta=1) {
     if (is.null(predictedClass) && is.null(predictedProb)) {
         warning("Only one of the predictedClass and predictedProb parameters can be NULL")
         return(NULL) ;

@@ -555,6 +555,18 @@ void rfAttrEval(int *modelID, double *estOut) {
 
 }
 
+void rfOOB(int *modelID, double *oobAccuracy, double *oobMargin, double *oobCorrelation) {
+if (*modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
+		return;
+	featureTree *dT = (featureTree*) allModels[*modelID]; // get the model
+	if  (dT->learnRF) {
+		*oobAccuracy = dT->avgOobAccuracy ;
+		*oobMargin = dT->avgOobMargin ;
+		*oobCorrelation = dT->avgOobCorrelation ;
+	}
+	else return ;
+}
+
 void ordEvalCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 		char **dscAttrNames, char **dscValNames, int *noOptions,
 		char **optName, char **optValue, double *rePos, double *reNeg,

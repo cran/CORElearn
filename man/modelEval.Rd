@@ -7,7 +7,7 @@
   computes  some statistics evaluating the quality of the model.
 }
 \usage{
-modelEval(model, correctClass, predictedClass, predictedProb=NULL, 
+modelEval(model=NULL, correctClass, predictedClass, predictedProb=NULL, 
           costMatrix=NULL, priorClProb = NULL, 
           avgTrainPrediction = NULL, beta = 1) 
 }

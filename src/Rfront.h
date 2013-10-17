@@ -43,6 +43,7 @@ void modelEvaluateReg(int *noInst, double *truePred,
 void calibrate(int *calMethod, int *noInst, int *correctCl, double *predictedPr, double *wght, int *noBins,
 		       int *noIntervals, double *interval, double *calProb);
 void rfAttrEval(int *modelID, double *estOut) ;
+void rfOOB(int *modelID, double *oobAccuracy, double *oobMargin, double *oobCorrelation) ;
 
 }
 

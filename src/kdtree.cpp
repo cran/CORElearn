@@ -238,8 +238,8 @@ makeLeaf:
         Node->left = Node->right = 0 ;
         return Node ;
     }    
-    // select the splitting dimension - the dimension with the greatest scattering of values is choosen
-    // for continuous attributes scater measure is variance
+    // select the splitting dimension - the dimension with the greatest scattering of values is chosen
+    // for continuous attributes scatter measure is variance
     int i, iAttr, maxContIdx = -1 ; ;
     double valueSum, squares, fTemp;
     double maxVariance = -1.0, attrVariance ;

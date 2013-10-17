@@ -86,7 +86,7 @@ plot(md, dataset, graphType="attrEvalCluster", clustering=NULL)
 }
 
 
-\author{ John Adeyanju Alao (as a part of his BSc thesis) and Marko Robnik-Sikonja (thesis supervisor)}
+\author{ John Adeyanju Alao (implementation) and Marko Robnik-Sikonja (integration, improvements)}
 
 
 \seealso{

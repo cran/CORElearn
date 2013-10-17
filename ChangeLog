@@ -1,3 +1,4 @@
+CORElearn-0.9.42, 2013-10-17: bug fixes, added access to out-of-bag evaluation for random forests
 CORElearn-0.9.41, 2013-01-02: bug fixes
 CORElearn-0.9.40, 2012-07-06: bug fixes, proximity matrix for random forest
 CORElearn-0.9.39, 2012-01-27: version without multithreading support to test error on Solaris/intel

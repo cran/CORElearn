@@ -88,7 +88,7 @@ getRpartModel <- function(model, dataset) {
             counts <- yval[, 1L + (1L:nclass)]
             dimCounts<-dim(counts);
             counts<-matrix(as.numeric(counts),dimCounts[1],dimCounts[2])
-            temp1 <- rpart:::formatg(counts, digits)
+            temp1 <- rpart.formatg(counts, digits)
             if (nclass > 1) {
                 temp1 <- apply(matrix(temp1, ncol = nclass), 
                         1, paste, collapse = "/")
@@ -119,11 +119,11 @@ getRpartModel <- function(model, dataset) {
             }
             else{
                 if (use.n) {
-                    paste(rpart:::formatg(yval, digits), 
+                    paste(rpart.formatg(yval, digits), 
                             "\nn=", n, sep = "")
                 }
                 else {
-                    paste(rpart:::formatg(yval, digits))
+                    paste(rpart.formatg(yval, digits))
                 }
             }
         }
@@ -513,3 +513,15 @@ plotRFNorm<-function(point, cluster, somnames, lOffset,
         lines(point[value,], col=myColor[cluster[value]], pch=myPch[cluster[value]]);}
     legend(xlim[1], ylim[2], somnames, cex=0.8, col=myColor, pch=myPch, horiz=myHoriz);
 }
+
+# taken from rpart package, because it does not export it anymore
+## format a set of numbers using C's "g" format
+rpart.formatg <- function(x, digits = getOption("digits"),
+		format = paste0("%.", digits, "g"))
+{
+	if (!is.numeric(x)) stop("'x' must be a numeric vector")
+	
+	temp <- sprintf(format, x)
+	if (is.matrix(x)) matrix(temp, nrow = nrow(x)) else temp
+}
+
