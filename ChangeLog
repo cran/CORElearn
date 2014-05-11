@@ -1,3 +1,4 @@
+CORElearn-0.9.43, 2014-05-11: bug fix for C++ initialization, examples leaking memory allocated in C++ code, integer parameters larger than 1e5 transferered to C++ 
 CORElearn-0.9.42, 2013-10-17: bug fixes, added access to out-of-bag evaluation for random forests
 CORElearn-0.9.41, 2013-01-02: bug fixes
 CORElearn-0.9.40, 2012-07-06: bug fixes, proximity matrix for random forest

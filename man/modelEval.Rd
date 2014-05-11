@@ -108,6 +108,9 @@ pred <- predict(model, iris, rfPredictClass=FALSE)
 # Model evaluation
 mEval <- modelEval(model, iris[["Species"]], pred$class, pred$prob)
 print(mEval)
+
+destroyModels(model) # clean up
+
 }
 \keyword{ models }
 \keyword{ regression }

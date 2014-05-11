@@ -66,7 +66,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 0.9.42, built on " __DATE__ " at " __TIME__
+" version 0.9.43, built on " __DATE__ " at " __TIME__
 #if defined(_OPENMP)
 " with OpenMP support"
 #endif
@@ -359,21 +359,20 @@ void singleEstimation(featureTree* const Tree){
       merror("singleEstimation: cannot open results file: ", path)  ;
    }
 
-   outVersion(fout) ;
-   printEstimationHead(fout, Tree) ;
+   if (fout) {
+	   outVersion(fout);
+	   printEstimationHead(fout, Tree);
+	   printEstimations(fout, Tree->opt->splitIdx, Result, Tree);
+	   fprintf(fout, "\nCPU time used: %.2f seconds\n", timeMeasureDiff(estStart, estEnd));
+	   printLine(fout, "-", 23 + 11 * Tree->noAttr);
+	   fclose(fout);
 
-   printEstimations(fout,  Tree->opt->splitIdx, Result, Tree) ;
-   printEstimations(stdout, Tree->opt->splitIdx, Result, Tree) ;
+   }
 
-   fprintf(fout,"\nCPU time used: %.2f seconds\n", timeMeasureDiff(estStart, estEnd)) ;
-   fprintf(stdout,"\nCPU time used: %.2f seconds\n", timeMeasureDiff(estStart, estEnd)) ;
+   printEstimations(stdout, Tree->opt->splitIdx, Result, Tree);
+   fprintf(stdout, "\nCPU time used: %.2f seconds\n", timeMeasureDiff(estStart, estEnd));
+   printLine(stdout, "-", 23 + 11 * Tree->noAttr);
 
-   printLine(fout,"-",23+11 * Tree->noAttr)  ;
-   printLine(stdout,"-",23+11 * Tree->noAttr)  ;
-
-   //Tree->outConfig(fout) ;
-
-   fclose(fout) ;
 }
 
 //**********************************************************************
@@ -447,21 +446,21 @@ void singleEstimationReg(featureTree* const FTree)
    {
       merror("singleEstimationReg: cannot open results file: ", path)  ;
    }
-   outVersion(fout) ;
-   printEstimationHead(fout, Tree) ;
-
-
-   printEstimations(fout,  Tree->opt->splitIdx, Result, Tree) ;
+   
+   if (fout) {
+	   outVersion(fout);
+	   printEstimationHead(fout, Tree);
+	   printEstimations(fout, Tree->opt->splitIdx, Result, Tree);
+	   fprintf(fout, "\nCPU time used: %f seconds\n", timeMeasureDiff(estStart, estEnd));
+	   fclose(fout);
+   }
+	   
    printEstimations(stdout, Tree->opt->splitIdx, Result, Tree) ;
-
-   Tree->opt = 0 ;
-   delete Tree ;
-
-   //Tree->outConfig(fout) ;
-   fprintf(fout,"\nCPU time used: %f seconds\n", timeMeasureDiff(estStart, estEnd)) ;
    fprintf(stdout,"\nCPU time used: %f seconds\n", timeMeasureDiff(estStart, estEnd)) ;
 
-   fclose(fout) ;
+   Tree->opt = 0;
+   delete Tree;
+
 }
 
 
@@ -804,6 +803,7 @@ void allSplitsTree(featureTree* const Tree) {
    if ((to=fopen(path,"w"))==NULL)
    {
        stop("Cannot open decision tree output file",path) ;
+	   return;
    }
 
    outVersion(to) ;
@@ -912,6 +912,7 @@ void allTreeReg(featureTree* const FTree, demandType demand)
    if ((to=fopen(path,"w"))==NULL)
    {
        stop("Cannot open regression tree output file",path) ;
+	   return;
    }
 
    fprintf(to,"Parameters:\n" ) ;
@@ -1015,18 +1016,21 @@ void singleRF(featureTree* const Tree) {
    if ((to=fopen(path,"w"))==NULL) {
        merror("Cannot open random forests report file", path) ;
    }
-   outVersion(to) ;
-   fprintf(to,"Parameters:\n" ) ;
-   fprintf(to,"-----------\n" ) ;
-   Tree->opt->outConfig(to) ;
-   Tree->outDomainSummary(to) ;
-   Tree->outDomainSummary(stdout) ;
-   Tree->rfResultHead(to) ;
-   Tree->rfResultHead(stdout) ;
-   fflush(to) ;
-   fflush(stdout) ;
+   if (to) {
+	   outVersion(to);
+	   fprintf(to, "Parameters:\n");
+	   fprintf(to, "-----------\n");
+	   Tree->opt->outConfig(to);
+	   Tree->outDomainSummary(to);
+	   Tree->rfResultHead(to);
+	   fflush(to);
+   }
+   Tree->outDomainSummary(stdout);
+   Tree->rfResultHead(stdout);
+   Tree->rfResultHead(stdout);
 
-   double buildStart = timeMeasure() ;
+
+   double buildStart = timeMeasure();
    Tree->learnRF = mTRUE ;
    Tree->setDataSplit(Tree->opt->splitIdx) ;
    randSeed(Tree->opt->rfRndSeed) ;
@@ -1077,10 +1081,13 @@ void singleRF(featureTree* const Tree) {
 		  Tree->printAttrEval(stdout,idx,attrEval) ;
 		  Tree->printAttrEval(to,idx,attrEval) ;
 	   }
-       fflush(to) ;
-       fprintf(stdout,"\nCPU time used: %.2f seconds\n", timeMeasureDiff(buildStart, buildEnd)) ;
-       fflush(stdout) ;
-	   fclose(to) ;
+	   if (to) {
+		   fflush(to);
+		   fclose(to);
+	   }
+	   fprintf(stdout, "\nCPU time used: %.2f seconds\n", timeMeasureDiff(buildStart, buildEnd));
+	   fflush(stdout);
+
    }
 }
 
@@ -1454,10 +1461,13 @@ void evalOrdAttrValNorm(featureTree*  Tree, demandType demand)  {
 		   pEstimator->ordAVdAeqNormAttrDiff1(1,Tree->noDiscrete, kEqual, reinfPos,reinfNeg,anchor, reinfPosRnd,reinfNegRnd,anchorRnd);
        if (Tree->opt->ordEvalNoRandomNormalizers > 0) {
 		   sprintf(path,"%s%s.oer",Tree->opt->resultsDirectory.getConstValue(), Tree->opt->domainName.getConstValue()) ;
-		   if ((fout = fopen(path,"w"))==NULL)
-			  merror("evalOrdAttrValNorm: cannot open results file: ", path)  ;
-		   printAVestRnd(fout, reinfPosRnd, reinfNegRnd, anchorRnd, Tree) ;
-    	   fclose(fout) ;
+		   if ((fout = fopen(path, "w")) == NULL) {
+			   merror("evalOrdAttrValNorm: cannot open results file: ", path);
+		   }
+		   else {
+			   printAVestRnd(fout, reinfPosRnd, reinfNegRnd, anchorRnd, Tree);
+			   fclose(fout);
+		   }
 	   }
    }
     else merror("evalOrdAttrValNorm", "unrecognized demand") ;
@@ -1466,17 +1476,18 @@ void evalOrdAttrValNorm(featureTree*  Tree, demandType demand)  {
    if ((fout = fopen(path,"w"))==NULL)   {
       merror("evalOrdAttrValNorm: cannot open results file: ", path)  ;
    }
-   printAVest(stdout, reinfPos, reinfNeg, anchor, Tree) ;
-   printAVest(fout, reinfPos, reinfNeg, anchor, Tree) ;
+   if (fout) {
+	   printAVest(fout, reinfPos, reinfNeg, anchor, Tree);
+	   fclose(fout);
+   }
 
+   printAVest(stdout, reinfPos, reinfNeg, anchor, Tree);
 
    delete pEstimator ;
    double estEnd = timeMeasure() ;
 
    fprintf(stdout,"\nCPU time used: %.2f seconds\n", timeMeasureDiff(estStart, estEnd)) ;
-
    fflush(stdout) ;
-   fclose(fout) ;
 }
 
 

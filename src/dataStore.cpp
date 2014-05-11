@@ -933,8 +933,10 @@ int dataStore::readCosts(void)
 		  sprintf(buf,"%d",j) ;
           merror("Not enough values for class value ",buf) ;
         }
-        sscanf(token,"%lf", &costValue) ;
-        CostMatrix(i,j) = costValue ;
+		else {
+			sscanf(token, "%lf", &costValue);
+			CostMatrix(i, j) = costValue;
+		}
 
         token = strtok(0, dataSeparators );
       }

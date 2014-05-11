@@ -8,7 +8,7 @@
 #define R_PORT
 #if defined(MICROSOFT)
 // comment for stand-alone Windows version compiled with VisualC++ compiler
-#define MINGW
+//#define MINGW
 #endif
 
 #if defined(R_PORT)

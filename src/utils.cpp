@@ -414,12 +414,12 @@ double mdlIntEncode(long int number)
 
    double code = double(1.0) + log2(double(2.865064)) ;
 
-   double logarithm = log2(number) ;
+   double logarithm = log2((double)number) ;
 
    while (logarithm > 0)
    {
       code += logarithm ;
-      logarithm = log2(logarithm) ;
+      logarithm = log2((double)logarithm) ;
    }
 
    return code ;

@@ -38,6 +38,8 @@ modelRF <- CoreModel(Species ~ ., iris, model="rf",
               selectionEstimator="MDL", minNodeWeightRF=50, rfNoTrees=50)
 
 getRFsizes(modelRF) 
+
+destroyModels(modelRF) # clean up
 }
 
 \keyword{ models }

@@ -41,6 +41,9 @@ print(modelRF)
 # get the structure of the forest 
 forest <- getCoreModel(modelRF) 
 forest
+
+destroyModels(modelRF) # clean up
+ 
 }
 
 \keyword{ models }

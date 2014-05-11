@@ -41,9 +41,9 @@ extern "C" int descSort3Comp(const void *a, const void *b) ;
 // char* int2str(int Number, char* const Str);
 
 //   logarithm of basis 2: compatibility sake
-#if defined(MICROSOFT)
-  inline double log2(double x) { return double( log(x) / 0.69314718055994528622) ; }
-#endif
+//#if defined(MICROSOFT)
+//  inline double log2(double x) { return double( log(x) / 0.69314718055994528622) ; }
+//#endif
 
 #define sqrt2 1.414213562373
 #define epsilon  1e-7

@@ -373,8 +373,10 @@ double exprReg::predict(binnodeReg *treeNode, int Case)
 double exprReg::predict(binnodeReg *treeNode, int Case, exprRegNode* Node)
 {
     #if defined(DEBUG)
-       if (!Node)
-          merror("exprReg::predict", "Invalid structure of model") ;
+	if (!Node) {
+		merror("exprReg::predict", "Invalid structure of model");
+		return -FLT_MAX;
+	}
     #endif
     switch(Node->nodeType)
     {
@@ -630,7 +632,7 @@ char* exprReg::descriptionString(exprRegNode* Node)
 double exprReg::mdlCost(int noAttributes)
 {
   // coding the length of the exprRegession
-  double codeLen = log2(noAttributes+1) ; //  log2(noAttributes and constant term)
+  double codeLen = log2((double)(noAttributes+1)) ; //  log2(noAttributes and constant term)
   // selection of attributes
   marray<double> Multinom(2,0.0) ;  
   Multinom[0] = noCoefficients() ;
@@ -656,8 +658,10 @@ double exprReg::mdlCost(int noAttributes)
 double exprReg::mdlExprCost(exprRegNode* Node)
 {
     #if defined(DEBUG)
-       if (!Node)
-          merror("exprReg::mdlExprCost", "Invalid structure of model") ;
+	if (!Node) {
+		merror("exprReg::mdlExprCost", "Invalid structure of model");
+		return -FLT_MAX;
+	}
     #endif
     switch(Node->nodeType)
     {
@@ -690,8 +694,10 @@ double exprReg::mdlExprCost(exprRegNode* Node)
 double exprReg::mdlPointCost(exprRegNode* Node)
 {
     #if defined(DEBUG)
-       if (!Node)
-          merror("exprReg::predict", "Invalid structure of model") ;
+	if (!Node) {
+		merror("exprReg::predict", "Invalid structure of model");
+		return -FLT_MAX;
+	}
     #endif
     switch(Node->nodeType)
     {

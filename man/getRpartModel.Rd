@@ -27,6 +27,9 @@ plot(rpm, branch=0.5, minbranch=5, compress=TRUE)
 # pretty=0 prints full names of attributes, 
 # numbers to 3 decimals, try to make a dendrogram more compact
 text(rpm, pretty=0, digits=3)
+
+destroyModels(md) # clean up
+
 }
 
 \seealso{\code{\link{CoreModel}}, \code{\link{plot.CoreModel}},\code{\link{rpart}}, \code{\link{rpart.object}},

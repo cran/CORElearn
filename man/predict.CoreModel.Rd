@@ -60,6 +60,8 @@ print(modelRF)
 pred <- predict(modelRF, iris, rfPredictClass=FALSE, type="both")
 print(pred)
 
+destroyModels(modelRF) # clean up
+
 }
 
 \keyword{ models }

@@ -38,6 +38,10 @@ classPrototypes,
 getRpartModel
 )
 
+import(rpart)
+import(cluster)
+import(stats)
+
 S3method(plot, ordEval)
 S3method(predict, CoreModel)
 S3method(plot, CoreModel)

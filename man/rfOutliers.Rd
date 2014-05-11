@@ -24,6 +24,9 @@ outliers <- rfOutliers(md, dataset)
 plot(abs(outliers))
 #for a nicer display try 
 plot(md, dataset, graphType="outliers")
+
+destroyModels(md) # clean up
+
 }
 
 \author{ John Adeyanju Alao (as a part of his BSc thesis) and Marko Robnik-Sikonja (thesis supervisor)}

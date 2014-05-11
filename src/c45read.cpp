@@ -234,7 +234,13 @@ int c45read::readC45costs(FILE *from, mmatrix<double> &CostMatrix) {
     for (iat = attrs.first(); iat != 0 ; iat = attrs.next(iat))
 	   if (iat->value.aType == attrDiscClass)
 		   break ;
-	int noCl = iat->value.values.len() ;
+	int noCl = 0;
+	if (iat != 0)
+		noCl = iat->value.values.len() ;
+	else {
+		merror("c45read::readc45costs", "invalid number of classes assumed");
+		return -1;
+	}
 
 	// creation and initialization
 	CostMatrix.create(noCl+1, noCl+1, 1.0) ;

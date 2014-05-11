@@ -69,7 +69,7 @@ Regression models:
   in the package memory space and only its pointer (index) is returned.
   The maximum  number of models that can be stored simultaneously
   is a parameter of the initialization function \code{initCore} and
-  defaults to 100. Models, which are not needed may be deleted in order
+  defaults to 16384. Models, which are not needed may be deleted in order
   to free the memory using function \code{destroyModels}.
   By referencing the returned model, any of the stored models may be
   used for prediction with \code{\link{predict.CoreModel}}.
@@ -116,22 +116,28 @@ Majority of these references are available from \url{http://lkm.fri.uni-lj.si/rm
 modelRF <- CoreModel(Species ~ ., iris, model="rf",
               selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
 print(modelRF)
+destroyModels(modelRF) # clean up
+
 
 # build decision tree with naive Bayes in the leaves
 modelDT <- CoreModel(Species ~ ., iris, model="tree", modelType=4)
 print(modelDT)
+destroyModels(modelDT) # clean up
+
 
 # build regression tree similar to CART
 instReg <- regDataGen(200)
 modelRT <- CoreModel(response~., instReg, model="regTree", modelTypeReg=1)
 print(modelRT)
+destroyModels(modelRT) # clean up
 
 # build kNN kernel regressor by preventing tree splitting
 modelKernel <- CoreModel(response~., instReg, model="regTree",
                     modelTypeReg=7, minNodeWeightTree=Inf)
 print(modelKernel)
+destroyModels(modelKernel) # clean up
 
-# A more complex example demonstrating also destroyModels() follows.
+# A more complex example 
 # Test accuracy of random forest predictor with 20 trees on iris data
 # using 10-fold cross-validation.
 ncases <- nrow(iris)
@@ -141,9 +147,10 @@ pred <- rep(NA,ncases)
 fit <- NULL
 for (i in unique(ind)) {
     # Delete the previous model, if there is one.
-    if (!is.null(fit)) destroyModels(fit)
     fit <- CoreModel(Species ~ ., iris[ind!=i,], model="rf", rfNoTrees=20)
     pred[ind==i] <- predict(fit, iris[ind==i,], type="class")
+    if (!is.null(fit)) destroyModels(fit) # dispose model no longer needed
+ 
 }
 table(pred,iris$Species)
 }

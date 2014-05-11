@@ -847,18 +847,18 @@ double constructReg::mdlAux(constructRegNode *Node)
          return mdlAux(Node->left) + mdlAux(Node->right) ;
 
       case cnCONTattribute: // summing and multiplying
-         return log2(gRT->noNumeric-1) ;
+         return log2((double)(gRT->noNumeric-1)) ;
       
       case cnCONTattrValue:
       {
         double intValue = gRT->valueInterval[Node->attrIdx]/gRT->opt->mdlErrorPrecision ;
         if (intValue < 1.0)
           intValue = 1.0 ;
-        return  log2(gRT->noAttr) + 2.0*log2(intValue) ;
+        return  log2((double)gRT->noAttr) + 2.0*log2((double)intValue) ;
       }
       case  cnDISCattrValue:
-        return log2(gRT->noAttr) +
-               log2(gRT->AttrDesc[gRT->DiscIdx[Node->attrIdx]].NoValues) ;
+        return log2((double)gRT->noAttr) +
+               log2((double)gRT->AttrDesc[gRT->DiscIdx[Node->attrIdx]].NoValues) ;
 
       case cnDISCattribute:
       default: 
@@ -878,11 +878,11 @@ double constructReg::mdlAux(constructRegNode *Node)
 // *********************************************************************
 double constructReg::mdlConstructCode() 
 {
-   double code = log2(no1bits(gRT->opt->constructionMode)) ;
+   double code = log2((double)no1bits(gRT->opt->constructionMode)) ;
    switch (compositionType)
    {
      case cSINGLEattribute:
-          code += log2(gRT->noAttr) ;
+          code += log2((double)gRT->noAttr) ;
           if (countType == aDISCRETE)
           {
  //           marray<double> Multinom(2, 0.0) ;  
@@ -903,13 +903,13 @@ double constructReg::mdlConstructCode()
           }
           break ;       
      case cCONJUNCTION:
-         code += log2(gRT->opt->maxConstructSize) ;
+         code += log2((double)gRT->opt->maxConstructSize) ;
          code += mdlAux() ;       
          break ;
     
      case cSUM:
      case cPRODUCT:
-         {  code += log2(gRT->opt->maxConstructSize) ;
+         {  code += log2((double)gRT->opt->maxConstructSize) ;
             // selection of the attributes       
             marray<double> Multinom(2, 0.0) ;  
             Multinom[0] = degreesOfFreedom() ;

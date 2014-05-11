@@ -134,7 +134,7 @@
                 totalWeight += y[i].weight;
             double expBinWeight = totalWeight / noBins;
             interval.create(noBins);
-            calProb.create(noBins);
+            calProb.create(noBins, 0);
             marray<double> binWeight(noBins, 0), actualSum(noBins, 0);
             int binIdx = 0;
             marray<int> binBorder(noBins, -1);

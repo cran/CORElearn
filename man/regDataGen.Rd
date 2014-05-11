@@ -61,6 +61,8 @@ regData <-regDataGen(noInst=200)
 modelRT <- CoreModel(response ~ ., regData, model="regTree", modelTypeReg=1)
 print(modelRT)
 
+destroyModels(modelRT) # clean up
+
 }
 
 \keyword{ data }

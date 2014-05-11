@@ -546,11 +546,6 @@ void Options::outConfig(FILE *to) const
 	// bootstrap sampling or permutation for random normalizers
 	fprintf(to,"ordEvalBootstrapNormalize=%s  # bootstrap sampling or permutation for random normalizers\n", (ordEvalBootstrapNormalize ? "Y" : "N")) ;
 
-	// confidence interval
-//	fprintf(to, "# types of confidence intervals for ordEval random normalization") ;
-//	fprintf(to,"# 1-two sided, 2-upper, 3-lower") ;
-//	fprintf(to,"ordEvalConfidenceInterval=%d  # type of confidence interval for ordEval random normalization\n",(int)oeCI) ;
-
 	// the alpha for confidence interval
 	fprintf(to,"ordEvalNormalizingPercentile=%f  # the percentile defining the length of confidence interval obtained with random normalization", ordEvalNormalizingPercentile) ;
 
@@ -833,9 +828,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
 	else if (strcmp(keyword, "numberOfSplits")==0) {
        // Number of data splits to work on
-       sscanf(key,"%d", &temp) ;
-       if (temp > 0)
- 	  	 numberOfSplits = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp > 0)
+ 	  	 numberOfSplits = (int)dtemp ;
        else
 	 	 merror("numberOfSplits (number of data splits) should be positive", "") ;
 	}
@@ -849,15 +844,16 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
 	else if (strcmp(keyword, "rndSeedSplit")==0) {
        // Random seed for data splits
-       sscanf(key,"%d", &rndSeedSplit) ;
+       sscanf(key,"%lf", &dtemp) ;
        if (rndSeedSplit == 0)
            rndSeedSplit = (int) -time(NULL) ;
+       else rndSeedSplit = (int)dtemp ;
 	}
 	else if (strcmp(keyword, "splitIdx")==0) {
        // Split index
-       sscanf(key, "%d", &temp) ;
-       if (temp>=0)
-          splitIdx = temp ;
+       sscanf(key, "%lf", &dtemp) ;
+       if (dtemp>=0)
+          splitIdx = (int)dtemp ;
        else
           merror("splitIdx (data split index) should be positive", "") ;
 	}
@@ -883,9 +879,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "attrEvaluationInstances")==0) {
        // number of examples  for attribute estimations
-       sscanf(key,"%d", &temp) ;
-       if (temp >= 0)
-         attrEvaluationInstances = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0)
+         attrEvaluationInstances = (int)dtemp ;
        else
           merror("attrEvaluationInstances (number of instances for attribute evaluation) should be non-negative", "") ;
 	}
@@ -940,9 +936,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 
 	if (strcmp(keyword, "ReliefIterations")==0) {
        // Number of iterations in ReliefF's main loop
-       sscanf(key,"%d", &temp) ;
-       if (temp >= -2)
-          ReliefIterations = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= -2)
+          ReliefIterations = (int)dtemp ;
        else
           merror("ReliefIterations (number of iterations for all variants of Relief) should be larger or equal to -2", "") ;
 	}
@@ -964,17 +960,17 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "kNearestEqual")==0) {
        // Number of neighbours to consider - kEqual
-       sscanf(key,"%d", &temp) ;
-       if (temp >= 0)
-          kNearestEqual = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0)
+          kNearestEqual = (int)dtemp ;
        else
           merror("kNearestEqual (number of neighbours to consider in equal k nearest evaluation) should be nonnegative","") ;
 	}
     else if (strcmp(keyword, "kNearestExpRank")==0) {
        // Number of neighbours to consider - kExpRank
-       sscanf(key,"%d", &temp) ;
-       if (temp >= 0)
-          kNearestExpRank = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0)
+          kNearestExpRank = (int)dtemp ;
        else
           merror("kNearestExpRank (number of neighbours to consider in exponential rank distance evaluation) should be nonnegative","") ;
 	}
@@ -991,9 +987,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 
 	else if (strcmp(keyword, "ordEvalNoRandomNormalizers")==0) {
        // number of randomly shuffled attributes to be used for normalization of each attribute in ordEval algorithm
-       sscanf(key,"%d", &temp) ;
-       if (temp >= 0)
-          ordEvalNoRandomNormalizers = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0)
+          ordEvalNoRandomNormalizers = (int)dtemp ;
        else
           merror("ordEvalNoRandomNormalizers (number of randomly shuffled attributes to be used for normalization of each attribute in ordEval algorithm) should be nonnegative", "") ;
 	}
@@ -1006,14 +1002,6 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
        else
 		   merror("ordEvalBootstrapNormalize (choice for normalization with bootstrap sampling - otherwise  permutation based sampling) should be on or off (Y or N)", "") ;
 	}
-//	else if (strcmp(keyword, "ordEvalConfidenceInterval")==0) {
-//       // type of confidence interval for ordEval normalization
-//       sscanf(key,"%d", &temp) ;
-//       if (temp >= 1 && temp <=3)
-//          ordEvalconfidenceInterval = (oeConfidenceInterval) temp ;
-//       else
-//          merror("ordEvalConfidenceInterval (type of confidence interval for ordEval random normalization) should be 1, 2, or 3", "") ;
-//	}
 	else if (strcmp(keyword, "ordEvalNormalizingPercentile")==0) {
        // the length of confidence interval obtained with random normlization
        sscanf(key,"%lf", &dtemp) ;
@@ -1159,9 +1147,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "kInNN")==0) {
        // k in kNN models
-       sscanf(key,"%d", &temp) ;
-       if (temp >= 0 )
-         kInNN = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0 )
+         kInNN = (int)dtemp ;
        else
          merror("kInNN (number of neighbours in k-nearest neighbours models) should be positive", "") ;
 	}
@@ -1183,9 +1171,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "bayesEqFreqIntervals")==0) {
   	   // number of intervals for equal frequency discretization for simple Bayes models
-       sscanf(key,"%d", &temp) ;
-       if (temp > 1)
-         bayesEqFreqIntervals = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp > 1)
+         bayesEqFreqIntervals = (int)dtemp ;
        else
           merror("bayesEqFreqIntervals (number of intervals in equal-frequency discretization for naive Bayes models) should be greater than 1", "") ;
 	}
@@ -1201,17 +1189,17 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "constructionDepth")==0) {
        // depth  constructive induction
-       sscanf(key,"%d", &temp) ;
-       if (temp >= 0)
-          constructionDepth = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0)
+          constructionDepth = (int)dtemp ;
        else
           merror("constructionDepth (depth of the tree where construction is applied) should be non-negative", "") ;
 	}
     else if (strcmp(keyword, "noCachedInNode")==0) {
        // how many attributes to cache in each node
-       sscanf(key,"%d", &temp) ;
-       if (temp >= 0)
-          noCachedInNode = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0)
+          noCachedInNode = (int)dtemp ;
        else
            merror("noCachedInNode (number of cached constructs in eaach construction node) should be non-negative", "") ;
 	}
@@ -1237,33 +1225,33 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "beamSize")==0) {
        // beam size for beam search
-       sscanf(key,"%d", &temp) ;
-       if (temp > 0 )
-          beamSize = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp > 0 )
+          beamSize = (int)dtemp ;
        else
           merror("beamSize (size of the beam in constructive induction) should be greater than 0", "") ;
 	}
     else if (strcmp(keyword, "maxConstructSize")==0) {
       // maximal size of constructs
-      sscanf(key,"%d", &temp) ;
-      if (temp > 0 )
-         maxConstructSize = temp ;
+      sscanf(key,"%lf", &dtemp) ;
+      if (dtemp > 0 )
+         maxConstructSize = (int)dtemp ;
       else
          merror("maxConstructSize (maximal size of constructs) should be greater than 0", "") ;
 	}
     else if (strcmp(keyword, "discretizationLookahead")==0) {
        // Number of times current discretization can be worse than the best
-       sscanf(key,"%d", &temp) ;
-       if (temp >= 0)
-         discretizationLookahead = temp ;
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >= 0)
+         discretizationLookahead = (int)dtemp ;
        else
          merror("discretizationLookahead (number of times current discretization can be worse than the best) should be non-negative", "") ;
 	}
     else if (strcmp(keyword, "discretizationSample")==0) {
        // Maximal number of points to try discretization with Relief
-      sscanf(key,"%d", &temp) ;
-      if (temp >= 0)
-        discretizationSample = temp ;
+      sscanf(key,"%lf", &dtemp) ;
+      if (dtemp >= 0)
+        discretizationSample = (int)dtemp ;
       else
          merror("discretizationSample (maximal number of points to try discretization with Relief) should be non-negative","") ;
 	}
@@ -1320,17 +1308,17 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 
     else if (strcmp(keyword, "rfNoTrees")==0) {
       // number of trees in the forest
-      sscanf(key,"%d", &temp) ;
-      if (temp>0)
-        rfNoTrees = temp ;
+      sscanf(key,"%lf", &dtemp) ;
+      if (dtemp>0)
+        rfNoTrees = (int)dtemp ;
       else
          merror("rfNoTrees (number of trees in the random forest) should be positive","") ;
 	}
     else if (strcmp(keyword, "rfNoSelAttr")==0) {
       // Number of randomly selected attributes in the node
-      sscanf(key,"%d", &temp) ;
-      if (temp>=-2)
-         rfNoSelAttr = temp ;
+      sscanf(key,"%lf", &dtemp) ;
+      if (dtemp>=-2)
+         rfNoSelAttr = (int)dtemp ;
       else
         merror("rfNoSelAttr (number of randomly selected attributes in tree nodes) should be >=-2","") ;
 	}
@@ -1345,9 +1333,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "rfkNearestEqual")==0) {
       // Number of nearest instances for weighted rf classification
-      sscanf(key,"%d", &temp) ;
-      if (temp>=0)
-        rfkNearestEqual = temp ;
+      sscanf(key,"%lf", &dtemp) ;
+      if (dtemp>=0)
+        rfkNearestEqual = (int)dtemp ;
       else
         merror("rfkNearestEqual (number of nearest instances for random forest weighting) should be nonnegative","") ;
 	}
@@ -1387,9 +1375,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "rfNoTerminals")==0) {
       // Number of leaves in the individual trees (0-build a whole tree)
-      sscanf(key,"%d", &temp) ;
-      if (temp >= 0)
-         rfNoTerminals = temp ;
+      sscanf(key,"%lf", &dtemp) ;
+      if (dtemp >= 0)
+         rfNoTerminals = (int)dtemp ;
       else
 		 merror("rfNoTerminals (number of leaves in each tree) should be nonnegative","") ;
 	}
@@ -1411,9 +1399,10 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
     else if (strcmp(keyword, "rfRndSeed")==0) {
        // Random seed for random forests
-       sscanf(key,"%d", &rfRndSeed) ;
+       sscanf(key,"%lf", &dtemp) ;
        if (rfRndSeed == 0)
           rfRndSeed = -(long)time(NULL) ;
+       else rfRndSeed = (long)dtemp ;
 	}
 
 	// Prediction options
@@ -1438,9 +1427,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	// Other options
     else if (strcmp(keyword, "maxThreads")==0) {
         // maximal number of active threads
-        sscanf(key,"%d", &temp) ;
-        if (temp >= 0) {
-           maxThreads = temp ;
+        sscanf(key,"%lf", &dtemp) ;
+        if (dtemp >= 0) {
+           maxThreads = (int)dtemp ;
            #if defined(_OPENMP)
            if (maxThreads > 0)
         	   omp_set_num_threads(maxThreads);

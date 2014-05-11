@@ -25,6 +25,9 @@ The method calls \code{link{pam}} function for clustering, initializing its dist
 set<-iris
 md<-CoreModel(Species ~ ., set, model="rf", rfNoTrees=30)
 mdCluster<-rfClustering(md, 5)
+
+destroyModels(md) # clean up
+
 }
 \author{ John Adeyanju Alao (as a part of his BSc thesis) and Marko Robnik-Sikonja (thesis supervisor)}
 

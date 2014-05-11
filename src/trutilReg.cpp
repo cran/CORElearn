@@ -123,7 +123,7 @@ void regressionTree::printFTreeFile(char *FileName, int idx,
    {
       Feature2Str(FeatureNode[i], buf);
       fprintf(to, "f%d: %s\n", i, buf) ;
-	  if (opt->printTreeInDot)
+	  if (toDot)
 		  fprintf(toDot, "\tf%d [label = \"%s\"]\n", i, buf) ;
    }
 
@@ -138,7 +138,7 @@ void regressionTree::printFTreeFile(char *FileName, int idx,
                   i, ModelNode[i]->weight, sqrt(ModelNode[i]->MSE), ModelNode[i]->MAE,
                   ModelNode[i]->averageClassValue, ModelNode[i]->stdDevClass,
                   ModelDescription ) ;
- 	  if (opt->printTreeInDot)
+ 	  if (toDot)
 		  fprintf(toDot, "\tl%d [shape = box, label = \"%s\"]\n", i, ModelDescription) ;
 
       delete [] ModelDescription ;
@@ -148,7 +148,7 @@ void regressionTree::printFTreeFile(char *FileName, int idx,
 
    fclose(to) ;
 
-   if (opt->printTreeInDot)
+   if (toDot)
    {
       fprintf(toDot, "}\n") ;
       fclose(toDot) ;

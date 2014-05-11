@@ -356,9 +356,12 @@ rfAttrEvalClustering<-function(model, dataset, clustering=NULL){
     temp<-list();
     ncolumn<-length(b[b==FALSE]);
     imptemp<-matrix(imp, stopme, ncolumn, TRUE);
+  	colnames(imptemp) <- names(dataset)[b==FALSE]
+	  rownames(imptemp) <- levels(levSet)
     temp$imp<-imptemp
     temp$levels<-lev;
     rfAttrEvalClustering<-temp;
+	
 }
 plotRFStats <- function(point, cluster=FALSE, plotLine=FALSE, 
         lOffset=0, myCount=7, myAxes=FALSE)

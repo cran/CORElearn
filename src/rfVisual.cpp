@@ -234,6 +234,7 @@ SEXP featureTree::T2Rpart()
                         SET_STRING_ELT(outVectorLabels, i+line, mkChar("<leaf>"));
                         char *desc = aNode->Model.descriptionString();
                         SET_STRING_ELT(outVectorLabels, i+2*line, mkChar(desc));
+                        delete [] desc ;
                 }
                 /*
                  * ncompete, nsurrogate
@@ -314,10 +315,8 @@ SEXP featureTree::T2Rpart()
                                 leftValue = 3;
                                 rigthValue = 1;
                         }
-                        /*
-                         * no idea why aValue+1
-                         */
-                        for(int aValue=0; aValue < aNode->Construct.leftValues.len(); aValue++){
+
+                        for(int aValue=0; aValue < aNode->Construct.leftValues.len()-1; aValue++){
                                 int atPos = csplitCurrentColumn+aValue;
                                 if(aNode->Construct.leftValues[aValue+1] == mTRUE){
                                         INTEGER(csplitArray)[atPos] = leftValue;
@@ -600,6 +599,7 @@ SEXP regressionTree::T2Rpart()
                         SET_STRING_ELT(outVectorLabels, i+line, mkChar("<leaf>"));
                         char *desc = aNode->Model.descriptionString();
                         SET_STRING_ELT(outVectorLabels, i+2*line, mkChar(desc));
+                        delete [] desc ;
                 }
                 /*
                  * ncompete, nsurrogate

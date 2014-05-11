@@ -60,6 +60,7 @@ modelRF <- CoreModel(class~., train, model="rf", selectionEstimator="MDL",
                      minNodeWeightRF=5, rfNoTrees=100)
 # prediction 
 pred <- predict(modelRF, cal, rfPredictClass=FALSE)
+destroyModels(modelRF) # clean up
 
 # calibrate for a chosen class1 and method
 class1<-1

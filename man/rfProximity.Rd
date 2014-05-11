@@ -25,6 +25,9 @@ pr <- rfProximity(md, outProximity=TRUE)
 # visualization
 require(lattice)
 levelplot(pr)
+
+destroyModels(md) # clean up
+
 }
 
 \author{ John Adeyanju Alao (as a part of his BSc thesis) and Marko Robnik-Sikonja (thesis supervisor)}

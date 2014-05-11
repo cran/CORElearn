@@ -42,6 +42,9 @@
 modelRF <- CoreModel(Species ~ ., iris, model="rf", 
               selectionEstimator="MDL", minNodeWeightRF=5, rfNoTrees=100)
 rfOOB(modelRF) 
+
+destroyModels(modelRF) # clean up
+
 }
 \references{ 
 

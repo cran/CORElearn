@@ -123,12 +123,16 @@ estimationReg::estimationReg(regressionTree *fTreeParent, marray<int> &inDTrain,
 
 
    //-------------------------------------------------------------
-   // set number of iterations in main reliefF loop
+   // set number of iterations in main ReliefF loop
    //-------------------------------------------------------------
-   if (eopt.ReliefIterations == 0 ||  eopt.ReliefIterations > TrainSize)
-       NoIterations = TrainSize ;
-   else
-      NoIterations = eopt.ReliefIterations ;
+    if (eopt.ReliefIterations == 0 || eopt.ReliefIterations > TrainSize)
+        NoIterations = TrainSize ;
+    else if (eopt.ReliefIterations == -1)
+        NoIterations = (int)log(double(TrainSize)) ;
+    else if (eopt.ReliefIterations == -2)
+        NoIterations = (int)sqrt(double(TrainSize)) ;
+    else
+       NoIterations = eopt.ReliefIterations ;
 
    //-------------------------------------------------------------
    // set k

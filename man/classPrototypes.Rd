@@ -29,6 +29,7 @@ visualized by calling e.g.,
 dataset <- iris
 md <- CoreModel(Species ~ ., dataset, model="rf", rfNoTrees=30)
 typical <- classPrototypes(md, dataset, 10)
+destroyModels(md) # clean up
 }
 \author{ John Adeyanju Alao (as a part of his BSc thesis) and Marko Robnik-Sikonja (thesis supervisor)}
 

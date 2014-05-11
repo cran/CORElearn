@@ -12,7 +12,7 @@
 #include "rfUtil.h"
 #include "options.h"
 
-extern Options *opt ;
+//extern Options *opt ;
 
 
 

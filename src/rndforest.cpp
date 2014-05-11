@@ -123,7 +123,7 @@ int featureTree::buildForest(void) {
 		   estim[i] = availEst[i % noAvailableEst] ;
   		}
 
-    #pragma omp parallel for schedule(dynamic, 1)
+    #pragma omp parallel for // schedule(dynamic, 1)
     for (int it = 0 ; it < opt->rfNoTrees ; it++) {
 
     	if ( it/double(opt->rfNoTrees) < opt->rfPropWeightedTrees) {

@@ -70,19 +70,24 @@ plot(rpm, branch=0.5, minbranch=5, compress=TRUE)
 #(pretty=0) full names of attributes, numbers to 3 decimals, 
 text(rpm, pretty=0, digits=3)
 
+destroyModels(md) # clean up
+
 # regression tree
 dataset <- CO2
-md <- CoreModel(uptake ~ ., dataset, model="regTree")
-plot(md, dataset)
+mdr <- CoreModel(uptake ~ ., dataset, model="regTree")
+plot(mdr, dataset)
+destroyModels(mdr) # clean up
 
 #random forests
 dataset <- iris
-md <- CoreModel(Species ~ ., dataset, model="rf", rfNoTrees=30)
-plot(md, dataset, graphType="attrEval")
-plot(md, dataset, graphType="outliers")
-plot(md, dataset, graphType="scaling")
-plot(md, dataset, graphType="prototypes")
-plot(md, dataset, graphType="attrEvalCluster", clustering=NULL)
+mdRF <- CoreModel(Species ~ ., dataset, model="rf", rfNoTrees=30)
+plot(mdRF, dataset, graphType="attrEval")
+plot(mdRF, dataset, graphType="outliers")
+plot(mdRF, dataset, graphType="scaling")
+plot(mdRF, dataset, graphType="prototypes")
+plot(mdRF, dataset, graphType="attrEvalCluster", clustering=NULL)
+destroyModels(mdRF) # clean up
+
 }
 
 

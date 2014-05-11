@@ -65,6 +65,9 @@ loadedRF = loadRF(Species ~ ., iris, "tempRF.txt")
 predLoaded <- predict(loadedRF, iris, rfPredictClass=FALSE, type="both")
 print(predLoaded)
 
+# clean up the models when no longer needed
+destroyModels(modelRF) 
+destroyModels(loadedRF) 
 
 
 }

@@ -123,6 +123,10 @@ print(pred)
 # Model evaluation
 mEval <- modelEval(model, iris[["Species"]], pred$class, pred$prob)
 print(mEval)
+
+# Clean up. otherwise the memory is still taken
+destroyModels(model) # clean up
+
  
 # evaluate features in given data set with selected method
 estReliefF <- attrEval(Species ~ ., iris, 

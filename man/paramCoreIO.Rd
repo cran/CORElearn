@@ -42,12 +42,14 @@ paramCoreIO(model, fileName, io=c("read","write"))
 # use iris data
 # build random forests model with certain parameters
 modelRF <- CoreModel(Species ~ ., iris, model="rf", 
-              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
+              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=50)
 
 # writes all the used parameters to file
 paramCoreIO(modelRF, "parameters.par", io="write")
 # and reads them back into the model
 paramCoreIO(modelRF, "parameters.par", io="read")
+
+destroyModels(modelRF) # clean up
 
 }
 

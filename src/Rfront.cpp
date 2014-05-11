@@ -176,7 +176,8 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		dT = (featureTree*) allModels[*modelID]; // working model
 		data = (dataStore*) dT;
 	}
-	data->opt = opt;
+	data->opt->copy(*opt) ;
+	delete opt ;
 
 	// data is passed from R
 	data->isRegression = isRegression;
@@ -248,7 +249,8 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		data->clearData(mTRUE);
 
 	// unwrap arrays
-	cleanUp: noDiscreteValues.unWrap(dummy);
+	cleanUp:
+	noDiscreteValues.unWrap(dummy);
 	discreteData.unWrap(dummy);
 	numericData.unWrap(dummy);
 	priorClProb.unWrap(dummy);

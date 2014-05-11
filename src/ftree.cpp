@@ -165,7 +165,6 @@ binnode* featureTree::buildTree(marray<int> &DTrain, marray<double> &pDTrain,
    //  numeric attribute missing values - use the average atribute value instead
    //   it would be better to use density estimation with kernel functions
    //-------------------------------------------------------------
-
    Node->NAnumValue.create(noNumeric) ;
    marray<double> NAcontWeight(noNumeric,0.0) ;
    marray<double> NAcontSum(noNumeric,0.0) ;

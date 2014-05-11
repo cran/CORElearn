@@ -50,9 +50,7 @@ dat <- ordDataGen(200)
 est <- ordEval(class ~ ., dat, ordEvalNoRandomNormalizers=100)
 print(est)  
 plot(est)
-
 }
-
 
 \keyword{ data }
 \keyword{datagen}

@@ -2,7 +2,7 @@ prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrd
 {
     if (dependent) { # shell we fill in the column with the dependent data 
 		if (inherits(data[[1]],"ordered")) {
-			data[[1]] <- factor(data[[1]],ordered=FALSE); # protect against transformation to numeric
+			data[[1]] <- factor(data[[1]],ordered=FALSE,levels=levels(data[[1]])); # protect against transformation to numeric
 			cat("Changing dependent variable to unordered factor.\n");
 		}
         if (length(data[[1]][is.na(data[[1]])])>0)
@@ -10,7 +10,7 @@ prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrd
 		data <- data[!is.na(data[[1]]),]
 	} 
     else {
-        if (is.null(class.lev))  {## regression
+        if (is.null(class.lev))  {# regression
            predictionColumn <- double(length=nrow(data))
            predictionColumn[] <- NA
            data <- cbind(prediction=predictionColumn,data)
@@ -32,7 +32,7 @@ prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrd
     skipmap <- integer(0)
 	for (i in seq(along=data)) {
         # check validity of columns
-        if (length(data[[i]][is.na(data[[i]])])==nrow(data)) {
+        if (all(is.na(data[[i]]))) { #
             if (i > 1) {
                 if (skipNAcolumn) {
                   skipmap <- c(skipmap,i) 
@@ -41,13 +41,15 @@ prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrd
                   next
                 }
                 else {
-                    warning(sprintf("Variable %s has all values equal to NA.",names(data)[i]))                  
+                    if (dependent)
+						warning(sprintf("Variable %s has all values equal to NA.",names(data)[i]))                  
                 }
           }
         }
         else {
           sc <- sort(data[[i]],na.last=NA)
           if (nrow(data) > 1 && (length(sc) <= 1 || sc[1]==sc[length(sc)]) ) { # all equal
+			  if (i>1) {
                if (skipEqualColumn) {
                   skipmap <- c(skipmap,i)  
                   warning(sprintf("Variable %s has all values equal and has beeen skipped.",names(data)[i]))
@@ -55,8 +57,11 @@ prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrd
                   next
               }
               else {
-                  warning(sprintf("Variable %s has all values equal.",names(data)[i]))
+				  if (dependent)
+                     warning(sprintf("Variable %s has all values equal.",names(data)[i]))
               }
+		  }
+		  else warning(sprintf("Dependent variable %s has all values equal.",names(data)[i]))
           }
         }
 		if (inherits(data[[i]],"character") || (!inherits(data[[i]],"factor") && discreteOrdered==TRUE)) {
@@ -111,6 +116,8 @@ infoCore<-function(what=c("attrEval","attrEvalReg")) {
 
 prepare.Options <- function(...)
 {
+	scp <- getOption("scipen")  #store the value
+	options(scipen=20)  # change option
 	optionsList <- list(...);
 	for (i in seq(along=optionsList)) {
 		if (is.logical(optionsList[[i]])) {
@@ -121,6 +128,7 @@ prepare.Options <- function(...)
 			stop(paste("wrong type of option",names(optionsList)[i],"=",optionsList[[i]]));
 		}
 	}
+	options(scipen=scp)  # restore the old value
 	opt <- unlist(optionsList)
     # convert integer values of estimators to their character descriptors
     for (est in c("selectionEstimator","constructionEstimator")) {
@@ -143,7 +151,7 @@ prepare.Options <- function(...)
     opt                
 }
  convert.Options <- function(opt) {
-    # convert character description of of estimators to their character descriptors
+    # convert character description of estimators to their character descriptors
     for (est in c("selectionEstimator","constructionEstimator")) {
       idx = match(est, names(opt),nomatch=-1)
       if (idx > 0) {
@@ -523,8 +531,10 @@ preparePlot<-function(fileName="Rplot", ...)
         pdf(file = fileName, paper="default", ...)
     else if (tolower(fileType[2])=="ps") 
         postscript(file = fileName, paper="default", horizontal=FALSE, encoding="ISOLatin1.enc",...)
-    else if (tolower(fileType[2])=="emf" && .Platform$OS.type == "windows") 
-        win.metafile(filename = fileName,...)
+    else if (tolower(fileType[2])=="emf" && .Platform$OS.type == "windows")
+		eval(call(paste("win","metafile",sep="."), filename=quote(fileName),quote(...)))
+	    # next line would be better than previous but generates an unjustified note about violation of CRAN policy
+        # win.metafile(filename = fileName,...) 
     else if (tolower(fileType[2])=="jpg")
         jpeg(filename = fileName, ...)
     else if (tolower(fileType[2])=="tif")
