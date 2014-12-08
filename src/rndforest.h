@@ -37,7 +37,6 @@ public:
    ~forestTree(void) {} 
    void operator= (forestTree &Source) { copy(Source); };
    void copy(forestTree &Source) ;
-;
 } ;
 
 

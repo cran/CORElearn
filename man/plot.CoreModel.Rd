@@ -80,7 +80,7 @@ destroyModels(mdr) # clean up
 
 #random forests
 dataset <- iris
-mdRF <- CoreModel(Species ~ ., dataset, model="rf", rfNoTrees=30)
+mdRF <- CoreModel(Species ~ ., dataset, model="rf", rfNoTrees=30, maxThreads=1)
 plot(mdRF, dataset, graphType="attrEval")
 plot(mdRF, dataset, graphType="outliers")
 plot(mdRF, dataset, graphType="scaling")

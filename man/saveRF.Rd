@@ -47,7 +47,8 @@ loadRF(formula, data, fileName)
 
 # build random forests model with certain parameters
 modelRF <- CoreModel(Species ~ ., iris, model="rf", 
-              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
+              selectionEstimator="MDL",minNodeWeightRF=5,
+              rfNoTrees=100, maxThreads=1)
 print(modelRF)
 
 # prediction with node distribution

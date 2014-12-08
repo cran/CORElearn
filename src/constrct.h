@@ -44,9 +44,10 @@ public:
    double splitValue ;
    int noValues ;
    
-   construct() { root = 0 ; gFT = 0 ; }
+   construct() { initialize() ;}
    construct(const featureTree* ft) { root=0 ; init(ft); };
-   void init(const featureTree* ft) {destroy(); gFT = ft; }
+   void init(const featureTree* ft) {destroy(); initialize() ; gFT = ft; }
+   void initialize() {root = 0 ; gFT = 0 ; countType=aDISCRETE; compositionType=cSINGLEattribute; splitValue=-FLT_MAX; noValues=-1;}
    ~construct() ;
    construct(construct &Copy) ;
    int operator== (construct &X) ;

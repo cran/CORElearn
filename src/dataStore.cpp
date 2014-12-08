@@ -90,8 +90,9 @@ void attribute::destroy()
 // constructor
 dataStore::dataStore()
 {
-    noAttr =  NoOriginalAttr = NoCases = NoPredict = NoTrainCases = NoTestCases  = 0 ;
+    noAttr =  NoOriginalAttr = NoCases = NoPredict = NoTrainCases = NoTestCases = noClasses = 0 ;
     noNumeric = noDiscrete = 0 ;
+    minClass = -1 ;
 	isRegression = mFALSE ;
 	opt = new Options() ;
 	dData = &DiscData ;

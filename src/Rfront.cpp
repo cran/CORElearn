@@ -272,7 +272,7 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 
 void destroyOneCoreModel(int* modelID) {
 	// is modelID valid
-	if (*modelID >= 0 && *modelID < allModels.len() && allModels[*modelID] != 0) {
+	if (modelID != 0 && *modelID >= 0 && *modelID < allModels.len() && allModels[*modelID] != 0) {
 		dataStore *data = allModels[*modelID];
 		if (data->isRegression)
 			delete (regressionTree*) allModels[*modelID];
@@ -288,7 +288,7 @@ void predictWithCoreModel(int *modelID, int *noInst, int *discData,
 		double *numData, double *costMx, int *returnPred, double *returnProb,
 		double *returnPredReg, int *noOptions, char **optName, char **optValue) {
 	// is modelID valid
-	if (*modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
+	if (modelID == 0 || *modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
 		return;
 	dataStore *data = allModels[*modelID]; // working Model
 
@@ -558,7 +558,7 @@ void rfAttrEval(int *modelID, double *estOut) {
 }
 
 void rfOOB(int *modelID, double *oobAccuracy, double *oobMargin, double *oobCorrelation) {
-if (*modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
+if (modelID == 0 || *modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
 		return;
 	featureTree *dT = (featureTree*) allModels[*modelID]; // get the model
 	if  (dT->learnRF) {
@@ -871,7 +871,7 @@ void modelEvaluateReg(int *noInst, double *truePred, double *pred,
 // library version
 void optionsInOut(int *modelID, char **fileName, char **io) {
 	// is modelID valid
-	if (*modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
+	if (modelID == 0 || *modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
 		return;
 	dataStore *data = allModels[*modelID]; // working Model
 	if (strcmp(io[0], "read") == 0) {
@@ -885,7 +885,7 @@ void optionsInOut(int *modelID, char **fileName, char **io) {
 
 void saveRF(int *modelID, char **fileName) {
 	// is modelID valid
-	if (*modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
+	if (modelID == 0 || *modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
 		return;
 	featureTree *dT = (featureTree*) allModels[*modelID]; // working Model
 	dT->learnRF = mTRUE;

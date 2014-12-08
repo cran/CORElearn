@@ -126,8 +126,8 @@ int featureTree::buildForest(void) {
     #pragma omp parallel for // schedule(dynamic, 1)
     for (int it = 0 ; it < opt->rfNoTrees ; it++) {
 
-    	if ( it/double(opt->rfNoTrees) < opt->rfPropWeightedTrees) {
-		   if (opt->rfNoTerminals ==0)
+    	if ( it/(double)opt->rfNoTrees < opt->rfPropWeightedTrees) {
+		   if (opt->rfNoTerminals == 0)
 	         forest[it].t.root = buildForestTree(trainSize, forest[it].ib, estim[it], wProb, it) ;
 		   else
 			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, trainSize, forest[it].ib, estim[it], wProb, it) ;

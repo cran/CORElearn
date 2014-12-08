@@ -113,8 +113,10 @@ Majority of these references are available from \url{http://lkm.fri.uni-lj.si/rm
 # use iris data set
 
 # build random forests model with certain parameters
+# setting maxThreads to 0 or more than 1 uses several processor cores 
 modelRF <- CoreModel(Species ~ ., iris, model="rf",
-              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
+              selectionEstimator="MDL",minNodeWeightRF=5,
+              rfNoTrees=100, maxThreads=1)
 print(modelRF)
 destroyModels(modelRF) # clean up
 
@@ -147,7 +149,7 @@ pred <- rep(NA,ncases)
 fit <- NULL
 for (i in unique(ind)) {
     # Delete the previous model, if there is one.
-    fit <- CoreModel(Species ~ ., iris[ind!=i,], model="rf", rfNoTrees=20)
+    fit <- CoreModel(Species ~ ., iris[ind!=i,], model="rf", rfNoTrees=20, maxThreads=1)
     pred[ind==i] <- predict(fit, iris[ind==i,], type="class")
     if (!is.null(fit)) destroyModels(fit) # dispose model no longer needed
  

@@ -56,7 +56,7 @@ void Options::copy(const Options &cp) {
 	   resultsDirectory = cp.resultsDirectory ;
 	   NAstring = cp.NAstring ;
 	   splitIdx =cp.splitIdx ;
-	   numberOfSplits = cp.splitIdx;
+	   numberOfSplits = cp.numberOfSplits;
 	   splitSelection = cp.splitSelection;
 	   trainProportion = cp.trainProportion;
 	   rndSeedSplit = cp.rndSeedSplit;
@@ -249,6 +249,7 @@ void Options::setDefault(void) {
     rfRegType = 0 ; // no regularization
     rfRegLambda = 0.0 ; // lambda for regularization
     rfRndSeed = -1 ; // random seed for random forest
+    rfRandomBinarization = mFALSE ;
 
     maxThreads = 0 ; // allow openMP system to set defaults
     printTreeInDot = mFALSE ;
@@ -828,9 +829,9 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
 	}
 	else if (strcmp(keyword, "numberOfSplits")==0) {
        // Number of data splits to work on
-       sscanf(key,"%lf", &dtemp) ;
-       if (dtemp > 0)
- 	  	 numberOfSplits = (int)dtemp ;
+       sscanf(key,"%d", &temp) ;
+       if (temp > 0)
+ 	  	 numberOfSplits = temp ;
        else
 	 	 merror("numberOfSplits (number of data splits) should be positive", "") ;
 	}

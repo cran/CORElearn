@@ -123,7 +123,8 @@ classData <-classDataGen(noInst=200)
 
 # build random forests model with certain parameters
 modelRF <- CoreModel(class~., classData, model="rf",
-              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
+              selectionEstimator="MDL", minNodeWeightRF=5,
+              rfNoTrees=100, maxThreads=1)
 print(modelRF)
 destroyModels(modelRF) # clean up
 }

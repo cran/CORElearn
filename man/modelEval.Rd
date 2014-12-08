@@ -100,7 +100,8 @@ David J.Hand: Good practice in retail credit scorecard assesment. \emph{Journal 
 
 # build random forests model with certain parameters
 model <- CoreModel(Species ~ ., iris, model="rf", 
-              selectionEstimator="MDL",minNodeWeightRF=5,rfNoTrees=100)
+              selectionEstimator="MDL",minNodeWeightRF=5,
+              rfNoTrees=100, maxThreads=1)
 
 # prediction with node distribution
 pred <- predict(model, iris, rfPredictClass=FALSE)

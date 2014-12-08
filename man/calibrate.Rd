@@ -57,7 +57,7 @@ cal <-classDataGen(noInst=200)
 
 # build random forests model with certain parameters
 modelRF <- CoreModel(class~., train, model="rf", selectionEstimator="MDL",
-                     minNodeWeightRF=5, rfNoTrees=100)
+                     minNodeWeightRF=5, rfNoTrees=100, maxThreads=1)
 # prediction 
 pred <- predict(modelRF, cal, rfPredictClass=FALSE)
 destroyModels(modelRF) # clean up

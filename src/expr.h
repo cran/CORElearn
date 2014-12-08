@@ -45,8 +45,8 @@ class expr
 public:
    const featureTree *gFT ;
 
-   expr() { root = 0 ; gFT = 0 ; }
-   expr(featureTree* ft) { root = 0 ; gFT = ft; }
+   expr() { root = 0 ; gFT = 0 ; majorClass = -1 ; modelType = majority ; }
+   expr(featureTree* ft) { root = 0 ; gFT = ft; majorClass = -1 ; modelType = majority ;}
    ~expr() ;
    expr(expr &Copy) ;
    void copy(const expr &Source) ;

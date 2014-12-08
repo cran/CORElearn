@@ -23,7 +23,7 @@ The method calls \code{link{pam}} function for clustering, initializing its dist
 
 \examples{
 set<-iris
-md<-CoreModel(Species ~ ., set, model="rf", rfNoTrees=30)
+md<-CoreModel(Species ~ ., set, model="rf", rfNoTrees=30, maxThreads=1)
 mdCluster<-rfClustering(md, 5)
 
 destroyModels(md) # clean up

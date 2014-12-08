@@ -20,7 +20,7 @@ Returned matrix is used as an input to other function (see \code{\link{rfOutlier
 and \code{\link{rfClustering}}).
 }
 \examples{
-md <- CoreModel(Species ~ ., iris, model="rf", rfNoTrees=30)
+md <- CoreModel(Species ~ ., iris, model="rf", rfNoTrees=30, maxThreads=1)
 pr <- rfProximity(md, outProximity=TRUE)
 # visualization
 require(lattice)

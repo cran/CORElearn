@@ -18,7 +18,7 @@
 #endif
 
 // to make additional checks
-// #define DEBUG
+//#define DEBUG
 
 // to have special memory allocation
 //#define DEBUG_NEW

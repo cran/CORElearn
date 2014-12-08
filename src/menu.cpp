@@ -13,9 +13,10 @@
 #include "error.h"
 #include "menu.h"
 
-const int ScreenWidth = 80 ;
 
 #if !defined(R_PORT)
+const int ScreenWidth = 80 ;
+
 int textMenu(const char* Title, char const* Item[],int NoItems)
 {
 

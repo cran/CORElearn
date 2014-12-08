@@ -27,7 +27,7 @@ visualized by calling e.g.,
 }
 \examples{
 dataset <- iris
-md <- CoreModel(Species ~ ., dataset, model="rf", rfNoTrees=30)
+md <- CoreModel(Species ~ ., dataset, model="rf", rfNoTrees=30,maxThreads=1)
 typical <- classPrototypes(md, dataset, 10)
 destroyModels(md) # clean up
 }
