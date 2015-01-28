@@ -101,8 +101,8 @@ public:
    void enlarge(int newSize) ;
 
    int operator== (marray<T> &Y) const ;
-   int operator< (marray<T> &) const { return 0 ;} ;
-   int operator> (marray<T> &) const { return 0 ;} ;
+   int operator< (marray<T> &) const { return 0 ;}
+   int operator> (marray<T> &) const { return 0 ;}
 
    T* toArray(void) { return table ; }
    void wrap(int sourceSize, T* source) ;

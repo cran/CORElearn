@@ -77,10 +77,11 @@
     # evaluate ordered features with ordEval
     oe <- ordEval(class ~ ., dat, ordEvalNoRandomNormalizers=200)
     plot(oe)
-    printOrdEval(oe)
+    # printOrdEval(oe)
+    
     # the same effect we achieve by storing results to files
-    ordEval(class ~ ., dat, file="profiles.oe", rndFile="profiles.oer", 
-            ordEvalNoRandomNormalizers=200)   
+    tmp <- ordEval(class ~ ., dat, file="profiles.oe", rndFile="profiles.oer", 
+                   ordEvalNoRandomNormalizers=200)   
     plotOrdEval(file="profiles.oe", rndFile="profiles.oer",graphType="attrBar")
     
 }

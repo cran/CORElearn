@@ -14,10 +14,10 @@
   attrEval(formula, data, estimator, costMatrix = NULL, ...)
 }
 \arguments{
-  \item{formula}{ Formula specifying the predictors to be evaluated and the target variable. }
+  \item{formula}{ Formula specifying the attributes to be evaluated and the target variable. }
   \item{data}{ Data frame with evaluation data. }
   \item{estimator}{ The name of the evaluation method.}
-  \item{costMatrix}{ Optional cost matrix. }
+  \item{costMatrix}{ Optional cost matrix used with certain estimators. }
   \item{\dots }{ Additional options used by specific evaluation methods as described in \code{\link{helpCore}}
   . }
 }
@@ -29,7 +29,7 @@
   In this case all other attributes in the data set are evaluated.
   See also example below.
   
-  The optional parameter \bold{ costMatrix } can provide nonuniform cost matrix to classification 
+  The optional parameter \bold{ costMatrix } can provide nonuniform cost matrix to certain
   cost-sensitive measures (ReliefFexpC, ReliefFavgC, ReliefFpe, ReliefFpa, ReliefFsmp,GainRatioCost,     
   DKMcost, ReliefKukar, and MDLsmp). For other measures this parameter is ignored.    
   The format of the matrix is costMatrix(true class, predicted class). 

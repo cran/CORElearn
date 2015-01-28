@@ -215,11 +215,11 @@ char* construct::description(constructNode *Node)
                                    gFT->AttrDesc[gFT->DiscIdx[Node->attrIdx]].ValueName[Node->valueIdx-1] ) ;
            break ;          
       case cnCONTattrValue:
-           if (Node->lowerBoundary == -FLT_MAX)
+           if (Node->lowerBoundary == -DBL_MAX)
               sprintf(Str, "(%s <= %.3f)", gFT->AttrDesc[gFT->ContIdx[Node->attrIdx]].AttributeName,
                                            Node->upperBoundary ) ;
            else
-             if (Node->upperBoundary == FLT_MAX)
+             if (Node->upperBoundary == DBL_MAX)
                 sprintf(Str, "(%s > %.3f)", gFT->AttrDesc[gFT->ContIdx[Node->attrIdx]].AttributeName,
                                            Node->lowerBoundary ) ;
              else
@@ -278,7 +278,7 @@ char* construct::description(constructNode *Node)
 // *             degreesOfFreedom
 // *             ----------------
 // *
-// *     return the number of building attrubutes in construct 
+// *     return the number of building attributes in construct
 // *
 // *********************************************************************
 int construct::degreesOfFreedom(void) 
@@ -358,7 +358,7 @@ double construct::continuousValue(mmatrix<int> &DiscData, mmatrix<double> &NumDa
      
      default:
         merror("construct::continuousValue", "invalid composition type detected") ;    
-        return -FLT_MAX ;
+        return -DBL_MAX ;
   }
 
 }

@@ -35,7 +35,7 @@ public:
    //PseudoRandom rnd ;
    forestTree(void) {}
    ~forestTree(void) {} 
-   void operator= (forestTree &Source) { copy(Source); };
+   void operator= (forestTree &Source) { copy(Source); }
    void copy(forestTree &Source) ;
 } ;
 

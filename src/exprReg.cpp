@@ -246,7 +246,7 @@ void exprReg::createLocal(int TrainSize, int k)
         if (differentDistance[i] != equalDistance[i])
             CAslope[i] = double(1.0)/(differentDistance[i] - equalDistance[i]) ;
          else
-            CAslope[i] = FLT_MAX ;
+            CAslope[i] = DBL_MAX ;
     }
 }
 
@@ -375,7 +375,7 @@ double exprReg::predict(binnodeReg *treeNode, int Case, exprRegNode* Node)
     #if defined(DEBUG)
 	if (!Node) {
 		merror("exprReg::predict", "Invalid structure of model");
-		return -FLT_MAX;
+		return -DBL_MAX;
 	}
     #endif
     switch(Node->nodeType)
@@ -660,7 +660,7 @@ double exprReg::mdlExprCost(exprRegNode* Node)
     #if defined(DEBUG)
 	if (!Node) {
 		merror("exprReg::mdlExprCost", "Invalid structure of model");
-		return -FLT_MAX;
+		return -DBL_MAX;
 	}
     #endif
     switch(Node->nodeType)
@@ -696,7 +696,7 @@ double exprReg::mdlPointCost(exprRegNode* Node)
     #if defined(DEBUG)
 	if (!Node) {
 		merror("exprReg::predict", "Invalid structure of model");
-		return -FLT_MAX;
+		return -DBL_MAX;
 	}
     #endif
     switch(Node->nodeType)

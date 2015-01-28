@@ -60,6 +60,8 @@
        char *newValue = new char[this->len()+ val.len()+1];
    	   if (value)
    		   strcpy(newValue,value) ;
+   	   else
+   		   newValue[0]='\0';
    	   if (val.value)
    		   strcat(newValue, val.getConstValue()) ;
    	   destroy() ;
@@ -80,5 +82,11 @@
     int mstring::operator== (const char *Y) const
     {
       return (strcmp(value, Y)==0) ;
+    }
+
+    char* mstring::unWrap() {
+    	char *retValue = value ;
+    	value = 0 ;
+    	return retValue ;
     }
 

@@ -115,7 +115,7 @@ int estimation::estimate(int selectedEstimator, int contAttrFrom, int contAttrTo
     }
 
    // find best attribute
-   double bestContEst = - FLT_MAX, bestDiscEst = - FLT_MAX ;
+   double bestContEst = - DBL_MAX, bestDiscEst = - DBL_MAX ;
    int i, bestContIdx = -1, bestDiscIdx = -1 ;
    for (i=contAttrFrom ; i < contAttrTo; i++)
    {
@@ -488,7 +488,7 @@ double estimation::estImpurityDisc(int discIdx)
       }
    }
    if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
-      return -FLT_MAX ;
+      return -DBL_MAX ;
 
    // store sum over all attribute values in index 0
    for (iC = 1; iC <= noClasses; iC++){
@@ -504,7 +504,7 @@ double estimation::estImpurityDisc(int discIdx)
 		    noValidSplits++ ;
    }
    if (noValidSplits <=1)
-	   return -FLT_MAX ;
+	   return -DBL_MAX ;
 
    double priorImpurity = (this->*fImpurity)(OKvalues, noClassAttrVal, 0) ;
 
@@ -542,14 +542,14 @@ double estimation::impuritySplit(construct &nodeConstruct, double &bestEstimatio
    }
    if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
    {
-      bestEstimation = - FLT_MAX ;
-      return - FLT_MAX ; // smaller than any value, so all examples will go into one branch
+      bestEstimation = - DBL_MAX ;
+      return - DBL_MAX ; // smaller than any value, so all examples will go into one branch
    }
    double priorImpurity = (this->*fImpurity)(OKvalues, noClassAttrVal, 2) ;
    sortedAttr.setFilled(OKvalues) ;
    sortedAttr.qsortAsc() ;
-   bestEstimation = - FLT_MAX ;
-   double est = 0, splitValue = - FLT_MAX ; // smaller than any value, so all examples will go into one branch
+   bestEstimation = - DBL_MAX ;
+   double est = 0, splitValue = - DBL_MAX ; // smaller than any value, so all examples will go into one branch
    // initially we move some left instance from right to left
    for (j=0 ; j < eopt.minNodeWeightEst ; j++) {
 	   noClassAttrVal(DiscValues(sortedAttr[j].value, 0), 1)++ ; // increase on the left
@@ -629,14 +629,14 @@ double estimation::impuritySplitSample(construct &nodeConstruct, double &bestEst
    }
    if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
    {
-      bestEstimation = - FLT_MAX ;
-      return - FLT_MAX ; // smaller than any value, so all examples will go into one branch
+      bestEstimation = - DBL_MAX ;
+      return - DBL_MAX ; // smaller than any value, so all examples will go into one branch
    }
    double priorImpurity = (this->*fImpurity)(OKvalues, noClassAttrVal, 2) ;
    sortedAttr.setFilled(OKvalues) ;
    sortedAttr.qsortAsc() ;
-   bestEstimation = - FLT_MAX ;
-   double est = 0, splitValue = - FLT_MAX ; // smaller than any value, so all examples will go into one branch
+   bestEstimation = - DBL_MAX ;
+   double est = 0, splitValue = - DBL_MAX ; // smaller than any value, so all examples will go into one branch
 
   // initially we move some left instance from right to left
    for (j=0 ; j < eopt.minNodeWeightEst ; j++) {
@@ -679,7 +679,7 @@ double estimation::impuritySplitSample(construct &nodeConstruct, double &bestEst
 int estimation::estimateSelected(marray<int> &rankList, int noSelected, attributeCount &bestType) {
 	//int selectedEstimator = activeEstimator ;
 	attributeCount bT ; // dummy
-	double bestEst = - FLT_MAX;
+	double bestEst = - DBL_MAX;
 	int bestIdx = -1, iRL=1, iA;
 	while (iRL <= noSelected) {
 		iA = rankList[iRL] ;
@@ -690,7 +690,7 @@ int estimation::estimateSelected(marray<int> &rankList, int noSelected, attribut
 				bestType = aCONTINUOUS ;
 				bestIdx = fTree->AttrDesc[iA].tablePlace ;
 			}
-			else if (NumEstimation[fTree->AttrDesc[iA].tablePlace] == -FLT_MAX) {
+			else if (NumEstimation[fTree->AttrDesc[iA].tablePlace] == -DBL_MAX) {
 				// invalid attribute
 				if (noSelected < rankList.filled()-1)
 					++noSelected ;
@@ -703,7 +703,7 @@ int estimation::estimateSelected(marray<int> &rankList, int noSelected, attribut
 				bestType = aDISCRETE ;
 				bestIdx = fTree->AttrDesc[iA].tablePlace ;
 			}
-			else if (DiscEstimation[fTree->AttrDesc[iA].tablePlace] == -FLT_MAX) {
+			else if (DiscEstimation[fTree->AttrDesc[iA].tablePlace] == -DBL_MAX) {
 				// invalid attribute
 				if (noSelected < rankList.filled()-1)
 					++noSelected ;
@@ -859,7 +859,7 @@ double estimation::gainUniform(double priorImpurity, int weightNode, marray<int>
 			noClassAttrVal(i,0) += noClassAttrVal(i,valIdx) ;
 	}
 	marray<double> dist(noClasses+1, 0);
-	for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
+	for (valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
 		pvj = 0 ;
 	    for (i=1 ; i <= noClasses ;i++)
 		  if (noClassAttrVal(i,0) > 0) {
@@ -889,7 +889,7 @@ double estimation::accUniform(double priorImpurity, int weightNode, marray<int> 
 			noClassAttrVal(i,0) += noClassAttrVal(i,valIdx) ;
 	}
 	marray<double> dist(noClasses+1, 0);
-	for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
+	for (valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
 		pvj = 0 ;
 	    for (i=1 ; i <= noClasses ;i++)
 		  if (noClassAttrVal(i,0) > 0) {
@@ -972,7 +972,7 @@ double estimation::EuclidHellingerImpurity(int weightNode, mmatrix<int> &noClass
 		break;
 	case 2: // maximum over all pairs
 	case 4: // maximum over one-against-all
-		da = - FLT_MAX ;
+		da = - DBL_MAX ;
 		break ;
 	default: merror("estimation::EuclidHellingerImpurity","invalid multi-class extension") ;
 		return -1 ;
@@ -1042,7 +1042,7 @@ double estimation::EuclidHellingerImpurity(int weightNode, mmatrix<int> &noClass
 	case 3: // average over one-against-all
 		if (noComb > 0)
 		  return da / double(noComb) ;
-		else return - FLT_MAX ;
+		else return - DBL_MAX ;
 	case 2: // maximum over all pairs
 	case 4: // maximum over one-against-all
 		return da ;
@@ -1084,7 +1084,7 @@ double estimation::EqualHellinger(double priorImpurity, int weightNode, marray<i
 	}
 	if (noComb>0)
 		return h / double(noComb) ; // average over all combinations of splits
-	else return -FLT_MAX ;
+	else return -DBL_MAX ;
 }
 
 
@@ -1234,7 +1234,7 @@ double estimation::distMulticlassEvaluation(double priorImpurity, int weightNode
 		break;
 	case 2: // maximum over all pairs
 	case 4: // maximum over one-against-all
-	    d = - FLT_MAX ;
+	    d = - DBL_MAX ;
 		break ;
 	default: merror("estimation::distMulticlassEvaluation","invalid multi-class extension") ;
 		return -1 ;
@@ -1299,7 +1299,7 @@ double estimation::distMulticlassEvaluation(double priorImpurity, int weightNode
 	case 3: // average over one-against-all
 		if (noComb>0)
 			return d / double(noComb) ;
-		else return -FLT_MAX ;
+		else return -DBL_MAX ;
 	case 2: // maximum over all pairs
 	case 4: // maximum over one-against-all
 		return d ;

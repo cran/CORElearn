@@ -3,6 +3,11 @@
 
 extern "C" {
 void initCore(int *maxModels) ;
+void testNA(int *t, double *x, int *a) ;
+void testRPORT(int *a) ;
+void testCoreRand(int *n, double *x) ;
+void testClassPseudoRandom(int *n, int *s, int *k, int *m, double *x) ;
+void testTime(double *x) ;
 void versionCore(char **version) ;
 void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		int *discData, int *noNumeric, double *numData, double *costMx,
@@ -32,7 +37,7 @@ void ordEvalCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 		int *noOptions, char **optName, char **optValue,
 		double *rePos, double *reNeg, double *anch, double *rndrePos, double *rndreNeg, double *rndAnch,
 		int *noAttrVal, char **ordEvalFile, char **ordEvalRndFile, int *variant) ;
-void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
+void modelEvaluate(int *noInst, int *correctCl, // int *predictedCl,
 		double *predictedPr, double *costMx, int *noClasses, double *priorClProbability,
 		double *accuracy, double *avgCost,
 		double *infScore, double *auc, int *predictionMx, double *sensitivity,
@@ -44,7 +49,21 @@ void calibrate(int *calMethod, int *noInst, int *correctCl, double *predictedPr,
 		       int *noIntervals, double *interval, double *calProb);
 void rfAttrEval(int *modelID, double *estOut) ;
 void rfOOB(int *modelID, double *oobAccuracy, double *oobMargin, double *oobCorrelation) ;
+void optionsInOut(int *modelID, char **fileName, char **io) ;
+void saveRF(int *modelID, char **fileName) ;
+void readRF(char **fileName, int *modelID) ;
+#if defined(R_PORT)
+SEXP exportSizesRF(SEXP modelID) ;
+SEXP exportSumOverLeavesRF(SEXP modelID) ;
+SEXP exportModel(SEXP modelID) ;
+SEXP exportModelRT(SEXP modelID) ;
+SEXP exportModelT(SEXP modelID) ;
+SEXP exportProximity(SEXP modelID, SEXP dis) ;
+SEXP exportVarImportanceCluster(int *modelID, int *clusterData, double *var) ;
+SEXP printTreeDot2R(SEXP modelID) ;
+SEXP printTree2R(SEXP modelID) ;
 
+#endif
 }
 
 #endif /*RFRONT_H_*/

@@ -158,57 +158,73 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
   returnList
 }
 
-plot.CoreModel<-function(x, trainSet, graphType=c("attrEval","outliers","scaling", "prototypes","attrEvalCluster"), clustering=NULL,...) 
+display<- function(x, format=c("screen","dot")) UseMethod("display", x)
+
+display.CoreModel <- function(x, format=c("screen","dot")) {
+   format<-match.arg(format)
+   if (x$model %in% c("tree","knn","knnKernel","bayes","regTree")){
+	   if (format=="screen")
+	      treeStr <- .Call("printTree2R", as.integer(x$modelID), PACKAGE="CORElearn")
+	  else if (format == "dot")
+		  treeStr <- .Call("printTreeDot2R", as.integer(x$modelID), PACKAGE="CORElearn")
+   }
+   else {
+	   warning("The model provided is not of appropriate type for this visualization.");
+	   treeStr <- ""
+   }
+  cat(treeStr)
+  invisible(treeStr)	
+} 
+	
+plot.CoreModel<-function(x, trainSet, rfGraphType=c("attrEval","outliers","scaling", "prototypes","attrEvalCluster"), clustering=NULL,...) 
 {    
-  graphType<-match.arg(graphType)
-  model <- x
-  rm(x)
+  rfGraphType<-match.arg(rfGraphType)
   # regression or decision tree
-  if (model$model == "regTree" || model$model == "tree"){           
-    rmodel <- getRpartModel(model, trainSet) ;
-    plot(rmodel,compress=T,branch=0.5);
-    text(rmodel, pretty=0);
-  }
-  else if (model$model == "rf" || model$model == "rfNear"){
-    if (graphType == "attrEval") {
-      imp<-rfAttrEval(model);
-      plotRFStats(imp, plotLine=TRUE, myAxes=attr(model$terms,"term.labels"));
+  if (x$model == "regTree" || x$model == "tree"){           
+    rmodel <- getRpartModel(x, trainSet) ;
+	plot(rmodel)  # ,compress=T,branch=0.5);
+	text(rmodel) # , pretty=0);
+ }
+  else if (x$model == "rf" || x$model == "rfNear"){
+    if (rfGraphType == "attrEval") {
+      imp<-rfAttrEval(x);
+      plotRFStats(imp, plotLine=TRUE, myAxes=attr(x$terms,"term.labels"));
     }
-    else if (graphType == "attrEvalCluster") {
+    else if (rfGraphType == "attrEvalCluster") {
       #importance by cluster
-      impc<-rfAttrEvalClustering(model, trainSet, clustering);
-      plotRFMulti(impc$imp, impc$levels, myAxes=attr(model$terms,"term.labels"));
+      impc<-rfAttrEvalClustering(x, trainSet, clustering);
+      plotRFMulti(impc$imp, impc$levels, myAxes=attr(x$terms,"term.labels"));
     }
-    else if (graphType == "outliers"){
-      out<-rfOutliers(model, trainSet);
-      plotRFStats(abs(out), cluster=as.character(trainSet[[as.character(attr(model$terms,"variables")[[2]])]]));
+    else if (rfGraphType == "outliers"){
+      out<-rfOutliers(x, trainSet);
+      plotRFStats(abs(out), cluster=as.character(trainSet[[as.character(attr(x$terms,"variables")[[2]])]]));
     }
-    else if (graphType == "scaling"){
-      dis<-rfProximity(model, outProximity=F);
+    else if (rfGraphType == "scaling"){
+      dis<-rfProximity(x, outProximity=F);
       #get 4 most important components
       space<-spaceScale(dis, 4);
       #  display 1. in 2. component
       subDim<-c(space$points[,1], space$points[,2]);
       dim(subDim)<-c(length(space$points[,1]),2);
-      className <- attr(model$terms, "variables")[[2]];
+      className <- attr(x$terms, "variables")[[2]];
       cluster<-trainSet[as.character(className)];
       plotRFStats(subDim, t(cluster));
     }
-    else if (graphType == "prototypes"){
+    else if (rfGraphType == "prototypes"){
       # 10 most typical cases for each class based on predicted class probability
-      best<-classPrototypes(model, trainSet, 10);
-      vnorm<-varNormalization(model, trainSet[best$prototypes,]);
-      plotRFNorm(vnorm, best$cluster, best$levels, 0.15, myHoriz=TRUE, myAxes=attr(model$terms,"term.labels"));
+      best<-classPrototypes(x, trainSet, 10);
+      vnorm<-varNormalization(x, trainSet[best$prototypes,]);
+      plotRFNorm(vnorm, best$cluster, best$levels, 0.15, myHoriz=TRUE, myAxes=attr(x$terms,"term.labels"));
     }
   }
   else {
     warning("The model provided has no visualization.");
   }
-  invisible(model)
+  invisible(x)
 }
 attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
 {
-  ## find the type of estimator
+  ## find the e of estimator
   isRegression <- FALSE ;
   estDsc <- infoCore(what="attrEval");
   estIndex <- match(estimator, estDsc, nomatch=-1);
@@ -667,7 +683,7 @@ modelEvaluationClass.Core <- function(correctClass, predictedClass, predictedPro
   tmp <- .C("modelEvaluate",
             noInst = length(correctClass),
             correctClass = as.integer(correctClass),
-            predictedClass = as.integer(predictedClass),
+            # predictedClass = as.integer(predictedClass), # computed from predictedProb and CostMatrix
             predictedProb = as.double(predictedProb),
             costMatrix = as.double(costMatrix),
             noClasses = as.integer(noClasses), 

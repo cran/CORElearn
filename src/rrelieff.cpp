@@ -96,7 +96,7 @@ estimationReg::estimationReg(regressionTree *fTreeParent, marray<int> &inDTrain,
      if (DifferentDistance[i] != EqualDistance[i])
          CAslope[i] = double(1.0)/(DifferentDistance[i] - EqualDistance[i]) ;
      else
-        CAslope[i] = FLT_MAX ;
+        CAslope[i] = DBL_MAX ;
    }
 #endif
 
@@ -814,8 +814,8 @@ double estimationReg::DAdiff(int AttrIdx, int I1, int I2)
 {
 
   // we assume that missing value has value 0
-  char dV1 = DiscValues(I1, AttrIdx) ;
-  char dV2 = DiscValues(I2, AttrIdx) ;
+  int dV1 = DiscValues(I1, AttrIdx) ;
+  int dV2 = DiscValues(I2, AttrIdx) ;
   if (dV1 == NAdisc)
      return NAdiscValue[AttrIdx][int(dV2)] ;
   else

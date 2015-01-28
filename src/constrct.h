@@ -1,17 +1,23 @@
 #if !defined(CONSTRUCT_H)
 #define CONSTRUCT_H
 
+#include <float.h>
 #include "general.h"
 #include "contain.h"
 
 class estimation ; // forward
 
-struct constructNode
+class constructNode
 {
+ public:
    constructNodeType nodeType ;
    int attrIdx, valueIdx ;
    double  lowerBoundary, upperBoundary ;
    constructNode *left, *right ;  
+
+   constructNode(){ nodeType = cnDISCattribute; attrIdx = valueIdx = -1 ;
+                    lowerBoundary = upperBoundary = -DBL_MAX ;
+                    left = right = 0 ;}
 } ;
 
 typedef constructNode* PconstructNode ;
@@ -45,15 +51,16 @@ public:
    int noValues ;
    
    construct() { initialize() ;}
-   construct(const featureTree* ft) { root=0 ; init(ft); };
+   construct(const featureTree* ft) { initialize() ; gFT = ft ; }
    void init(const featureTree* ft) {destroy(); initialize() ; gFT = ft; }
-   void initialize() {root = 0 ; gFT = 0 ; countType=aDISCRETE; compositionType=cSINGLEattribute; splitValue=-FLT_MAX; noValues=-1;}
+   void initialize() {root = 0 ; gFT = 0 ; countType = aDISCRETE; compositionType = cSINGLEattribute;
+                      splitValue = -DBL_MAX; noValues = -1;}
    ~construct() ;
    construct(construct &Copy) ;
    int operator== (construct &X) ;
    construct& operator= (construct &X) ;
-   int operator< (construct &) { return 0; } ;
-   int operator> (construct &) { return 0; } ;
+   int operator< (construct &) { return 0; }
+   int operator> (construct &) { return 0; }
    void destroy(void) ;
    void copy(construct &Source) ;
    void descriptionString(char* const Str) ;

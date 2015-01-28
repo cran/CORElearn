@@ -7,13 +7,13 @@
     Different plots can be produced depending on the type of the model.
 }
 \usage{
-    \method{plot}{CoreModel}(x, trainSet, graphType=c("attrEval", "outliers", "scaling",
+    \method{plot}{CoreModel}(x, trainSet, rfGraphType=c("attrEval", "outliers", "scaling",
     "prototypes", "attrEvalCluster"), clustering=NULL, ...) 
 }
 \arguments{
     \item{x}{The model structure as returned by \code{\link{CoreModel}}.}          
     \item{trainSet}{ The data frame containing training data which produced the model \code{x}. }
-    \item{graphType}{ The type of the graph to produce for random forest models. See details.}
+    \item{rfGraphType}{ The type of the graph to produce for random forest models. See details.}
     \item{clustering}{The clustering of the training instances used in some model types. See details.}
     \item{\dots }{ Other options controlling graphical output passed to additional graphical functions.}
 }
@@ -22,13 +22,17 @@
     are produced. Currently, classification tree, regression tree, and random forests are supported 
     (models "tree", "regTree", "rf", and "rfNear").
     
-    For classification and regression trees (models "tree" and "regTree") the visualization produces a graph representing structure
+    For classification and regression trees (models "tree" and "regTree") the visualization produces a graph 
+    representing structure
     of classification and regression tree, respectively. This process exploits graphical capabilities of 
-    \code{\link{plot.rpart}} function. Internal structures of 
+    \code{\link{rpart}} package. Internal structures of 
     \code{CoreModel} are converted to \code{\link{rpart.object}} and then visualized by calling
-    \code{\link{plot.rpart}} using some sensible values of graphical parameters. For more versatile
-    picture use \code{\link{getRpartModel}} and call \code{\link{plot.rpart}} and \code{\link{text.rpart}} 
-    directly modifying their graphical parameters (see an example below). 
+    \code{\link{plot.rpart}} and \code{\link{text.rpart}} using some sensible values of graphical parameters. For more versatile
+    picture use \code{\link{getRpartModel}} and call these two functions with different parameters.  
+    An alternative is to use package rpart.plot and plot the \code{\link{rpart.object}} with it, however note that
+    \code{rpart.plot} can only display a single value in a leaf, which is not appropriate for model trees using e.g., 
+    linear regression in the leaves. For these cases function \code{\link{display}} is a better alternative.
+    directly modifying the parameters. 
     
     For random forest models (models "rf" and "rfNear") different types of visualizations can be produced depending on the
     \code{graphType} parameter:
@@ -64,11 +68,15 @@ plot(md, dataset)
 # more versatile graph can be obtained by explicit conversion to rpart.object 
 rpm <- getRpartModel(md,dataset)
 # and than setting additional graphical parameters in plot.rpart and text.rpart
-# set angle to tan(0.5)=45 (degrees) and length of branches at least 5, try to
-# make a dendrogram more compact
+# E.g., set angle to tan(0.5)=45 (degrees) and length of branches at least 5, 
+# try to make a dendrogram more compact
 plot(rpm, branch=0.5, minbranch=5, compress=TRUE)
 #(pretty=0) full names of attributes, numbers to 3 decimals, 
 text(rpm, pretty=0, digits=3)
+
+# an alternative is to use fancier rpart.plot package
+# rpart.plot(rpm) # rpart.plot has many parameters controlling the output
+# but it cannot plot models in leaves 
 
 destroyModels(md) # clean up
 
@@ -81,17 +89,17 @@ destroyModels(mdr) # clean up
 #random forests
 dataset <- iris
 mdRF <- CoreModel(Species ~ ., dataset, model="rf", rfNoTrees=30, maxThreads=1)
-plot(mdRF, dataset, graphType="attrEval")
-plot(mdRF, dataset, graphType="outliers")
-plot(mdRF, dataset, graphType="scaling")
-plot(mdRF, dataset, graphType="prototypes")
-plot(mdRF, dataset, graphType="attrEvalCluster", clustering=NULL)
+plot(mdRF, dataset, rfGraphType="attrEval")
+plot(mdRF, dataset, rfGraphType="outliers")
+plot(mdRF, dataset, rfGraphType="scaling")
+plot(mdRF, dataset, rfGraphType="prototypes")
+plot(mdRF, dataset, rfGraphType="attrEvalCluster", clustering=NULL)
 destroyModels(mdRF) # clean up
 
 }
 
 
-\author{ John Adeyanju Alao (implementation) and Marko Robnik-Sikonja (integration, improvements)}
+\author{ John Adeyanju Alao (initial implementation) and Marko Robnik-Sikonja (integration, improvements)}
 
 
 \seealso{
@@ -102,8 +110,7 @@ destroyModels(mdRF) # clean up
 \code{\link{rfAttrEvalClustering}},
 \code{\link{rfOutliers}},
 \code{\link{classPrototypes}},
-\code{\link{cmdscale}},
-\code{\link{rpart}}.
+\code{\link{cmdscale}}
 }
 
 \references{

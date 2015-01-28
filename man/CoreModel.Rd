@@ -28,7 +28,7 @@ Regression models:
   \item{data}{ Data frame with training data. }
   \item{model}{ The type of model to be learned. }
   \item{... }{ Options for building the model. See \code{\link{helpCore}}. }
-  \item{costMatrix}{ Optional cost matrix. }
+  \item{costMatrix}{ Optional cost matrix used with certain models. }
 }
 \details{
   Parameter \bold{formula} is used as a mechanism to select features (attributes)
@@ -69,7 +69,7 @@ Regression models:
   in the package memory space and only its pointer (index) is returned.
   The maximum  number of models that can be stored simultaneously
   is a parameter of the initialization function \code{initCore} and
-  defaults to 16384. Models, which are not needed may be deleted in order
+  defaults to 16384. Models, which are not needed, may be deleted in order
   to free the memory using function \code{destroyModels}.
   By referencing the returned model, any of the stored models may be
   used for prediction with \code{\link{predict.CoreModel}}.
@@ -113,7 +113,7 @@ Majority of these references are available from \url{http://lkm.fri.uni-lj.si/rm
 # use iris data set
 
 # build random forests model with certain parameters
-# setting maxThreads to 0 or more than 1 uses several processor cores 
+# setting maxThreads to 0 or more than 1 forces utilization of several processor cores 
 modelRF <- CoreModel(Species ~ ., iris, model="rf",
               selectionEstimator="MDL",minNodeWeightRF=5,
               rfNoTrees=100, maxThreads=1)

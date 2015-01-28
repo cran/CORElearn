@@ -167,11 +167,11 @@ char* constructReg::description(constructRegNode *Node)
                                    gRT->AttrDesc[gRT->DiscIdx[Node->attrIdx]].ValueName[Node->valueIdx-1] ) ;
            break ;          
       case cnCONTattrValue:
-           if (Node->lowerBoundary == -FLT_MAX)
+           if (Node->lowerBoundary == -DBL_MAX)
               sprintf(Str, "(%s <= %.3f)", gRT->AttrDesc[gRT->ContIdx[Node->attrIdx]].AttributeName,
                                            Node->upperBoundary ) ;
            else
-             if (Node->upperBoundary == FLT_MAX)
+             if (Node->upperBoundary == DBL_MAX)
                 sprintf(Str, "(%s > %.3f)", gRT->AttrDesc[gRT->ContIdx[Node->attrIdx]].AttributeName,
                                            Node->lowerBoundary ) ;
              else
@@ -310,7 +310,7 @@ double constructReg::continuousValue(mmatrix<int> &DiscData, mmatrix<double> &Nu
      
      default:
         merror("constructReg::continuousValue", "invalid composition type detected") ;    
-        return -FLT_MAX ;
+        return -DBL_MAX ;
   }
 
 }

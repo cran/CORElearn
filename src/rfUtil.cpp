@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "error.h"
 #include "contain.h"
+#include "rfUtil.h"
 
 
 

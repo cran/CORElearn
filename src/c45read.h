@@ -14,7 +14,7 @@ public:
 	c45attrType aType ;
 	mlist<mstring> values ;
 
-	c45Dsc() {} ;
+	c45Dsc() { aType=attrDisc; }
 	c45Dsc(c45Dsc &source){
 		copy(source);
 	}
@@ -34,12 +34,12 @@ class c45Data {
 public:
 	marray<int> discData ;
 	marray<double> numData ;
-	c45Data() {} ;
+	c45Data() {}
 	c45Data(int noDisc, int noNum) { create(noDisc, noNum) ; }
 	void create(int noDisc, int noNum) {
 		discData.create(noDisc,NAdisc);
 		numData.create(noNum,NAcont);
-	} ;
+	}
 	c45Data(c45Data &source){
 		copy(source);
 	}
@@ -66,7 +66,7 @@ public:
 	c45read() {
 		noDiscreteAttr = noNumericAttr = noDataCases = 0 ;
 		classIdx = -1;
-		isRegression = mFALSE ;
+		isRegression = isOrdinalClass = mFALSE ;
 	}
 	~c45read() {
 		freeC45() ;

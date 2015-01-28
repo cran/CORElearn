@@ -317,7 +317,7 @@ SEXP featureTree::T2Rpart()
                         }
 
                         for(int aValue=0; aValue < aNode->Construct.leftValues.len()-1; aValue++){
-                                int atPos = csplitCurrentColumn+aValue;
+                                atPos = csplitCurrentColumn+aValue;
                                 if(aNode->Construct.leftValues[aValue+1] == mTRUE){
                                         INTEGER(csplitArray)[atPos] = leftValue;
                                 }
@@ -683,8 +683,8 @@ SEXP regressionTree::T2Rpart()
                         /*
                          * no idea why aValue+1
                          */
-                        for(int aValue=0; aValue < aNode->Construct.leftValues.len(); aValue++){
-                                int atPos = csplitCurrentColumn+aValue;
+                        for(int aValue=0; aValue < aNode->Construct.leftValues.len()-1; aValue++){
+                                atPos = csplitCurrentColumn+aValue;
                                 if(aNode->Construct.leftValues[aValue+1] == mTRUE){
                                         INTEGER(csplitArray)[atPos] = leftValue;
                                 }
@@ -914,7 +914,7 @@ SEXP featureTree::proximityM(bool distance)
                  * out[a,b]
                  */
                 int a = i % NoCases;
-                int b = (int)i/NoCases;
+                int b = i / NoCases ;
                 if(a > b){
                         aValue = (REAL(out)[b*NoCases+a] + REAL(out)[a*NoCases+b])/2;
                         if(distance){

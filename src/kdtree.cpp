@@ -26,10 +26,14 @@ void kdNode::copy(kdNode &Source)
 kdTree::kdTree() 
 { 
     root = 0 ; 
-    DiscVal = 0 ; 
+    DiscVal = 0 ;
     ContVal = 0 ;
+    noDiscValues = 0 ;
+    minValue = maxValue = valueInterval = step = 0 ;
+    NAdiscValue = NAnumValue = 0 ;
     bucketSize = 10 ;
     contFrom = contTo = discFrom = discTo = 0 ;
+    noNumeric = noDiscrete = kNear = qPoint = -1 ;
 }
 
 kdTree::~kdTree() 
@@ -562,8 +566,7 @@ booleanT kdTree::BallWithinBounds(kdNode *Node)
 
    // now test for all the dimensions
    // if the radius of the ball is smaller than coordinate distance
-   int iAttr ;
-   char dTemp ;
+   int iAttr, iTemp ;
    // any single distance cannot be grater than 1.0, so if radius is larger than 1.0
    // we can be sure that ball is not within bounds
    if (PQnear[0].key >= 1.0)
@@ -572,8 +575,8 @@ booleanT kdTree::BallWithinBounds(kdNode *Node)
    for (iAttr = discFrom ; iAttr < discTo ; iAttr++)
    {
       //  coordinate distance is compared to radius
-      dTemp = (*DiscVal)(qPoint, iAttr) ;
-      if (! Node->range[iAttr-discFrom][dTemp]) // coordinate distance is 1.0, and radius is less
+      iTemp = (*DiscVal)(qPoint, iAttr) ;
+      if (! Node->range[iAttr-discFrom][iTemp]) // coordinate distance is 1.0, and radius is less
          return mFALSE ;
    }
 
@@ -605,13 +608,12 @@ booleanT kdTree::BoundsOverlapBall(kdNode *Node)
       return mTRUE ;
 
    double sumDist =0.0 ;
-   int iAttr ;
-   char dTemp ;
+   int iAttr, iTemp ;
    for (iAttr = discFrom ; iAttr < discTo ; iAttr++)
    {
       //  coordinate distance is compared to radius
-      dTemp = (*DiscVal)(qPoint, iAttr) ;
-      if (dTemp != NAdisc &&  !Node->range[iAttr-discFrom][dTemp])
+      iTemp = (*DiscVal)(qPoint, iAttr) ;
+      if (iTemp != NAdisc &&  !Node->range[iAttr-discFrom][iTemp])
       {
          sumDist += 1.0 ;
          if (sumDist > PQnear[0].key)
@@ -809,8 +811,8 @@ double kdTree::DAdiff(int AttrIdx, int I1, int I2)
 {
 
   // we assume that missing value has value 0
-  char dV1 = (*DiscVal)(I1, AttrIdx) ;
-  char dV2 = (*DiscVal)(I2, AttrIdx) ;
+  int dV1 = (*DiscVal)(I1, AttrIdx) ;
+  int dV2 = (*DiscVal)(I2, AttrIdx) ;
   if (dV1 == NAdisc)
      return (*NAdiscValue)[AttrIdx][int(dV2)] ;
   else
@@ -829,7 +831,7 @@ double kdTree::DAdiff(int AttrIdx, int I1, int I2)
 //              diff function of discrete attribute (values)
 //
 // ***************************************************************************
-double kdTree::DAdiffV(int AttrIdx, char dV1, char dV2)
+double kdTree::DAdiffV(int AttrIdx, int dV1, int dV2)
 {
 
   // we assume that missing value has value 0

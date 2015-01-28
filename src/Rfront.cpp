@@ -768,7 +768,7 @@ void calibrate(int *calMethod, int *noInst, int *correctCl,
 
 	Calibrate cal;
 	marray<sort3Rec> y(*noInst);
-	for (int i = 0; i < *noInst; i++) {
+	for (i = 0; i < *noInst; i++) {
 		y[i].value = correctClass[i];
 		y[i].key = predictedProb[i];
 		y[i].weight = weight[i];
@@ -802,16 +802,16 @@ void calibrate(int *calMethod, int *noInst, int *correctCl,
 	weight.unWrap(dummy);
 }
 
-void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
+void modelEvaluate(int *noInst, int *correctCl, // int *predictedCl,
 		double *predictedPr, double *costMx, int *noClasses,
 		double *priorClProbability, double *accuracy, double *avgCost,
 		double *infScore, double *auc, int *predictionMx, double *sensitivity,
 		double *specificity, double *brier, double *kappa, double *precision, double *Gmean,
 		double *KS, double *TPR, double *FPR) {
 	// wrap arrays
-	marray<int> correctClass, predictedClass, predictionMatrix;
+	marray<int> correctClass, predictionMatrix;
 	correctClass.wrap(*noInst, correctCl);
-	predictedClass.wrap(*noInst, predictedCl);
+	// predictedClass.wrap(*noInst, predictedCl); // computed from predictedProb and costMatrix
 	predictionMatrix.wrap(*noClasses * *noClasses, predictionMx);
 	marray<double> predictedProb, costMatrix, priorClProb;
 	predictedProb.wrap(*noInst * *noClasses, predictedPr);
@@ -843,7 +843,7 @@ void modelEvaluate(int *noInst, int *correctCl, int *predictedCl,
 
 	//unwrap arrays
 	correctClass.unWrap(dummy);
-	predictedClass.unWrap(dummy);
+	// predictedClass.unWrap(dummy);
 	predictionMatrix.unWrap(dummy);
 	predictedProb.unWrap(dummy);
 	costMatrix.unWrap(dummy);
@@ -912,37 +912,6 @@ void readRF(char **fileName, int *modelID) {
 }
 
 #if defined(R_PORT)
-/*
-SEXP getModelDescription(SEXP modelID, SEXP rfTreeIdx) {
-	int mi = INTEGER(modelID)[0];
-	// is modelID valid
-	if (mi < 0 || mi >= allModels.len() || allModels[mi] == 0)
-		return (R_NilValue);
-
-	int noLeaves  = 0 ;
-	char* description ;
-
-	dataStore *data = allModels[mi]; // select model
-
-	if (data->isRegression) {
-		noLeaves = ((regressionTree*) data)->noLeaves() ;
-
-	}
-	else {
-		if ( ((featureTree*)data)->learnRF ) {
-		   int treeIdx = INTEGER(modelID)[0];
-		   noLeaves =  ((featureTree*) data)->forest[treeIdx].t.noLeaves() ;
-
-		}
-		else {
-			noLeaves = ((featureTree*) data)->noLeaves() ;
-		}
-
-	}
-    return
-
-}
-*/
 
 SEXP exportSizesRF(SEXP modelID) {
 	int mi;
@@ -975,6 +944,50 @@ SEXP exportModel(SEXP modelID) {
 	featureTree *dT = (featureTree*) allModels[mi]; // working Model
 	dT->learnRF = mTRUE;
 	return (dT->RF2R());
+}
+
+SEXP printTree2R(SEXP modelID) {
+	int mi;
+	mi = INTEGER(modelID)[0];
+	// is modelID valid
+
+	if (mi < 0 || mi >= allModels.len() || allModels[mi] == 0)
+		return (R_NilValue);
+	dataStore *tree = allModels[mi]; // working Model
+	char *treeStr ;
+	if (tree->isRegression)
+		treeStr = ((regressionTree*) tree)->printTreeStr();
+	else
+		treeStr = ((featureTree*) tree)->printFTreeStr();
+
+	SEXP out;
+	PROTECT(out = allocVector(STRSXP, 1));
+	SET_STRING_ELT(out, 0, mkChar(treeStr));
+    delete [] treeStr ;
+	UNPROTECT(1);
+	return(out);
+}
+
+SEXP printTreeDot2R(SEXP modelID) {
+	int mi;
+	mi = INTEGER(modelID)[0];
+	// is modelID valid
+
+	if (mi < 0 || mi >= allModels.len() || allModels[mi] == 0)
+		return (R_NilValue);
+	dataStore *tree = allModels[mi]; // working Model
+	char *treeStr ;
+	if (tree->isRegression)
+		treeStr = ((regressionTree*) tree)->printTreeDot();
+	else
+		treeStr = ((featureTree*) tree)->printFTreeDot();
+
+	SEXP out;
+	PROTECT(out = allocVector(STRSXP, 1));
+	SET_STRING_ELT(out, 0, mkChar(treeStr));
+    delete [] treeStr ;
+	UNPROTECT(1);
+	return(out);
 }
 
 #endif

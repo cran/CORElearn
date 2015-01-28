@@ -63,7 +63,7 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 	binPartition Generator(NoValues) ;
 	int attrValue ;
 	int bestIdx ;
-	//bestEstimation = -FLT_MAX ;
+	//bestEstimation = -DBL_MAX ;
 
 	int noBasicAttr = (noDiscrete+noNumeric-1) ;
 	int greedyPositions = NoValues * (NoValues+1)/2 ;
@@ -138,7 +138,7 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 		marray<int>  noLeft(NoValues), noRight(NoValues) ; // number of instances after a split
 		marray<booleanT> currentBest(NoValues+1, mFALSE) ;
 		int i, j, added ;
-		double bestEstimation = -FLT_MAX ;
+		double bestEstimation = -DBL_MAX ;
 
 		for (int filled=1 ; filled < NoValues ; filled++)
 		{
@@ -182,7 +182,7 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 				   bestEstimation = DiscEstimation[bestIdx] ;
 				   nodeConstruct.leftValues =  currentBest ;
 				}
-				else if (bestEstimation == -FLT_MAX) { // no added yet
+				else if (bestEstimation == -DBL_MAX) { // no added yet
 				   nodeConstruct.leftValues =  currentBest ; // add anyway, but do not update bestEstimation
 				}
 			}
@@ -222,7 +222,7 @@ double estimation::bestSplitGeneral(construct &nodeConstruct, int firstFreeDiscS
 	}
 	if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
 	{
-		return - FLT_MAX ; // smaller than any value, so all examples will go into one branch
+		return -DBL_MAX ; // smaller than any value, so all examples will go into one branch
 	}
 	sortedAttr.setFilled(OKvalues) ;
 	sortedAttr.qsortAsc() ;
@@ -241,7 +241,7 @@ double estimation::bestSplitGeneral(construct &nodeConstruct, int firstFreeDiscS
 	OKvalues = lastUnique+1 ;
 	if (OKvalues <= 1)
 	{
-		return - FLT_MAX ; // smaller than any value, so all examples will go into one branch
+		return - DBL_MAX ; // smaller than any value, so all examples will go into one branch
 	}
 
 
@@ -316,7 +316,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
 	if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
 	{
 		// all values of the attribute are missing or equal
-		return - FLT_MAX ;
+		return - DBL_MAX ;
 	}
 	sortedAttr.setFilled(OKvalues) ;
 	sortedAttr.qsortAsc() ;
@@ -337,7 +337,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
 	if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
 	{
 		// all values of the attribute are missing or equal
-		return - FLT_MAX ;
+		return - DBL_MAX ;
 	}
 
 	booleanT binaryEvaluationBefore = eopt.binaryEvaluation ;
@@ -361,7 +361,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
 	// greedy search
 	marray<double> currentBounds(sampleSize) ;
 	int currentIdx ;
-	double bestEstimate = - FLT_MAX, bound ;
+	double bestEstimate = - DBL_MAX, bound ;
 	int currentLimit=0 ; // number of times the current dicretization was worse than the best discretization
 	int currentNoValues = 2 ;
 	while (currentLimit <= eopt.discretizationLookahead && sampleSize > 0 )
@@ -448,7 +448,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
    if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
    {
       // all values of the attribute are missing or equal
-      return - FLT_MAX ;
+      return - DBL_MAX ;
    }
    int validInstances = OKvalues
 
@@ -471,7 +471,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
    if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
    {
       // all values of the attribute are missing or equal
-      return - FLT_MAX ;
+      return - DBL_MAX ;
    }
 
    booleanT binaryEvaluationBefore = eopt.binaryEvaluation ;
@@ -499,7 +499,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
    // greedy search
    marray<double> currentBounds(sampleSize) ;
    int currentIdx ;
-   double bestEstimate = - FLT_MAX, bound ;
+   double bestEstimate = - DBL_MAX, bound ;
    int currentLimit=0 ; // number of times the current dicretization was worse than the best discretization
    int currentNoValues = 2 ;
    while (currentLimit <= eopt.discretizationLookahead && sampleSize > 0 )
@@ -741,7 +741,7 @@ void estimation::estBinarized(int selectedEstimator, int contAttrFrom, int contA
 	for (iDisc=discAttrFrom ; iDisc < discAttrTo; iDisc++)
 	{
 		estIdx = iDisc - discAttrFrom ;
-		DiscEstimation[iDisc] = -FLT_MAX ;
+		DiscEstimation[iDisc] = -DBL_MAX ;
 		for (iBin=discFrom[estIdx] ; iBin < discTo[estIdx] ; iBin++)
 			if (DiscEstimation[iBin] > DiscEstimation[iDisc])
 				DiscEstimation[iDisc] = DiscEstimation[iBin] ;
@@ -752,7 +752,7 @@ void estimation::estBinarized(int selectedEstimator, int contAttrFrom, int contA
 		for (iCont=contAttrFrom ; iCont < contAttrTo; iCont++)
 		{
 			estIdx = iCont - contAttrFrom ;
-			NumEstimation[iCont] = -FLT_MAX ;
+			NumEstimation[iCont] = -DBL_MAX ;
 			for (iBin=contFrom[estIdx] ; iBin < contTo[estIdx] ; iBin++)
 				if (DiscEstimation[iBin] > NumEstimation[iCont])
 					NumEstimation[iCont] = DiscEstimation[iBin] ;

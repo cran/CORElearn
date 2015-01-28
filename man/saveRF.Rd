@@ -53,7 +53,7 @@ print(modelRF)
 
 # prediction with node distribution
 pred <- predict(modelRF, iris, rfPredictClass=FALSE, type="both")
-print(pred)
+# print(pred)
 
 
 # saves the random forests model to file
@@ -64,12 +64,16 @@ loadedRF = loadRF(Species ~ ., iris, "tempRF.txt")
 
 # prediction should be the same
 predLoaded <- predict(loadedRF, iris, rfPredictClass=FALSE, type="both")
-print(predLoaded)
+# print(predLoaded)
+
+cat("Are predicted classes of original and retrieved models equal? ", 
+                           all(pred$class == predLoaded$class), "\n" ) 
+# cat("Are predicted probabilities of original and retrieved model equal? ", 
+#                 all(pred$probabilities == predLoaded$probabilities), "\n" ) 
 
 # clean up the models when no longer needed
 destroyModels(modelRF) 
 destroyModels(loadedRF) 
-
 
 }
 

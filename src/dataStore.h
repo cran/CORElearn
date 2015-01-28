@@ -25,8 +25,9 @@ public:
    double DifferentDistance, EqualDistance ;
    marray<double> Boundaries ;
    marray<double> valueProbability ;
-   attribute() ;
-   ~attribute() ;
+   attribute() { AttributeName = 0 ; continuous = mTRUE ; isOrdinal = mFALSE ; userDefinedDistance = mFALSE ;
+                 NoValues = 0 ; tablePlace = -1 ; DifferentDistance = EqualDistance = 0.0 ; } ;
+   ~attribute() { destroy(); };
    void destroy(void) ;
    int operator== (attribute &) { return 1; }
    int operator< (attribute &) { return 1; }
@@ -65,11 +66,10 @@ public:
    int NoCases, NoTrainCases, NoTestCases, noClasses, NoPredict, minClass ;
    marray<int> DTraining, DTesting; // storage for indexes of instances of the training/testing data, set before training
                               // they are indexes of rows for *dData, *nData, DiscData, NumData, ...
+   Options *opt ;  // parameters
    booleanT isRegression ;  // the type of problem: classification or regression
 
-   Options *opt ;  // parameters
-
-   dataStore();
+   dataStore() ;
    ~dataStore();
    int readProblem(booleanT isTrain, booleanT verbose) ;
    int readDescription(void);

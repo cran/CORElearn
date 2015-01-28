@@ -1,17 +1,22 @@
 #if !defined(CONSTRUCTREG_H)
 #define CONSTRUCTREG_H
 
+#include <float.h>
 #include "general.h"
 #include "contain.h"
 
 class estimationReg ; // forward
 
-struct constructRegNode
+class constructRegNode
 {
+ public:
    constructNodeType nodeType ;
    int attrIdx, valueIdx ;
    double  lowerBoundary, upperBoundary ;
-   constructRegNode *left, *right ;  
+   constructRegNode *left, *right ;
+   constructRegNode(){ nodeType = cnDISCattribute; attrIdx = valueIdx = -1 ;
+                       lowerBoundary = upperBoundary = -DBL_MAX ;
+                       left = right = 0 ; }
 } ;
 
 typedef constructRegNode* PconstructRegNode ;
@@ -45,14 +50,16 @@ public:
    int noValues ;
    int splitEstimator ;
    
-   constructReg() { root = 0 ; gRT = 0 ;}
+   constructReg() { root = 0 ; gRT = 0 ; countType = aDISCRETE; compositionType = cSINGLEattribute;
+                       splitValue = -DBL_MAX; noValues = -1; splitEstimator = -1; }
+
    ~constructReg() { destroy() ; gRT = 0 ; }
    constructReg(constructReg &Copy) {    root = 0;  copy(Copy) ; }
    void destroy() { if (root) destroy(root) ; root = 0 ; }
    int operator== (constructReg &X) ;
    constructReg& operator= (constructReg &X) ;
-   int operator< (constructReg &) { return 0; } ;
-   int operator> (constructReg &) { return 0; } ;
+   int operator< (constructReg &) { return 0; }
+   int operator> (constructReg &) { return 0; }
    void copy(constructReg &Source) ;
    void descriptionString(char* const Str) ;
    int degreesOfFreedom(void) ;

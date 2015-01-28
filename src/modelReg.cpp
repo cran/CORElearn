@@ -265,7 +265,7 @@ void regressionTree::M5Simplify(marray<int> &DTrain, int TrainSize, binnodeReg* 
       int currentModelSize = modelSize-1 ;
       while (currentModelSize >= 1)
       {
-         worstSizeError =  FLT_MAX ;
+         worstSizeError =  DBL_MAX ;
          worstSizePosition = -1 ;
  
          for (position=1 ; position < Mask.len() ; position++)

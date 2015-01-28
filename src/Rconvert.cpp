@@ -93,7 +93,7 @@ int regressionTree::predictRreg(marray<double> &predicted) {
 }
 
 
-char attrValSeparatorsFromR[] = "\x1F" ;
+const char attrValSeparatorsFromR[] = "\x1F" ;
 
 int dataStore::dscFromR(int noDiscreteAttr, marray<int> &noDiscreteValues,
 		int noNumericAttr, marray<char* > &discAttrNames,
@@ -362,8 +362,7 @@ SEXP featureTree::RF2R()
 SEXP featureTree::RFtree2R(binnode *branch){
 	SEXP out, aux, names ;
 
-    switch (branch->Identification)  {
-			case leaf:
+    if (branch->Identification == leaf)  {
 				PROTECT(out = allocVector(VECSXP, 3));
 				// nodeId
 				PROTECT(aux = allocVector(STRSXP, 1));
@@ -390,9 +389,8 @@ SEXP featureTree::RFtree2R(binnode *branch){
 
 				UNPROTECT(5) ;// is this correct?
 				return out ;
-
-	            break ;
-	        case continuousAttribute:
+    }
+    else if (branch->Identification == continuousAttribute) {
 				PROTECT(out = allocVector(VECSXP, 6));
 
 				// nodeId
@@ -439,9 +437,9 @@ SEXP featureTree::RFtree2R(binnode *branch){
 
 				UNPROTECT(6) ; // is this correct?
 				return out ;
-	            break ;
-			case discreteAttribute:
-				PROTECT(out = allocVector(VECSXP, 6));
+    }
+    else if (branch->Identification == discreteAttribute) {
+     			PROTECT(out = allocVector(VECSXP, 6));
 
 				// nodeId
 				PROTECT(aux = allocVector(STRSXP, 1));
@@ -493,9 +491,8 @@ SEXP featureTree::RFtree2R(binnode *branch){
 
 				UNPROTECT(6) ; // is this correct?
 				return out ;
-	            break ;
-	}
-    return NULL ;
+    }
+    else return NULL ;
 }
 
 

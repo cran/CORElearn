@@ -6,10 +6,12 @@
 
 enum exprType  {majority=1, kNN=2, kNNkernel=3, simpleBayes=4} ;
 
-struct exprNode
+class exprNode
 {
+ public:
    int iMain, iAux ;
    exprNode *left, *right ;  // usually 2: left = 0, right = 1
+   exprNode(){ iMain = iAux = -1 ;  left = right = 0 ; }
 } ;
 
 typedef exprNode* PexprNode ;
@@ -59,7 +61,7 @@ public:
    void predict(binnode *treeNode, int Case, marray<double> &probDist) ;
    char* descriptionString(void)  ;
    int degreesOfFreedom(void) { return 1; }
-   double smoothingParameter(int smoothingType, double smoothingValue) ;
+   double smoothingParameter(int smoothingType) ;
 } ;
 
 #endif

@@ -22,9 +22,9 @@ public:
  
     binnode *left,*right;
 
-    binnode(void) { left = right = 0 ; } 
+    binnode(void) { left = right = 0 ; Identification = leaf; weight = weightLeft = -DBL_MAX ; majorClass = -1 ; }
     void copy(binnode &Source) ;
-    void operator=(binnode &Source)  { copy(Source) ; };
+    void operator=(binnode &Source)  { copy(Source) ; }
 };
 
 typedef binnode* Pbinnode ;

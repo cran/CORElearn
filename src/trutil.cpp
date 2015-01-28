@@ -26,38 +26,160 @@
 //                      printFTree
 //                      ----------
 //
-//   recursively prints the entire feature tree on a given stream;
+//   recursively prints the entire feature tree
 //   if features are too long, make an abbreviation and full
 //                  description below
 //
 //************************************************************
-void featureTree::printFTree(FILE *out,  int &FeatureNo,
-    marray<binnode*> &FeatureNode, marray<binnode*> &ModelNode,
-    int &LeavesNo, binnode *branch, int place)
+char* featureTree::printFTree(int &featureNo, int &leavesNo, marray<binnode*> &featureNode, marray<binnode*> &modelNode,
+                              binnode *branch, int place)
 {
    if (branch)
    {
       if (branch->left) // not a leaf yet
       {
-         int fNo = FeatureNo++ ;   // reserve current index
+    	 mstring outTree ;
 
-         printFTree(out, FeatureNo, FeatureNode, ModelNode, LeavesNo,
+    	 int fNo = featureNo ;  // reserve current index
+    	 featureNo++ ;
+
+         char *lTreeStr = printFTree(featureNo, leavesNo, featureNode, modelNode,
                     branch->left, place+5);
+         outTree.append(lTreeStr) ;
+         delete [] lTreeStr ;
+         char *buf = new char[place + 20] ;
+         sprintf(buf,"%*sf%d\n",place," ",fNo) ;
+         outTree.append(buf) ;
+         delete [] buf ;
+         featureNode[fNo] = branch ;
 
-         fprintf(out,"%*sf%d\n",place," ",fNo) ;
-         FeatureNode[fNo] = branch ;
-
-         printFTree(out, FeatureNo, FeatureNode, ModelNode, LeavesNo,
+         char *rTreeStr = printFTree(featureNo, leavesNo, featureNode, modelNode,
                     branch->right, place+5);
+         outTree.append(rTreeStr) ;
+         delete [] rTreeStr ;
+
+         char *retStr = outTree.unWrap() ;
+         return retStr ;
       }
       else
       {
-         fprintf(out,"%*sl%d\n",place," ",LeavesNo) ;
-         ModelNode[LeavesNo] = branch ;
-         LeavesNo++ ;
+         char *buf = new char[place + 20] ;
+    	 sprintf(buf,"%*sl%d\n",place," ",leavesNo) ;
+    	 modelNode[leavesNo] = branch ;
+         leavesNo++ ;
+         return buf ;
       }
    }
+   return 0 ;
 }
+
+char* featureTree::printFTreeDot(void) {
+	int featureNo  = 0;
+	int noLeaf = noLeaves() ;
+	marray<binnode*> featureNode(noLeaf) ;
+	marray<binnode*> modelNode(noLeaf) ;
+	int leavesNo  = 0;
+
+	char buf[MaxFeatureStrLen], dotBuf[MaxFeatureStrLen+30] ;
+
+	sprintf(dotBuf, "digraph \"dotDecisionTree\" {\n") ;
+	mstring dotTree(dotBuf) ;
+	char *treeStr = tree2Dot(root, featureNo, leavesNo, featureNode, modelNode) ;
+	dotTree.append(treeStr) ;
+	delete [] treeStr ;
+
+	int i ;
+	mstring fStr("\n") ;
+	for (i=0; i<featureNo ; i++)
+	{
+		Feature2Str(featureNode[i], buf);
+		sprintf(dotBuf, "\tf%d [label = \"%s\"]\n", i, buf) ;
+		fStr.append(dotBuf) ;
+	}
+	dotTree.append(fStr) ;
+	char *modelDescription ;
+	mstring modelStr("\n") ;
+
+	for (i=0 ; i < leavesNo ; i++)
+	{
+		modelDescription = modelNode[i]->Model.descriptionString() ;
+		sprintf(dotBuf, "\tl%d [shape = box, label = \"%s\"]\n", i, modelDescription) ;
+		modelStr.append(dotBuf) ;
+		delete [] modelDescription ;
+	}
+	modelStr.append("}\n") ;
+	dotTree.append(modelStr) ;
+
+	char *retValue = dotTree.unWrap() ;
+	return retValue ;
+}
+
+
+
+//************************************************************
+//
+//                   printFTreeStr
+//                   --------------
+//
+//             prints the feature tree
+//
+//************************************************************
+char* featureTree::printFTreeStr(void) {
+
+   int featureNo  = 0;
+   int noLeaf = noLeaves() ;
+   marray<binnode*> featureNode(noLeaf) ;
+   marray<binnode*> modelNode(noLeaf) ;
+   int leavesNo  = 0;
+
+   char buf[MaxFeatureStrLen] ;
+
+   char *tStr = printFTree(featureNo, leavesNo, featureNode, modelNode, root, 0);
+   mstring fTreeStr(tStr) ;
+   delete [] tStr ;
+
+   int i,j ;
+   mstring fStr("\n") ;
+   char *bufLine = new char[MaxFeatureStrLen+30] ;
+   for (i=0; i < featureNo ; i++)
+   {
+      Feature2Str(featureNode[i], buf);
+      sprintf(bufLine, "f%d: %s\n", i, buf) ;
+      fStr.append(bufLine) ;
+   }
+   fTreeStr.append(fStr) ;
+   char *modelDescription ;
+
+   // header
+   mstring clStr("\nLeaf    node_weight") ;
+   for (j=0 ; j<noClasses ; j++) {
+	  sprintf(buf,"p(%s)", AttrDesc[0].ValueName[j]);
+      sprintf(bufLine," %*s", Mmax(6,int(4+strlen(AttrDesc[0].ValueName[j]))), buf);
+      clStr.append(bufLine) ;
+   }
+   clStr.append(" prediction\n") ;
+   for (i=0 ; i < leavesNo ; i++)
+   {
+      sprintf(bufLine, "l%-4d |%12.2f", i, modelNode[i]->weight) ;
+      clStr.append(bufLine) ;
+      for (j=0 ; j<noClasses ; j++) {
+         sprintf(bufLine," %*.4f", Mmax(6,4+int(strlen(AttrDesc[0].ValueName[j]))),
+                            modelNode[i]->Classify[j+1] / modelNode[i]->weight );
+         clStr.append(bufLine) ;
+      }
+
+      modelDescription = modelNode[i]->Model.descriptionString() ;
+      sprintf(bufLine," %s\n", modelDescription) ;
+      clStr.append(bufLine) ;
+      delete [] modelDescription ;
+   }
+   fTreeStr.append(clStr) ;
+   delete [] bufLine ;
+
+   char *retStr = fTreeStr.unWrap() ;
+   return retStr ;
+}
+
 
 
 //************************************************************
@@ -87,21 +209,16 @@ void featureTree::printFTreeFile(char *FileName, int idx,
                             TestAccuracy, TestCost, TestInf, TestAuc, TestSens, TestSpec, TestBrier, TestKappa) ;
    printLine(to,"-",70)  ;
 
-   int FeatureNo  = 0;
-   int noLeaf = noLeaves() ;
-   marray<binnode*> FeatureNode(noLeaf) ;
-   marray<binnode*> ModelNode(noLeaf) ;
-   int LeavesNo  = 0;
-
    char buf[MaxFeatureStrLen] ;
 
-   printFTree(to, FeatureNo, FeatureNode, ModelNode, LeavesNo, root, 0);
+   char *fTreeStr = printFTreeStr();
+   fprintf(to, "%s\n", fTreeStr) ;
+   delete [] fTreeStr ;
 
    printLine(to,"-",70)  ;
 
    if (opt->printTreeInDot)
    {
-      int fNo = 0, lNo = 0 ;
 	  strcpy(buf, FileName) ;
 	  strcat(buf, ".dot") ;
       if ((toDot=fopen(buf,"w"))==NULL)
@@ -109,71 +226,14 @@ void featureTree::printFTreeFile(char *FileName, int idx,
          merror("Cannot open dot tree output file",buf) ;
 	  }
 	  else {
-          fprintf(toDot, "digraph \"%s\" {\n\tsize = \"7,10\"  /* set appropriately to see the whole graph */\n", FileName) ;
-
-		  printFTreeDot(toDot, root, fNo, lNo) ;
+		  char *dotTreeStr = printFTreeDot() ;
+		  fprintf(toDot, "%s\n", dotTreeStr) ;
+		  fclose(toDot) ;
+		  delete [] dotTreeStr ;
       }
    }
 
-   int i ;
-   for (i=0; i<FeatureNo ; i++)
-   {
-      Feature2Str(FeatureNode[i], buf);
-      fprintf(to, "f%d: %s\n", i, buf) ;
- 	  if (toDot)
-    	fprintf(toDot, "\tf%d [label = \"%s\"]\n", i, buf) ;
-   }
-
-   int headLen  = 0 ;
-   headLen += 20;
-   fprintf(to, "\n        Leaf weight") ;
-
-   for (i=0 ; i<noClasses; i++)
-   {
-      fprintf(to,"%*s",Mmax(int(strlen(AttrDesc[0].ValueName[i])+2),9),AttrDesc[0].ValueName[i]) ;
-      headLen += Mmax(int(strlen(AttrDesc[0].ValueName[i])+2),9) ;
-   }
-   fprintf(to,"  prediction\n") ;
-   headLen += 12 ;
-   for (i=0 ; i<headLen; i++)
-     fprintf(to,"-") ;
-   fprintf(to, "\n") ;
-   fprintf(to, "      |            ") ;
-   for (i=0 ; i<noClasses; i++)
-      fprintf(to,"%*.4f", Mmax(int(strlen(AttrDesc[0].ValueName[i])+2),9), AttrDesc[0].valueProbability[i+1]) ;
-   fprintf(to, "  a priori\n") ;
-   for (i=0 ; i<headLen; i++)
-     fprintf(to, "-") ;
-   fprintf(to,"\n") ;
-
-   int j ;
-   char *ModelDescription ;
-
-   for (i=0 ; i<LeavesNo ; i++)
-   {
-      fprintf(to, "l%-4d |%12.2f",i,ModelNode[i]->weight) ;
-      for (j=0 ; j<noClasses ; j++)
-         fprintf(to,"%*.4f", Mmax(int(strlen(AttrDesc[0].ValueName[j])+2),9),
-                            ModelNode[i]->Classify[j+1] / ModelNode[i]->weight );
-
-      ModelDescription = ModelNode[i]->Model.descriptionString() ;
-      fprintf(to,"  %s\n", ModelDescription ) ;
-
-	  if (toDot)
-		  fprintf(toDot, "\tl%d [shape = box, label = \"%s\"]\n", i, ModelDescription) ;
-
-      delete [] ModelDescription ;
-   }
-   for (i=0 ; i<headLen; i++)
-     fprintf(to,"-") ;
-   fprintf(to,"\n\n") ;
-
-   if (toDot)
-   {
-      fprintf(toDot, "}\n") ;
-      fclose(toDot) ;
-   }
-
+   int i, j  ;
    fprintf(to,"Prediction matrix for testing set (%d instances)\n",TestPMx(0,0)) ;
    printLine(to,"-",65)  ;
    for (i=0 ; i<noClasses; i++)
@@ -196,42 +256,57 @@ void featureTree::printFTreeFile(char *FileName, int idx,
    fclose(to) ;
 }
 
-//************************************************************
-//
-//                      printFTreeDot
-//                      -------------
-//
-//   recursively prints the entire feature tree on a given stream
-//   in a dot format
-//
-//************************************************************
-void featureTree::printFTreeDot(FILE *outDot,  binnode *branch, int &FeatureNo, int &LeavesNo)
+/* ***********************************************************
+
+                    tree2dot
+                      -------------
+
+   recursively prints the entire feature tree in a dot format
+
+*********************************************************** */
+const int MaxLine = 128 ;
+char* featureTree::tree2Dot(binnode *branch, int &featureNo, int &leavesNo, marray<binnode*> &featureNode, marray<binnode*> &modelNode)
 {
    if (branch)
    {
       if (branch->left) // not the leaf yet
       {
-         int fNo = FeatureNo++ ;   // reserve current index
+         int fNo = featureNo ; // reserve current index
+         featureNo++ ;
+         featureNode[fNo] = branch ; // store
+         char *buf = new char[MaxLine] ;
 
          if (branch->left->left) // is left one the leaf
-		   fprintf(outDot, "\tf%d -> f%d [label = \"yes\"]\n", fNo, FeatureNo) ;
+		   sprintf(buf, "\tf%d -> f%d [label = \"yes\"]\n", fNo, featureNo) ;
 		 else
-		   fprintf(outDot, "\tf%d -> l%d [label = \"yes\"]\n", fNo, LeavesNo) ;
+		   sprintf(buf, "\tf%d -> l%d [label = \"yes\"]\n", fNo, leavesNo) ;
 
-         printFTreeDot(outDot, branch->left, FeatureNo, LeavesNo);
+         mstring treeStr(buf) ;
+         char *leftStr = tree2Dot(branch->left, featureNo, leavesNo, featureNode, modelNode);
+         treeStr.append(leftStr) ;
+         delete [] leftStr ;
 
-         if (branch->right->left) // is right one the leaf
-		   fprintf(outDot, "\tf%d -> f%d [label = \"no\"]\n", fNo, FeatureNo) ;
+         if (branch->right->left) // is the right one a leaf?
+		   sprintf(buf, "\tf%d -> f%d [label = \"no\"]\n", fNo, featureNo) ;
 		 else
-		   fprintf(outDot, "\tf%d -> l%d [label = \"no\"]\n", fNo, LeavesNo) ;
+		   sprintf(buf, "\tf%d -> l%d [label = \"no\"]\n", fNo, leavesNo) ;
 
-         printFTreeDot(outDot, branch->right, FeatureNo, LeavesNo);
+         treeStr.append(buf) ;
+         delete [] buf ;
+
+         char *rightStr = tree2Dot(branch->right, featureNo, leavesNo, featureNode, modelNode);
+         treeStr.append(rightStr) ;
+         delete [] rightStr ;
+         char *retStr = treeStr.unWrap() ;
+         return retStr ;
 	  }
       else  {
          // fprintf(outDot, "\tl%d [shape = box]\n", LeavesNo) ;
-         LeavesNo++ ;
+    	  modelNode[leavesNo] = branch ;
+         leavesNo++ ;
       }
    }
+   return 0 ;
 }
 
 

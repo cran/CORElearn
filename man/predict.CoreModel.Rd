@@ -58,7 +58,7 @@ print(modelRF)
 
 # prediction with node distribution
 pred <- predict(modelRF, iris, rfPredictClass=FALSE, type="both")
-print(pred)
+# print(pred)
 
 destroyModels(modelRF) # clean up
 

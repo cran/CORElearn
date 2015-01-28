@@ -789,7 +789,7 @@ void estimation::findHitMiss(int current, int &hit, int &miss)
 
    // we use only original attributes to obtain distance in attribute space
 
-   double hitDistance = FLT_MAX, missDistance = FLT_MAX, distance ;
+   double hitDistance = DBL_MAX, missDistance = DBL_MAX, distance ;
    
    for (int i=0 ; i < TrainSize; i++)
    {

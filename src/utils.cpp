@@ -1005,7 +1005,7 @@ char *myTokenMDskip(char *inStr, int &idx, const char *delimiters) {
    return token ;
 }
 
-void tokenizedList(char *buf, mlist<mstring> &names, char *tokenSeparators) {
+void tokenizedList(char *buf, mlist<mstring> &names, const char *tokenSeparators) {
 	names.destroy() ;
 	mstring item ;
 	int strIdx = 0 ;

@@ -101,7 +101,7 @@ int c45read::readC45names(FILE *from) {
 				aDsc.aType = attrOrdinal ;
 				// remove [ordered] indicator from first value
 				mstring tempStr ;
-				tempStr.copyFrom(names.first()->value, strlen(ordinalIndicator)) ;
+				tempStr.copyFrom(names.first()->value, (int)strlen(ordinalIndicator)) ;
 				tempStr.trimWhite();
 				names.first()->value = tempStr ;
 			}

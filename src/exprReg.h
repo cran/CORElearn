@@ -1,17 +1,21 @@
 #if !defined(EXPRREG_H)
 #define EXPRREG_H
 
+#include <float.h>
 #include "general.h"
 #include "contain.h"
 
 enum exprRegType  {plus, minus, times, constTimesAttr, intConstant, floatConstant, kNNreg, kernelRegression, LWLR} ;
 
-struct exprRegNode
+class exprRegNode
 {
+public:
    exprRegType nodeType ;
    int iMain, iAux ;
    double  dMain, dAux ;
-   exprRegNode *left, *right ;  // usually 2: left = 0, right = 1
+   exprRegNode *left, *right ;
+   exprRegNode() { nodeType = floatConstant; iMain = iAux = -1 ; dMain = dAux = -DBL_MAX ; left = right = 0 ;}
+
 } ;
 
 typedef exprRegNode* PexprRegNode ;
@@ -42,7 +46,7 @@ class exprReg
 
 public:
    const regressionTree *gRT ;
-   exprReg() { root = 0 ; }
+   exprReg() { root = 0 ; gRT = 0 ; }
    exprReg(regressionTree *rt) { root = 0 ; gRT = rt; }
    ~exprReg() { destroy(); gRT=0; }
    exprReg(exprReg &Copy) {    root = 0 ;  copy(Copy) ; }

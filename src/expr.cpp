@@ -163,7 +163,7 @@ void expr::createKNN(void)
         if (differentDistance[i] != equalDistance[i])
             CAslope[i] = double(1.0)/(differentDistance[i] - equalDistance[i]) ;
          else
-            CAslope[i] = FLT_MAX ;
+            CAslope[i] = DBL_MAX ;
     }
 }
 
@@ -185,7 +185,7 @@ void expr::createKNNkernel(void)
         if (differentDistance[i] != equalDistance[i])
             CAslope[i] = double(1.0)/(differentDistance[i] - equalDistance[i]) ;
          else
-            CAslope[i] = FLT_MAX ;
+            CAslope[i] = DBL_MAX ;
     }
 }
 
@@ -242,7 +242,7 @@ void expr::createSimpleBayes(estimation &Estimator, binnode *treeNode)
 	   {
 		   contValue = Estimator.NumValues(iEx, iCont)  ;
 		   if ( ! isNAcont(contValue))
-		      SBclAttrVal[Estimator.DiscValues(iEx, 0)][gFT->ContIdx[iCont]][Boundary[iCont].lessEqPlace(contValue)+1] ++ ;
+		      SBclAttrVal[Estimator.DiscValues(iEx, 0)][gFT->ContIdx[iCont]][(Boundary[iCont]).lessEqPlace(contValue)+1] ++ ;
            else
               SBclAttrVal[Estimator.DiscValues(iEx, 0 )][gFT->ContIdx[iCont]][0]++ ;
        }
@@ -270,7 +270,7 @@ void expr::createSimpleBayes(estimation &Estimator, binnode *treeNode)
 	}
 }
 
-double expr::smoothingParameter(int smoothingType, double smoothingValue){
+double expr::smoothingParameter(int smoothingType){
 	double m = 0 ;
 	switch (smoothingType){
 				case 0: // no smoothing
@@ -295,7 +295,7 @@ void expr::predict(binnode *treeNode, int Case, marray<double> &probDist)
         case majority:
 			{
 				int i ;
-				double m = smoothingParameter(gFT->opt->smoothingType, gFT->opt->smoothingValue) ;
+				double m = smoothingParameter(gFT->opt->smoothingType) ;
                 if (gFT->opt->smoothingType == 0 || gFT->opt->smoothingType == 1 || gFT->opt->smoothingType == 2) {
                 	// use additive (Laplace) smoothing
                 	for (i=1 ; i < probDist.len() ; i++){
@@ -381,7 +381,7 @@ void expr::predict(binnode *treeNode, int Case, marray<double> &probDist)
 				int noAttr = gFT->noAttr ;
                 int iClass, iAttr, valueIdx, iCont, iDisc ;
 				double contValue, denominator, factor ;
-                double m = smoothingParameter(gFT->opt->smoothingType, gFT->opt->smoothingValue) ;
+                double m = smoothingParameter(gFT->opt->smoothingType) ;
                 double pAll = 0.0 ;
 
 				for (iClass = 1 ; iClass <= noClasses ; iClass++)

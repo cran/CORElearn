@@ -41,9 +41,9 @@ extern "C" int descSort3Comp(const void *a, const void *b) ;
 // char* int2str(int Number, char* const Str);
 
 //   logarithm of basis 2: compatibility sake
-//#if defined(MICROSOFT)
-//  inline double log2(double x) { return double( log(x) / 0.69314718055994528622) ; }
-//#endif
+#if defined(MICROSOFT)
+  inline double log2(double x) { return double( log(x) / 0.69314718055994528622) ; }
+#endif
 
 #define sqrt2 1.414213562373
 #define epsilon  1e-7
@@ -76,6 +76,7 @@ char* sgetStrIgnoreTill(char *stringFrom, char *Str, char Ignore) ;
 double binom(int N, int selector) ;
 
 int intRound(double x) ;
+int intRoundD(double x) ;
 long int longRound(long int x) ;
 int no1bits(unsigned long int number) ;
 
@@ -92,7 +93,7 @@ char* getWildcardFileName(const char* Path, const char *WildcardFileName);
 
 // pseudo-random number generators
 double nrran1Between(double From, double To) ;
-int rnrran1Between(int from, int to) ;
+int nrran1Between(int From, int To) ;
 void nrran1Seed(long seed) ;
 double mrg32k5aBetween(double From, double To) ;
 int mrg32k5aBetween(int from, int to) ;
@@ -107,7 +108,7 @@ double randNormal(double mean, double stddev) ;
 void printLine(FILE *to, const char *what, int times) ;
 char *myToken(char *inStr, int &idx, const char *delimiters) ;
 char *myTokenMDskip(char *inStr, int &idx, const char *delimiters) ;
-void tokenizedList(char *buf, mlist<mstring> &names, char *tokenSeparators) ;
+void tokenizedList(char *buf, mlist<mstring> &names, const char *tokenSeparators) ;
 int fscanfUntil(FILE *fin, char *buf, const char delimiter, int maxSize);
 
 void statOE(marray<double> &num, int n, marray<double> &stat, double percentile, double value) ;

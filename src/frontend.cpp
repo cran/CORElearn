@@ -66,7 +66,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 0.9.44, built on " __DATE__ " at " __TIME__
+" version 0.9.45, built on " __DATE__ " at " __TIME__
 #if defined(_OPENMP)
 " with OpenMP support"
 #endif
@@ -193,17 +193,17 @@ int main(int argc, char *argv[]) {
 
 
 void mainMenu(featureTree* gFT) {
-       char const* MainMenu[] = { "Estimate attributes on single split in classification" ,
+       char const* MainMenu[] = { "Estimate attributes on a single split in classification" ,
                             "Estimate attributes on all splits in classification" ,
-                            "Learning trees on single data split in classification",
-                            "Learning trees on all data splits in classification",
-                            "Learning random forests on single data split in classification",
-                            "Learning random forests on all data splits in classification",
+                            "Train a decision trees on a single data split in classification",
+                            "Train decision trees on all data splits in classification",
+                            "Train a random forest on a single data split in classification",
+                            "Train random forests on all data splits in classification",
                             "Summarize data characteristics in classification",
-                            "Estimate attributes on single split in regression" ,
+                            "Estimate attributes on a single split in regression" ,
                             "Estimate attributes on all splits in regression" ,
-                            "Learning trees on single data split in regression",
-                            "Learning trees on all data splits in regression",
+                            "Train a regression tree on a single data split in regression",
+                            "Train regression trees on all data splits in regression",
                             "Summarize data characteristics in regression",
                             "Options" ,
                             "Load parameters",

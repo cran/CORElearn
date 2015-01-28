@@ -195,7 +195,7 @@ double regressionTree::conjunct(estimationReg &Estimator, constructReg &bestConj
    int bestConjunctIdx = prepareAttrValues(Estimator, Candidates) ;
    
    if (Candidates.filled() == 0) // there are no candidates
-      return -FLT_MAX ;
+      return -DBL_MAX ;
 
    attributeCount bestConstructType = aDISCRETE ;
    marray<constructReg> ContConstructs(0) ;
@@ -207,7 +207,7 @@ double regressionTree::conjunct(estimationReg &Estimator, constructReg &bestConj
                      Candidates, ContConstructs) ;
    }
    if (bestConjunctIdx == -1)
-      return -FLT_MAX ;
+      return -DBL_MAX ;
      
    double bestConjunctEst = Estimator.DiscEstimation[bestConjunctIdx] ;
    bestConjunct = Candidates[bestConjunctIdx - noDiscrete] ;
@@ -429,7 +429,7 @@ int regressionTree::prepareAttrValues(estimationReg &Estimator, marray<construct
        // if there is not enough space available, prepare it
        if (Bounds.filled()+1 + Candidates.filled() >= Candidates.len())
           Candidates.enlarge(Bounds.filled()+1 + Candidates.filled() ) ;
-       lowerBound = upperBound = -FLT_MAX ;
+       lowerBound = upperBound = -DBL_MAX ;
        boundIdx = 0 ;
        // add all the discretized intervals
        while ( boundIdx < Bounds.filled() )
@@ -442,7 +442,7 @@ int regressionTree::prepareAttrValues(estimationReg &Estimator, marray<construct
           boundIdx ++ ;
        }
        tempAttrValue.root->lowerBoundary = upperBound ;
-       tempAttrValue.root->upperBoundary = FLT_MAX ;
+       tempAttrValue.root->upperBoundary = DBL_MAX ;
        Candidates.addEnd(tempAttrValue) ;
      } 
    
@@ -505,7 +505,7 @@ double regressionTree::summand(estimationReg &Estimator, constructReg &bestConst
    
    int bestConstructIdx = prepareContAttrs(Estimator, cSUM, Candidates, bestConstruct) ;
    if (Candidates.filled() == 0) // there are no candidates
-      return -FLT_MAX ;
+      return -DBL_MAX ;
    
    double bestConstructEst = Estimator.NumEstimation[bestConstructIdx] ;
 
@@ -527,7 +527,7 @@ double regressionTree::summand(estimationReg &Estimator, constructReg &bestConst
                          noNumeric +Candidates.filled(),0, 0, bestConstructType,
                          DiscConstructs, Candidates) ;
      if (bestConstructIdx == -1)
-       return -FLT_MAX ;
+       return -DBL_MAX ;
 
      bestConstructEst = Estimator.NumEstimation[bestConstructIdx] ;
      bestConstruct = Candidates[bestConstructIdx - noNumeric] ;
@@ -601,7 +601,7 @@ double regressionTree::multiplicator(estimationReg &Estimator, constructReg &bes
    
    int bestConstructIdx = prepareContAttrs(Estimator, cPRODUCT, Candidates, bestConstruct) ;
    if (Candidates.filled() == 0 || bestConstructIdx == -1) // there are no candidates
-      return -FLT_MAX ;
+      return -DBL_MAX ;
 
    double bestConstructEst = Estimator.NumEstimation[bestConstructIdx] ;
 
@@ -623,7 +623,7 @@ double regressionTree::multiplicator(estimationReg &Estimator, constructReg &bes
                          noNumeric +Candidates.filled(),0, 0, bestConstructType,
                          DiscConstructs, Candidates) ;
      if (bestConstructIdx == -1)
-       return -FLT_MAX ;
+       return -DBL_MAX ;
 
      bestConstructEst = Estimator.NumEstimation[bestConstructIdx] ;
      bestConstruct = Candidates[bestConstructIdx - noNumeric] ;
@@ -702,7 +702,7 @@ int regressionTree::prepareContAttrs(estimationReg &Estimator, constructComposit
    tempAttrValue.root->nodeType = cnCONTattribute ;
 
    int bestIdx = -1, bestCandidateIdx = -1 ;
-   double bestEst = -FLT_MAX ;
+   double bestEst = -DBL_MAX ;
    // select from continuous attributes
    for (int i=1 ; i < noNumeric ; i++)
      if ( (opt->selectionEstimatorReg == estRReliefFexpRank || opt->selectionEstimatorReg == estRReliefFkEqual || 

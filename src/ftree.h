@@ -38,8 +38,9 @@ protected:
    void createLeaf(binnode *Node) ;
    void buildModel(estimation &Estimator, binnode* Node) ;
    void check(binnode *branch, int caseIdx, marray<double> &ClassTable) ;
-   void printFTree(FILE *out,  int &FeatureNo,  marray<binnode*> &FeatureNode, marray<binnode*> &ModelString, int &LeavesNo, binnode *branch, int place) ;
-   void printFTreeDot(FILE *outDot,  binnode *branch, int &FeatureNo, int &LeavesNo) ;
+   char* printFTree(int &featureNo, int &leavesNo, marray<binnode*> &featureNode, marray<binnode*> &modelNode, binnode *branch, int place) ;
+   char* tree2Dot(binnode *branch, int &featureNo, int &leavesNo, marray<binnode*> &featureNode, marray<binnode*> &modelNode) ;
+
    void Feature2Str(binnode *Node, char* const Str) ;
    double mPrune(binnode *Node) ;
    double mdlCode(binnode *Node) ;
@@ -91,7 +92,7 @@ protected:
    double f1dim(double x);
 
 #if defined(R_PORT)
-  void rfMarkCaseInTree(binnode *branch, int caseIdx) ;
+   void rfMarkCaseInTree(binnode *branch, int caseIdx) ;
    void rfClearDTrain(binnode *branch) ;
    void rfLeafCooccurence(binnode *branch,  int outDim, SEXP out) ;
 #endif
@@ -101,8 +102,9 @@ public:
    double avgOobAccuracy, avgOobMargin, avgOobCorrelation ;
    PseudoRandomStreams rndStr ;
 
-   featureTree();
-   ~featureTree();
+   featureTree() { rootWeight = rfA0 = avgOobAccuracy = avgOobMargin = avgOobCorrelation = -DBL_MAX ;
+                   rootTrainSize = rfNoSelAttr = -1 ; learnRF = mFALSE ; }
+   ~featureTree() {}
    int constructTree(void);
    void test(marray<int> &DSet, int SetSize, double &Accuracy, double &avgCost, double &Inf,
              double &Auc, mmatrix<int> &PredictionMatrix, double &kappa, double &sensitivity, double &specificity,
@@ -117,6 +119,8 @@ public:
    void printFTreeFile(char *FileName, int idx,  int Leaves, int freedom,
         double Accuracy, double Cost, double Inf, double Auc,
         mmatrix<int> &PMx, double Sens, double Spec, double Brier, double Kappa) ;
+   char* printFTreeDot(void) ;
+   char* printFTreeStr(void) ;
    double mPrune(void) { return mPrune(root) ; }
    int buildForest(void) ;
    void rfResultHead(FILE *to) const ;

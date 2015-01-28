@@ -25,11 +25,11 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
 	   firstFreeDiscSlot = noDiscrete ;
 
    int NoValues = nodeConstruct.noValues ;
-   nodeConstruct.leftValues.create(NoValues,mFALSE) ;
+   nodeConstruct.leftValues.create(NoValues+1,mFALSE) ;
    
    if (NoValues < 2) 
    {
-	  bestEstimation = -FLT_MAX ;
+	  bestEstimation = -DBL_MAX ;
       return ;
    }
 
@@ -56,7 +56,7 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
    binPartition Generator(NoValues) ;
    char attrValue ;
    int bestIdx ;
-   bestEstimation = -FLT_MAX ;
+   bestEstimation = -DBL_MAX ;
 
    int noBasicAttr = (noDiscrete+noNumeric-1) ;
    int greedyPositions = NoValues * (NoValues+1)/2 ;
@@ -74,7 +74,7 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
      // exhaustive search
      adjustTables(0,  int(firstFreeDiscSlot + exhaustivePositions)) ;
      marray<marray<booleanT> >  leftValues( (int)exhaustivePositions) ;
-     int i, noIncrements = 0 ;
+     int noIncrements = 0 ;
      while (Generator.increment() )
      {
        // save partition
@@ -198,7 +198,7 @@ void estimationReg::binarizeBreiman(constructReg &nodeConstruct, double &bestEst
    sortedMean.setFilled(OKvalues) ;
    sortedMean.qsortAsc() ;
    double estimate, pLeft, variance ;
-   bestEstimation = FLT_MAX ;
+   bestEstimation = DBL_MAX ;
    int bestIdx = -1 ;
    double LeftWeight = 0.0, LeftSquares = 0.0, LeftValues = 0.0 ;
    int upper = OKvalues - 1 ;
@@ -268,8 +268,8 @@ double estimationReg::bestSplitGeneral(int selectedEstimator, constructReg &node
    }
    if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
    {
-      bestEstimation = - FLT_MAX ;
-      return - FLT_MAX ; // smaller than any value, so all examples will go into one branch
+      bestEstimation = - DBL_MAX ;
+      return - DBL_MAX ; // smaller than any value, so all examples will go into one branch
    }
    sortedAttr.setFilled(OKvalues) ;
    sortedAttr.qsortAsc() ;
@@ -286,8 +286,8 @@ double estimationReg::bestSplitGeneral(int selectedEstimator, constructReg &node
    OKvalues = lastUnique+1 ;
     if (OKvalues <= 1)    
    {
-      bestEstimation = - FLT_MAX ;
-      return - FLT_MAX ; // smaller than any value, so all examples will go into one branch
+      bestEstimation = - DBL_MAX ;
+      return - DBL_MAX ; // smaller than any value, so all examples will go into one branch
    }
 
 
@@ -394,7 +394,7 @@ double estimationReg::bestMSEsplit(constructReg &nodeConstruct, double &bestEsti
    double totalWeight = RightWeight ;
    sortedAttr.setFilled(OKvalues) ;
    sortedAttr.qsortAsc() ;
-   bestEstimation = FLT_MAX ;
+   bestEstimation = DBL_MAX ;
    int bestIdx = -1 ;
    double estimate, pLeft, variance ;
 
@@ -444,7 +444,7 @@ double estimationReg::bestMSEsplit(constructReg &nodeConstruct, double &bestEsti
           return sortedAttr[0].key - double(1.0) ;  // smaller then minimum: split will put all the cases
                                            // into one subtree and node will become a leaf
        else  // all the cases have missing value of the attribute
-          return - FLT_MAX ;
+          return - DBL_MAX ;
    }
    else
      return (sortedAttr[bestIdx].key + sortedAttr[bestIdx-1].key)/double(2.0) ;
@@ -475,7 +475,7 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
    int NoDiscEstimated = discAttrTo - discAttrFrom ;
    int NoContEstimated = contAttrTo - contAttrFrom ;
    marray<int> discFrom(NoDiscEstimated), discTo(NoDiscEstimated), contFrom(NoContEstimated), contTo(NoContEstimated) ;
-   char discAttrValue ;
+   int discAttrValue ;
 
    // estimated size
    adjustTables(0, firstFreeDiscSlot + NoDiscEstimated* 4 + NoContEstimated * eopt.discretizationSample) ;
@@ -636,7 +636,7 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
    for (iDisc=discAttrFrom ; iDisc < discAttrTo; iDisc++)
    {
 	  estIdx = iDisc - discAttrFrom ;
-      DiscEstimation[iDisc] = -FLT_MAX ;
+      DiscEstimation[iDisc] = -DBL_MAX ;
       for (iBin=discFrom[estIdx] ; iBin < discTo[estIdx] ; iBin++)
 		  if (DiscEstimation[iBin] > DiscEstimation[iDisc])
 			  DiscEstimation[iDisc] = DiscEstimation[iBin] ;
@@ -645,7 +645,7 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
    for (iCont=contAttrFrom ; iCont < contAttrTo; iCont++)
    {
 	  estIdx = iCont - contAttrFrom ;
-      NumEstimation[iCont] = -FLT_MAX ;
+      NumEstimation[iCont] = -DBL_MAX ;
       for (iBin=contFrom[estIdx] ; iBin < contTo[estIdx] ; iBin++)
 		  if (DiscEstimation[iBin] > NumEstimation[iCont])
 			  NumEstimation[iCont] = DiscEstimation[iBin] ;

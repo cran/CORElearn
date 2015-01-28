@@ -41,22 +41,6 @@ char dataSeparators[] = " ,\t";
 *
 *********************************************************************/
 
-// constructor
-attribute::attribute()
-{
-    AttributeName = 0 ;
-    continuous = mTRUE ;
-    isOrdinal = mFALSE ;
-    NoValues = 0 ;
-    tablePlace = -1 ;
-    userDefinedDistance =mFALSE ;
-    DifferentDistance = EqualDistance = 0.0 ;
-}
-
-attribute::~attribute()
-{
-   destroy() ;
-}
 
 
 void attribute::destroy()
@@ -99,6 +83,7 @@ dataStore::dataStore()
 	nData = &NumData ;
 
 }
+
 
 // destructor: clears dinamicaly reserved free store
 dataStore::~dataStore()
@@ -345,7 +330,7 @@ int dataStore::readDescription(void)
           if (temp < 0)
           {
              // Assistent format: numeric attribute with predefined boundaries
-             AttrDesc[i].Boundaries.create(-temp, -FLT_MAX) ;
+             AttrDesc[i].Boundaries.create(-temp, -DBL_MAX) ;
              AttrDesc[i].NoValues = -temp+1 ;
           }
           else

@@ -6,8 +6,9 @@
 
 
 
-struct kdNode 
+class kdNode
 {
+public:
      nodeType nodeId ;
      int attrIdx ;
      double contPivot ;
@@ -18,6 +19,8 @@ struct kdNode
      marray<int> DataPoint ;
      kdNode *left, *right; 
         
+     kdNode() { nodeId = leaf ; attrIdx = dataSize = -1 ; contPivot = -DBL_MAX ; left = right = 0 ; }
+
      kdNode& operator= (kdNode &Source) { copy(Source); return *this ; } 
      void copy(kdNode &Source) ;
 };
@@ -54,7 +57,7 @@ class kdTree
    double CAdiff(int AttrIdx, int I1, int I2)  ;
    double CAdiffV(int AttrIdx, double cV1, double cV2) ;
    double DAdiff(int AttrIdx, int I1, int I2) ;
-   double DAdiffV(int AttrIdx, char dV1, char dV2) ;
+   double DAdiffV(int AttrIdx, int dV1, int dV2) ;
    double NAnumDiff(int AttrIdx, double Value) ;
    booleanT BallWithinBounds(kdNode *Node) ;
    booleanT BoundsOverlapBall(kdNode *Node) ;

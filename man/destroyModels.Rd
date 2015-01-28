@@ -44,7 +44,7 @@ model <- CoreModel(Species ~ ., iris, model="rf",
 
 # prediction 
 pred <- predict(model, iris, rfPredictClass=FALSE)
-print(pred)
+# print(pred)
 
 # destruction of model's internal representation
 destroyModels(model)

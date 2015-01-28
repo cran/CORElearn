@@ -187,13 +187,13 @@
             // slow algorithm, worst case is O(N^2), to speed up one needs different data structure, which precomputes all possible mergers
 
             while (tryMerging) {
-                maxGain = -FLT_MAX;
+                maxGain = -DBL_MAX;
                 // find the most similar to merge
                 i = 0;
                 while (i < y.filled()) {
                     // find next nonempty index
                     j = i + 1;
-                    while (j < y.filled() && y[j].value == -FLT_MAX)
+                    while (j < y.filled() && y[j].value == -DBL_MAX)
                         j++;
                     if (j >= y.filled()) {
                         // merge best of this round
@@ -204,7 +204,7 @@
                         y[bestI].key = y[bestJ].key; // store margin
                         y[bestI].value = (y[bestI].value * y[bestI].weight + y[bestJ].value * y[bestJ].weight)/(y[bestI].weight+y[bestJ].weight); // sum of ones
                         y[bestI].weight += y[bestJ].weight; // sum of instances
-                        y[bestJ].value = -FLT_MAX;
+                        y[bestJ].value = -DBL_MAX;
                         break; // go to next iteration of merging
                     }
                     gain = mdlGain(y[i].value, y[i].weight, y[j].value, y[j].weight);
@@ -219,7 +219,7 @@
             // delete empty cells
             int lastFull = 0;
             for (i = 1; i < y.filled(); i++) {
-                if (y[i].value != -FLT_MAX) {
+                if (y[i].value != -DBL_MAX) {
                     // copy to next free position
                     ++lastFull;
                     y[lastFull] = y[i];

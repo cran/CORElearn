@@ -201,7 +201,7 @@ double featureTree::conjunct(estimation &Estimator, construct &bestConjunct, mar
    int bestConjunctIdx = prepareAttrValues(Estimator, Candidates) ;
 
    if (Candidates.filled() == 0) // there are no candidates
-      return -FLT_MAX ;
+      return -DBL_MAX ;
 
    attributeCount bestConstructType = aDISCRETE ;
    marray<construct> ContConstructs(0) ;
@@ -211,7 +211,7 @@ double featureTree::conjunct(estimation &Estimator, construct &bestConjunct, mar
      bestConjunctIdx=Estimator.estimateConstruct(opt->constructionEstimator, 1, 1,
                      noDiscrete, noDiscrete+Candidates.filled(), bestConstructType) ;
      if (bestConjunctIdx == -1)
-       return -FLT_MAX ;
+       return -DBL_MAX ;
    }
 
    double bestConjunctEst = Estimator.DiscEstimation[bestConjunctIdx] ;
@@ -436,7 +436,7 @@ int featureTree::prepareAttrValues(estimation &Estimator, marray<construct> &Can
        // if there is not enough space available, prepare it
        if (Bounds.filled()+1 + Candidates.filled() >= Candidates.len())
           Candidates.enlarge(Bounds.filled()+1 + Candidates.filled() ) ;
-       lowerBound = upperBound = -FLT_MAX ;
+       lowerBound = upperBound = -DBL_MAX ;
        boundIdx = 0 ;
        // add all the discretized intervals
        while ( boundIdx < Bounds.filled() )
@@ -449,7 +449,7 @@ int featureTree::prepareAttrValues(estimation &Estimator, marray<construct> &Can
           boundIdx ++ ;
        }
        tempAttrValue.root->lowerBoundary = upperBound ;
-       tempAttrValue.root->upperBoundary = FLT_MAX ;
+       tempAttrValue.root->upperBoundary = DBL_MAX ;
        Candidates.addEnd(tempAttrValue) ;
      }
 
@@ -514,7 +514,7 @@ double featureTree::summand(estimation &Estimator, construct &bestConstruct, mar
 
    int bestConstructIdx = prepareContAttrs(Estimator, cSUM, Candidates, bestConstruct) ;
    if (Candidates.filled() == 0) // there are no candidates
-      return -FLT_MAX ;
+      return -DBL_MAX ;
 
    double bestConstructEst = Estimator.NumEstimation[bestConstructIdx] ;
 
@@ -535,7 +535,7 @@ double featureTree::summand(estimation &Estimator, construct &bestConstruct, mar
      bestConstructIdx=Estimator.estimateConstruct(opt->constructionEstimator, noNumeric,
                          noNumeric +Candidates.filled(),0, 0, bestConstructType) ;
      if (bestConstructIdx == -1)
-       return -FLT_MAX ;
+       return -DBL_MAX ;
 
      bestConstructEst = Estimator.NumEstimation[bestConstructIdx] ;
      bestConstruct = Candidates[bestConstructIdx - noNumeric] ;
@@ -608,7 +608,7 @@ double featureTree::multiplicator(estimation &Estimator, construct &bestConstruc
 
    int bestConstructIdx = prepareContAttrs(Estimator, cPRODUCT, Candidates, bestConstruct) ;
    if (Candidates.filled() == 0 || bestConstructIdx == -1) // there are no candidates
-      return -FLT_MAX ;
+      return -DBL_MAX ;
 
    double bestConstructEst = Estimator.NumEstimation[bestConstructIdx] ;
 
@@ -629,7 +629,7 @@ double featureTree::multiplicator(estimation &Estimator, construct &bestConstruc
      bestConstructIdx=Estimator.estimateConstruct(opt->constructionEstimator, noNumeric,
                          noNumeric +Candidates.filled(),0, 0, bestConstructType) ;
      if (bestConstructIdx == -1)
-       return -FLT_MAX ;
+       return -DBL_MAX ;
 
      bestConstructEst = Estimator.NumEstimation[bestConstructIdx] ;
      bestConstruct = Candidates[bestConstructIdx - noNumeric] ;
@@ -705,7 +705,7 @@ int featureTree::prepareContAttrs(estimation &Estimator, constructComposition co
    tempAttrValue.root->nodeType = cnCONTattribute ;
 
    int bestIdx = -1, bestCandidateIdx = -1 ;
-   double bestEst = -FLT_MAX ;
+   double bestEst = -DBL_MAX ;
    // select from numeric attributes
    for (int i=0 ; i < noNumeric ; i++)
      if (Estimator.NumEstimation[i] <  opt->minReliefEstimate &&

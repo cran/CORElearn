@@ -224,7 +224,7 @@ binnode* featureTree::buildForestTree(int TrainSize, marray<int> &DTrain, int at
    Estimator->eopt.selectionEstimator = attrEstimator ;
 
    // select/build splitting attribute/construct
-   if (rfBuildConstruct(*Estimator, Node, attrProb, rndIdx) == -FLT_MAX ) {
+   if (rfBuildConstruct(*Estimator, Node, attrProb, rndIdx) == -DBL_MAX ) {
        rfRevertToLeaf(Node);
        delete Estimator ;
        return Node;
@@ -275,7 +275,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
    marray<double> pDTrain(TrainSize, 1.0) ;
    estimation Estimator(this, DTrain, pDTrain, TrainSize) ;
    Estimator.eopt.selectionEstimator = attrEstimator ;
-   if ((nodeEl.key = rfBuildConstruct(Estimator, rtNode, attrProb, rndIdx)) == -FLT_MAX)  {
+   if ((nodeEl.key = rfBuildConstruct(Estimator, rtNode, attrProb, rndIdx)) == -DBL_MAX)  {
 	 rfRevertToLeaf(rtNode) ;
      return rtNode ;
    }
@@ -308,7 +308,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 		 }
 		 else {
 			 Estimator.initialize(LeftTrain,pDTrain,LeftSize) ;
-			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->left, attrProb, rndIdx)) == -FLT_MAX) {
+			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->left, attrProb, rndIdx)) == -DBL_MAX) {
 	              rfRevertToLeaf(Node->left) ;
 				  --noTerminal ;
 			 }
@@ -324,7 +324,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 		 }
 		 else {
 			 Estimator.initialize(RightTrain,pDTrain,RightSize) ;
-			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->right, attrProb, rndIdx)) == -FLT_MAX) {
+			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->right, attrProb, rndIdx)) == -DBL_MAX) {
 	              rfRevertToLeaf(Node->right) ;
 				  --noTerminal ;
 			 }
@@ -444,7 +444,7 @@ double featureTree::rfBuildConstruct(estimation &Estimator, binnode* Node, const
    attributeCount bestType ;
    int bestIdx = Estimator.estimateSelected(selAttr, rfNoSelAttr, bestType) ;
    if (bestIdx == -1)
-     return -FLT_MAX ;
+     return -DBL_MAX ;
 
    makeSingleAttrNode(Node, Estimator, bestIdx, bestType) ;
    if (bestType == aDISCRETE)

@@ -23,7 +23,7 @@ class Calibrate {
 public:
 	marray<double> interval, calProb, w;
 
-	Calibrate() {}	;
+	Calibrate() {}
 	double cal(double p);
 	void calFromTo(int From, int To, marray<double> &p);
 	void isoRegCal(marray<sort3Rec> &y);

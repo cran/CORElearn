@@ -48,7 +48,7 @@ dat <- ordDataGen(200)
 
 # evaluate ordered features with ordEval
 est <- ordEval(class ~ ., dat, ordEvalNoRandomNormalizers=100)
-print(est)  
+# print(est)  
 plot(est)
 }
 

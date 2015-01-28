@@ -2,7 +2,9 @@ getRpartModel <- function(model, dataset) {
     m <- getRpart(model);
     ee <-list();
     class(ee)<-"rpart";
-    ee$method<-"class";
+    if (model$model == "regTree") 
+       ee$method <- "anova" 
+    else ee$method<-"class";
     ff<-m[[1]];
     ff<-matrix(as.numeric(ff),m[[4]],m[[5]],TRUE);
     dim(m[[3]])<-c(m[[4]],3);
@@ -26,8 +28,16 @@ getRpartModel <- function(model, dataset) {
         stat1<-stat/dfr[,2];
         dim(stat)<-c(1,m[[4]]*classLev);
         dim(stat1)<-c(1,m[[4]]*classLev);
-        dfryval2<-c(yvalue,stat,stat1);
+		y2 <- c()
+		for (i in 1:length(yvalue)) {
+			if (yvalue[i] %in% model$class.lev)
+				y2[i] <- as.integer(factor(yvalue[i],levels=model$class.lev))
+		    else y2[i] <- as.integer(yvalue[i])
+		}
+		dfryval2<-c(y2,stat,stat1);
+		# dfryval2<-c(yvalue,stat,stat1);
         dim(dfryval2)<-c(m[[4]],2*classLev+1);
+		method <- "class"
     }
     else{
         av<-mat.or.vec(m[[4]],1);

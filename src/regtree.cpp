@@ -23,29 +23,6 @@
 
 //************************************************************
 //
-//                    regressionTree
-//
-//                    constructRegor
-//
-//************************************************************
-regressionTree::regressionTree()
-{
-   rootStdDev = FLT_MAX ;
-}
-
-//************************************************************
-//
-//                      -regressionTree
-//
-//                        destructor
-//
-//************************************************************
-regressionTree::~regressionTree()
-{
-}
-
-//************************************************************
-//
 //                   constructRegTree
 //
 //       the main procedure for tree construction,
@@ -607,7 +584,7 @@ booleanT regressionTree::buildConstruct(marray<int> &DTrain, marray<double> &pDT
       
       // best
       constructReg bestConjunct, bestSum, bestProduct ;
-      double bestConjunctEst = -FLT_MAX, bestSumEst=-FLT_MAX, bestProductEst=-FLT_MAX ;
+      double bestConjunctEst = -DBL_MAX, bestSumEst=-DBL_MAX, bestProductEst=-DBL_MAX ;
 
       if (opt->constructionMode & 0x08)
         bestProductEst = multiplicator(Estimator, bestProduct, stepMplyCache, stepMplyCacheEst) ; 
@@ -628,48 +605,48 @@ booleanT regressionTree::buildConstruct(marray<int> &DTrain, marray<double> &pDT
       if (conjIdx < stepConjCache.filled())
         Est1 = stepConjCacheEst[conjIdx] ;
       else
-        Est1 = -FLT_MAX ;
+        Est1 = -DBL_MAX ;
       if (sumIdx < stepSumCache.filled())
          Est2 = stepSumCacheEst[sumIdx] ;
       else
-        Est2 = -FLT_MAX ;
+        Est2 = -DBL_MAX ;
       if (mplyIdx < stepMplyCache.filled())
         Est3 = stepMplyCacheEst[mplyIdx] ;
       else
-        Est3 = -FLT_MAX ;
+        Est3 = -DBL_MAX ;
 
       // fill the cache
       for (i=0 ; i < opt->noCachedInNode ; i++)
       {
          
-         if (Est1 >= Est2 && Est1 >= Est3 && Est1 != -FLT_MAX) 
+         if (Est1 >= Est2 && Est1 >= Est3 && Est1 != -DBL_MAX)
          {
            CachedConstructs.addEnd(stepConjCache[conjIdx]) ;
            conjIdx ++ ;
            if (conjIdx < stepConjCache.filled())
              Est1 = stepConjCacheEst[conjIdx] ;
            else
-             Est1 = -FLT_MAX ;
+             Est1 = -DBL_MAX ;
          }
          else 
-            if (Est2 >= Est1 && Est2 >= Est3 && Est2 != -FLT_MAX) 
+            if (Est2 >= Est1 && Est2 >= Est3 && Est2 != -DBL_MAX)
             {
               CachedConstructs.addEnd(stepSumCache[sumIdx]) ;
               sumIdx ++ ;
              if (sumIdx < stepSumCache.filled())
                Est2 = stepSumCacheEst[sumIdx] ;
              else
-               Est2 = -FLT_MAX ;
+               Est2 = -DBL_MAX ;
             }
             else
-               if (Est3 >= Est1 && Est3 >= Est2 && Est3 != -FLT_MAX) 
+               if (Est3 >= Est1 && Est3 >= Est2 && Est3 != -DBL_MAX)
             {
               CachedConstructs.addEnd(stepMplyCache[mplyIdx]) ;
               mplyIdx ++ ;
               if (mplyIdx < stepMplyCache.filled())
                 Est3 = stepMplyCacheEst[mplyIdx] ;
               else
-                Est3 = -FLT_MAX ;
+                Est3 = -DBL_MAX ;
             }
             else
                break ; // none is valid
@@ -678,7 +655,7 @@ booleanT regressionTree::buildConstruct(marray<int> &DTrain, marray<double> &pDT
       // put the best constructReg into the node
       if ( (opt->constructionEstimatorReg == opt->selectionEstimatorReg && bestEstimate >= bestConjunctEst 
             && bestEstimate >= bestSumEst && bestEstimate >= bestProductEst) || 
-            (bestConjunctEst == -FLT_MAX && bestSumEst == -FLT_MAX && bestProductEst == -FLT_MAX) )
+            (bestConjunctEst == -DBL_MAX && bestSumEst == -DBL_MAX && bestProductEst == -DBL_MAX) )
       {
         // revert to single attribute
         makeSingleAttrNode(Node, Estimator, bestAttrIdx, bestAttrType) ;

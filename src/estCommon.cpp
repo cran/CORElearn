@@ -143,7 +143,7 @@ void estimation::initialize(marray<int> &inDTrain, marray<double> &inpDTrain,
    //-------------------------------------------------------------
    DiscEstimation.create(noDiscrete, -2.0) ;
    NumEstimation.create(noNumeric, -2.0) ;
-   splitPoint.create(noNumeric, FLT_MAX) ;
+   splitPoint.create(noNumeric, DBL_MAX) ;
    //-------------------------------------------------------------
    // create distance matrix
    //-------------------------------------------------------------
@@ -178,7 +178,7 @@ void estimation::initialize(marray<int> &inDTrain, marray<double> &inpDTrain,
      if (DifferentDistance[i] != EqualDistance[i])
          CAslope[i] = double(1.0)/(DifferentDistance[i] - EqualDistance[i]) ;
      else
-        CAslope[i] = FLT_MAX ;
+        CAslope[i] = DBL_MAX ;
    }
 #endif
 
@@ -461,7 +461,7 @@ void estimation::prepareContAttr(int attrIdx)
    if (DifferentDistance[attrIdx] > EqualDistance[attrIdx])
       CAslope[attrIdx] = double(1.0)/(DifferentDistance[attrIdx] - EqualDistance[attrIdx]) ;
     else
-      CAslope[attrIdx] = FLT_MAX ;
+      CAslope[attrIdx] = DBL_MAX ;
 #endif
 
 }
@@ -538,7 +538,7 @@ void estimation::computeDistances(int Example)
    }
 }
 
-void estimation::computeDistances(int Example, mmatrix<double> &DiscDistance, mmatrix<double> &NumDistance)
+void estimation::computeDistances(int Example, mmatrix<double> &DiscDist, mmatrix<double> &NumDist)
 {
    int i ;
    for (int j=0 ; j < TrainSize ; j++)
@@ -546,15 +546,15 @@ void estimation::computeDistances(int Example, mmatrix<double> &DiscDistance, mm
       if (Example == j)
       {
          for (i=0; i<numUpper; i++)
-           NumDistance.Set(j, i, 0.0) ;
+           NumDist.Set(j, i, 0.0) ;
          for (i=0 ; i < discUpper ; i++)
-           DiscDistance.Set(j, i, 0.0) ;
+           DiscDist.Set(j, i, 0.0) ;
       }
       else {
         for (i=0; i<numUpper; i++)
-          NumDistance.Set(j, i, CAdiff(i,Example,j)) ;
+          NumDist.Set(j, i, CAdiff(i,Example,j)) ;
         for (i=0 ; i < discUpper ; i++)
-          DiscDistance.Set(j, i, DAdiff(i,Example,j)) ;
+          DiscDist.Set(j, i, DAdiff(i,Example,j)) ;
       }
    }
 }
@@ -579,16 +579,16 @@ double estimation::CaseDistance(int I1)
    return  Distance ;
 }
 
-double estimation::CaseDistance(int I1, mmatrix<double> &DiscDistance, mmatrix<double> &NumDistance)
+double estimation::CaseDistance(int I1, mmatrix<double> &DiscDist, mmatrix<double> &NumDist)
 {
    double Distance = 0.0;
 
    int i ;
    for (i=1 ; i < noDiscrete ; i++)
-      Distance += DiscDistance(I1,i) ;
+      Distance += DiscDist(I1,i) ;
 
    for (i=0; i<noNumeric; i++)
-      Distance += NumDistance(I1,i) ;
+      Distance += NumDist(I1,i) ;
 
    return  Distance ;
 }
@@ -819,7 +819,7 @@ void estimation::prepareDistanceFactors(int distanceType, marray<marray<sortRec>
           break ;
         case estReliefFdistance:
           {
-            double minNonZero = FLT_MAX ; // minimal non zero distance
+            double minNonZero = DBL_MAX ; // minimal non zero distance
             for (cl=1; cl <= noClasses ; cl++)
                for (i= diffSorted[cl].filled() -1 ; i >= 0 ; i--)
                   if (diffSorted[cl][i].key > 0.0)
@@ -828,7 +828,7 @@ void estimation::prepareDistanceFactors(int distanceType, marray<marray<sortRec>
                         minNonZero = diffSorted[cl][i].key ;
                      break;
                   }
-            if (minNonZero == FLT_MAX)
+            if (minNonZero == DBL_MAX)
                minNonZero = 1.0 ;
 
             for (cl=1; cl <= noClasses ; cl++)
@@ -851,7 +851,7 @@ void estimation::prepareDistanceFactors(int distanceType, marray<marray<sortRec>
           break ;
         case estReliefFsqrDistance:
           {
-            double minNonZero = FLT_MAX ; // minimal non zero distance
+            double minNonZero = DBL_MAX ; // minimal non zero distance
             for (cl=1; cl <= noClasses ; cl++)
                for (i= diffSorted[cl].filled() -1 ; i >= 0 ; i--)
                   if (diffSorted[cl][i].key > 0.0)
@@ -860,7 +860,7 @@ void estimation::prepareDistanceFactors(int distanceType, marray<marray<sortRec>
                         minNonZero = diffSorted[cl][i].key ;
                      break;
                   }
-            if (minNonZero == FLT_MAX)
+            if (minNonZero == DBL_MAX)
                minNonZero = 1.0 ;
 
             for (cl=1; cl <= noClasses ; cl++)
@@ -1000,7 +1000,7 @@ void estimation::prepareDistanceFactors(int distanceType)
           break ;
         case estReliefFdistance:
           {
-            double minNonZero = FLT_MAX ; // minimal non zero distance
+            double minNonZero = DBL_MAX ; // minimal non zero distance
             for (cl=1; cl <= noClasses ; cl++)
                for (i= diffSorted[cl].filled() -1 ; i >= 0 ; i--)
                   if (diffSorted[cl][i].key > 0.0)
@@ -1009,7 +1009,7 @@ void estimation::prepareDistanceFactors(int distanceType)
                         minNonZero = diffSorted[cl][i].key ;
                      break;
                   }
-            if (minNonZero == FLT_MAX)
+            if (minNonZero == DBL_MAX)
                minNonZero = 1.0 ;
 
             for (cl=1; cl <= noClasses ; cl++)
@@ -1032,7 +1032,7 @@ void estimation::prepareDistanceFactors(int distanceType)
           break ;
         case estReliefFsqrDistance:
           {
-            double minNonZero = FLT_MAX ; // minimal non zero distance
+            double minNonZero = DBL_MAX ; // minimal non zero distance
             for (cl=1; cl <= noClasses ; cl++)
                for (i= diffSorted[cl].filled() -1 ; i >= 0 ; i--)
                   if (diffSorted[cl][i].key > 0.0)
@@ -1041,7 +1041,7 @@ void estimation::prepareDistanceFactors(int distanceType)
                         minNonZero = diffSorted[cl][i].key ;
                      break;
                   }
-            if (minNonZero == FLT_MAX)
+            if (minNonZero == DBL_MAX)
                minNonZero = 1.0 ;
 
             for (cl=1; cl <= noClasses ; cl++)

@@ -5,7 +5,7 @@ export(attrEval, allTests, infoCore, classDataGen, CoreModel, destroyModels, get
 		regDataGen, rfAttrEval, rfOOB, saveRF, testCoreClass, testCoreAttrEval, testCoreReg,
 		testCoreOrdEval, testCoreNA, testCoreRPORT, testCoreRand, testClassPseudoRandom,
 		testTime, versionCore, calibrate, preparePlot, rfProximity, rfAttrEvalClustering,
-		rfClustering, rfOutliers, classPrototypes, getRpartModel
+		rfClustering, rfOutliers, classPrototypes, getRpartModel, display
 )
 
 import(rpart)
@@ -15,4 +15,5 @@ import(stats)
 S3method(plot, ordEval)
 S3method(predict, CoreModel)
 S3method(plot, CoreModel)
+S3method(display, CoreModel)
 

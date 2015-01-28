@@ -63,7 +63,7 @@ int estimationReg::estimate(int selectedEstimator, int contAttrFrom, int contAtt
 	   }
    }
    // find best attribute
-   double bestContEst = - FLT_MAX, bestDiscEst = - FLT_MAX ;
+   double bestContEst = - DBL_MAX, bestDiscEst = - DBL_MAX ;
    int i, bestContIdx = -1, bestDiscIdx = -1 ;
    for (i=contAttrFrom ; i < contAttrTo; i++)
    {
@@ -180,7 +180,7 @@ int estimationReg::estimateConstruct(int selectedEstimator,
 
    }
    // find best attribute
-   double bestContEst = - FLT_MAX, bestDiscEst = - FLT_MAX ;
+   double bestContEst = - DBL_MAX, bestDiscEst = - DBL_MAX ;
    int i, bestContIdx = -1, bestDiscIdx = -1 ;
    for (i=contAttrFrom ; i < contAttrTo; i++)
    {
@@ -313,7 +313,7 @@ void estimationReg::MSE(int contAttrFrom, int contAttrTo,
       totalWeight = RightWeight ;
       sortedMean.setFilled(OKvalues) ;
       sortedMean.qsortAsc() ;
-      bestEstimate = FLT_MAX ;
+      bestEstimate = DBL_MAX ;
       LeftWeight = LeftSquares = LeftValues = 0.0 ;
       int upper = OKvalues-1 ;
       for (j=0 ; j < upper ; j++)
@@ -366,7 +366,7 @@ void estimationReg::MSE(int contAttrFrom, int contAttrTo,
       totalWeight = RightWeight ;
       sortedAttr.setFilled(OKvalues) ;
       sortedAttr.qsortAsc() ;
-      bestEstimate = FLT_MAX ;
+      bestEstimate = DBL_MAX ;
       LeftWeight = LeftSquares = LeftValues = 0.0 ;
       j=0 ;
       while (j < OKvalues)
@@ -422,7 +422,7 @@ void estimationReg::Combination(int contAttrFrom, int contAttrTo,
    int estDiscrete = discAttrTo - discAttrFrom ;
 
    marray<double> contRelief(estContinuous), discRelief(estDiscrete) ;
-   double minReliefEst=FLT_MAX, maxReliefEst=-FLT_MAX ;
+   double minReliefEst=DBL_MAX, maxReliefEst=-DBL_MAX ;
    int i ;
    for (i=contAttrFrom ; i < contAttrTo; i++)
    {
@@ -446,7 +446,7 @@ void estimationReg::Combination(int contAttrFrom, int contAttrTo,
    MSE(contAttrFrom, contAttrTo, discAttrFrom, discAttrTo) ;
 
    // find ranges of MSE estimationReg
-   double minMSEest=FLT_MAX, maxMSEest=-FLT_MAX ;
+   double minMSEest=DBL_MAX, maxMSEest=-DBL_MAX ;
    for (i=contAttrFrom ; i < contAttrTo; i++)
    {
       if (NumEstimation[i] > maxMSEest)
@@ -562,7 +562,7 @@ void estimationReg::prepareContAttr(int attrIdx)
    if (DifferentDistance[attrIdx] > EqualDistance[attrIdx])
       CAslope[attrIdx] = double(1.0)/(DifferentDistance[attrIdx] - EqualDistance[attrIdx]) ;
     else
-      CAslope[attrIdx] = FLT_MAX ;
+      CAslope[attrIdx] = DBL_MAX ;
 #endif
 
 }
@@ -651,7 +651,7 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
          totalWeight += valueWeight[j] ;
 
       binPartition Generator(discNoValues[i]) ;
-      bestEstimate = FLT_MAX ;
+      bestEstimate = DBL_MAX ;
 
       greedyPositions = discNoValues[i] * (discNoValues[i]+1)/2 ;
       if (discNoValues[i] < maxVal4ExhDisc)
@@ -715,10 +715,10 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
       else {
          // greedy search through possible partitions
 
-         marray<booleanT> leftValues(discNoValues[i]+1, mFALSE) ;
+         leftValues.create(discNoValues[i]+1, mFALSE) ;
          for (int filled=1 ; filled < discNoValues[i] ; filled++)
          {
-            minRound = FLT_MAX ;
+            minRound = DBL_MAX ;
             idxRound = -1 ;
             for (val=1 ; val <= discNoValues[i] ; val++)
             {
@@ -862,7 +862,7 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
         for (j=0 ; j < sampleSize ; j++)
           splits[j] = uniqueIdx[j] ;
 
-      bestEstimate = FLT_MAX ;
+      bestEstimate = DBL_MAX ;
       // prepare for spliting
       for (j=0; j < OKvalues ; j++)
       {

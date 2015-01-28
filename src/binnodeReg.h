@@ -1,6 +1,8 @@
 #if !defined(BINNODEREG_H)
 #define BINNODEREG_H
 
+#include <float.h>
+
 #include "exprReg.h"
 #include "constrctReg.h"
 #include "contain.h"
@@ -21,7 +23,8 @@ public:
     marray<double> NAnumValue ;
     marray<int> NAdiscValue ;
     binnodeReg *left,*right;
-    binnodeReg(void) {  left = right = 0 ; }
+    binnodeReg(void) {  left = right = 0 ; Identification = leaf ;
+       weight = weightLeft = averageClassValue = minClassValue = maxClassValue = stdDevClass = MSE = MAE = -DBL_MAX ; }
     binnodeReg& operator= (binnodeReg &Source) { copy(Source); return *this ; } 
     void copy(binnodeReg &Source) ;
 };

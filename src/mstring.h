@@ -22,6 +22,7 @@ public:
     mstring& operator=(const char *Source) ;
     char *getValue() {	return value ;  }
     const char* getConstValue() const {	return value ;  }
+    char* unWrap() ;
     bool isDefined() { 	return (value != 0);  }
     int compareTo(const mstring &Source) const ;
     void trimWhite();

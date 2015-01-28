@@ -24,7 +24,7 @@ modelEval(model=NULL, correctClass, predictedClass, predictedProb=NULL,
   }
 \details{
    The function uses the \code{model} structure as returned by \code{\link{CoreModel}},
-   \code{predictedClass} and (optionally) \code{predictedProb} returned by 
+   \code{predictedClass} and \code{predictedProb} returned by 
    \code{\link{predict.CoreModel}}. Predicted values are compared with true values 
    and some statistics are computed  measuring the quality of predictions.
    In classification only one of the \code{predictedClass} and \code{predictedProb} can be NULL
@@ -40,9 +40,12 @@ modelEval(model=NULL, correctClass, predictedClass, predictedProb=NULL,
   Optional cost matrix can provide nonuniform costs for classification problems. For regression
   problem this parameter is ignored. The costs can be different from the ones used for building the model 
    in \code{\link{CoreModel}} and prediction with the model in \code{\link{predict.CoreModel}}.
-   If no costs are supplied uniform costs are assumed where necessary. 
+   If no costs are supplied, uniform costs are assumed. 
+   The format of the matrix is \code{costMatrix(true_class, predicted_class)}. 
+   By default a uniform costs are assumed, i.e.,  \code{costMatrix(i, i) = 0}, and \code{costMatrix(i, j) = 1}, 
+   for \code{i} not equal to \code{j}. See the example below.
    
-   If a non CORElearn model is evaluated, one should set \code{model=NULL}, and  a vector of prior of class 
+   If a non-CORElearn model is evaluated, one should set \code{model=NULL}, and  a vector of prior of class 
    probabilities \code{priorClProb} shell be provided in case of classification,
    and in case of regression \code{avgTrainPrediction} shell be the mean of prediction values 
    (estimated on a e.g., training set).
@@ -109,6 +112,13 @@ pred <- predict(model, iris, rfPredictClass=FALSE)
 # Model evaluation
 mEval <- modelEval(model, iris[["Species"]], pred$class, pred$prob)
 print(mEval)
+
+# use nonuniform cost matrix
+noClasses <- length(levels(iris[["Species"]]))
+costMatrix <- 1 - diag(noClasses)
+costMatrix[3,1] <- costMatrix[3,2] <- 5 # assume class 3 is more valuable  
+mEvalCost <- modelEval(model, iris[["Species"]], pred$class, pred$prob, costMatrix=costMatrix)
+print(mEvalCost)
 
 destroyModels(model) # clean up
 

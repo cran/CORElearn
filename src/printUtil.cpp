@@ -60,7 +60,7 @@ void printEstimations(FILE *to, int splitIdx, marray<marray<double> > &Result, d
      {
        fprintf(to, "%02d %21s", splitIdx, estNm[estIdx].brief) ;
        for (i=1 ; i <= dt->noAttr; i++)
-          if (Result[estIdx][i] == -FLT_MAX)
+          if (Result[estIdx][i] == -DBL_MAX)
             fprintf(to, "%10s ", "NA") ;
           else
             fprintf(to, "%10.5f ", Result[estIdx][i]) ;
@@ -111,7 +111,7 @@ void printEstimationsInColumns(FILE *to, int splitIdx, marray<marray<double> > &
         fprintf(to, "%*s ", maxAttrLen, dt->AttrDesc[i].AttributeName) ;
         for (estIdx=1 ; estIdx < Result.len() ; estIdx++)
           if ((*estOn)[estIdx]){
-			   if (Result[estIdx][i] == -FLT_MAX)
+			   if (Result[estIdx][i] == -DBL_MAX)
                  fprintf(to, "%*s ", Mmax((int)strlen(estNm[estIdx].brief),8), "NA") ;
 				else
 				  fprintf(to, "%*.6f ", Mmax((int)strlen(estNm[estIdx].brief),8), Result[estIdx][i]) ;
