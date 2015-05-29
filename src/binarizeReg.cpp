@@ -15,8 +15,8 @@
 //                       ----------------
 //
 //    creates binary split of attribute values according to
-//   the selected estimator; search is either exhaustive or greedy depending
-//   on the number of computations for each
+//   the selected estimator; search is exhaustive, greedy or random depending
+//   on the number of values of attribute
 //
 // ************************************************************
 void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeConstruct, double &bestEstimation, int firstFreeDiscSlot)
@@ -53,25 +53,58 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
    }
   
 
-   binPartition Generator(NoValues) ;
    char attrValue ;
    int bestIdx ;
    bestEstimation = -DBL_MAX ;
-
-   int noBasicAttr = (noDiscrete+noNumeric-1) ;
-   int greedyPositions = NoValues * (NoValues+1)/2 ;
-   double exhaustivePositions ;
-   if (NoValues < maxVal4ExhDisc) // exhaustive positions would reach more than 2^32 which is way too much
-     exhaustivePositions = Generator.noPositions() ;
-    else  exhaustivePositions = -1 ;
-   if (selectedEstimator == estRReliefFbestK || selectedEstimator == estRReliefFexpRank ||
-       selectedEstimator == estRReliefFkEqual || selectedEstimator == estRReliefFwithMSE || 
-	   //selectedEstimator == estRReliefFconstr || 
-	   selectedEstimator == estRReliefFdistance || selectedEstimator == estRReliefFsqrDistance) // ReliefF estimators
-      greedyPositions += (NoValues-1)*noBasicAttr; // we also have to estimate basic attributes in each round (distances)
-   if ( (NoValues < maxVal4ExhDisc) && (exhaustivePositions * 0.8 <= greedyPositions || exhaustivePositions < eopt.discretizationSample))
-   {
+   if (NoValues > eopt.maxValues4Greedy) {
+	    // random binarization
+		marray<int>  valueCount(NoValues, 0) ;
+		for (i=0 ; i < TrainSize ; i++)	{
+			attrValue = nodeConstruct.discreteValue(DiscValues, NumValues, i) ;
+			valueCount[attrValue] ++ ;
+		}
+		int validValues = TrainSize - valueCount[NAdisc] ;
+		if ( validValues <= eopt.minNodeWeightEst/2.0) { // split will be invalid anyway
+			nodeConstruct.leftValues.init(mFALSE) ;
+		}
+		double targetLeftVals = randBetween(eopt.minNodeWeightEst, validValues/2.0) ;
+		int leftVal = 0 ;
+		// prepare the random order of values
+		marray<int> order(NoValues+1) ;
+		for (i = 0 ; i <= NoValues; ++i)
+			order[i] = i ;
+		for (i = 1 ; i < NoValues; ++i) { // shuffle all expect 0th
+			swap(order[i], order[randBetween(i, NoValues)]) ;
+		}
+		for (int idx=0 ; idx <= NoValues ; ++idx) 	{
+			leftVal += valueCount[order[idx]] ;
+            if (leftVal == validValues)  // do not allow all relevant values on the left
+            	break ;
+			nodeConstruct.leftValues[ order[idx] ] = mTRUE ;
+			if (leftVal >= targetLeftVals)
+				break ;
+		}
+		// now estimate the quality of the split
+	    adjustTables(0, firstFreeDiscSlot + 1) ;
+	    for (i=0 ; i < TrainSize ; i++)
+	       {
+	          attrValue = nodeConstruct.discreteValue(DiscValues,NumValues,i) ;
+	          if (attrValue == NAdisc)
+	            DiscValues.Set(i, firstFreeDiscSlot, NAdisc) ;
+	          else
+	            if (nodeConstruct.leftValues[attrValue])
+	              DiscValues.Set(i, firstFreeDiscSlot, 1) ;
+	            else
+	              DiscValues.Set(i, firstFreeDiscSlot, 2) ;
+	       }
+	    prepareDiscAttr(firstFreeDiscSlot, 2) ;
+		i = estimate(eopt.selectionEstimatorReg, 1, 1, firstFreeDiscSlot, firstFreeDiscSlot+1, bestType) ;
+	    bestEstimation =  DiscEstimation[firstFreeDiscSlot] ;
+	}
+	else if ( NoValues <= eopt.maxValues4Exhaustive) { // &&(exhaustivePositions * 0.8 <= greedyPositions ||exhaustivePositions < eopt.discretizationSample))
      // exhaustive search
+     binPartition Generator(NoValues) ;
+     double exhaustivePositions = Generator.noPositions() ;
      adjustTables(0,  int(firstFreeDiscSlot + exhaustivePositions)) ;
      marray<marray<booleanT> >  leftValues( (int)exhaustivePositions) ;
      int noIncrements = 0 ;
@@ -101,9 +134,7 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
      nodeConstruct.leftValues = leftValues[bestIdx - firstFreeDiscSlot] ; 
      bestEstimation = DiscEstimation[bestIdx] ;
    }
-   else
-   {
-      // greedy search
+   else   {  // greedy search
      adjustTables(0, firstFreeDiscSlot + NoValues) ;
      marray<marray<booleanT> >  leftValues(NoValues) ;
      marray<booleanT> currentBest(NoValues+1, mFALSE) ;
@@ -156,7 +187,7 @@ void estimationReg::binarizeGeneral(int selectedEstimator, constructReg &nodeCon
 //
 //    creates binary split of attribute values according to
 //   optimal procedure described in Breiman et all, 1984,
-//         (for continuous class)
+//         (for numeric prediction value)
 //
 //************************************************************
 void estimationReg::binarizeBreiman(constructReg &nodeConstruct, double &bestEstimation)
@@ -245,7 +276,7 @@ void estimationReg::binarizeBreiman(constructReg &nodeConstruct, double &bestEst
 //                        bestSplitGeneral
 //                        -----------------
 //
-//            finds best split for continuous attribute with selected estimator
+//            finds best split for numeric attribute with selected estimator
 //
 //************************************************************
 double estimationReg::bestSplitGeneral(int selectedEstimator, constructReg &nodeConstruct, double &bestEstimation, int firstFreeDiscSlot)
@@ -290,7 +321,6 @@ double estimationReg::bestSplitGeneral(int selectedEstimator, constructReg &node
       return - DBL_MAX ; // smaller than any value, so all examples will go into one branch
    }
 
-
    int sampleSize ; 
    if (eopt.discretizationSample==0)
      sampleSize = OKvalues -1;
@@ -298,28 +328,6 @@ double estimationReg::bestSplitGeneral(int selectedEstimator, constructReg &node
      sampleSize = Mmin(eopt.discretizationSample, OKvalues-1) ;
    marray<int> splits(sampleSize) ;
    randomizedSample(splits, sampleSize, OKvalues-1) ;
-
-//   if (OKvalues-1 > sampleSize)  
-//   {
-//       // do sampling
-//       marray<int> sortedCopy(OKvalues) ;
-//       for (i=0 ; i < OKvalues ; i++)
-//         sortedCopy[i] = i ;
-//        
-//       int upper = OKvalues - 1 ;
-//       int selected ;
-//       for (i=0 ; i < sampleSize ; i++)
-//       {
-//          selected = randBetween(0,upper) ;
-//          splits[i] = sortedCopy[selected] ;
-//          upper -- ;
-//          sortedCopy[selected] = sortedCopy[upper] ;
-//       }
-//   }
-//   else
-//     for (i=0 ; i < sampleSize ; i++)
-//        splits[i] = i ;
-
 
    attributeCount bestType ;
 

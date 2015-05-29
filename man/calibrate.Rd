@@ -8,28 +8,34 @@
   match the actual probabilities of a binary class 1 provided by \code{correctClass}. 
   }
 \usage{
+
 calibrate(correctClass, predictedProb, class1=1, 
-          method = c("isoReg","binIsoReg","binning","chiMerge"), 
-          weight=NULL,noBins=10)
+          method = c("isoReg","binIsoReg","binning","mdlMerge"), 
+          weight=NULL, noBins=10, assumeProbabilities=FALSE)
 }
 
 \arguments{
   \item{correctClass}{ A vector of correct class labels for a binary classification problem. }
-  \item{predictedProb}{ A vector of predicted class 1 probability scores of the same length as \code{correctClass}. }
+  \item{predictedProb}{ A vector of predicted class 1 (probability) scores of the same length as \code{correctClass}. }
   \item{class1}{A class value (factor) or an index of the class value to be taken as a class to be calibrated.}
-  \item{method}{ One of \code{isoReg}, \code{binIsoReg}, \code{binning}, or \code{chiMerge}. See details below.}
-  \item{weight}{ If specified, should be of the same length as \code{correctClass} and gives weights for all the instances, 
+  \item{method}{ One of \code{isoReg}, \code{binIsoReg}, \code{binning}, or \code{mdlMerge}. See details below.}
+  \item{weight}{ If specified, should be of the same length as \code{correctClass} and gives the weights for all the instances, 
                  otherwise a default weight of 1 for each instance is assumed. }
-  \item{noBins}{ If \code{model="binning"} or \code{model="binIsoReg"} specifies desired number of bins i.e., calibration bands. }
+  \item{noBins}{The value of parameter depends on the parameter \code{method} and specifies desired or initial number of bins. See details below.}
+  \item{assumeProbabilities}{ If \code{assumeProbabilities=TRUE} the values in \code{predictedProb} are expected to be in [0,1] range i.e., probability estimates. 
+                           \code{assumeProbabilities=FALSE} the algorithm can be used as ordinary (isotonic) regression    }  
   }
 \details{
    Depending on the specified \code{method} one of the following calibration methods is executed.
    \itemize{
 \item \code{"isoReg"} isotonic regression calibration based on pair-adjacent violators (PAV) algorithm.
-\item \code{"binning"} calibration into a pre-specified number of bands given by \code{noBins} parameter. 
+\item \code{"binning"} calibration into a pre-specified number of bands given by \code{noBins} parameter, trying to make bins of equal weight.
 \item \code{"binIsoReg"} first binning method is executed, following by a isotonic regression calibration.
-\item \code{"chiMerge"} first intervals are merged by a chi-squared statistics criterion, following by the isotonic regression calibration.
-}    
+\item \code{"mdlMerge"} first intervals are merged by a MDL gain criterion into a prespecified number of intervals, following by the isotonic regression calibration.
+}  
+If \code{model="binning"} the parameter \code{noBins} specifies the desired number of bins i.e., calibration bands;
+      if \code{model="binIsoReg"} the parameter \code{noBins} specifies the number of initial bins that are formed by binning before isotonic regression is applied;
+      if \code{model="mdlMerge"}  the parameter \code{noBins} specifies the number of bins formed after first applying isotonic regression. The most similar bins are merged using MDL criterion.
 }
 \value{
   A function returns a list with two vector components of the same length:
@@ -38,7 +44,7 @@ calibrate(correctClass, predictedProb, class1=1,
   }
   
 
-\author{ Marko Robnik-Sikonja, Petr Savicky }
+\author{ Marko Robnik-Sikonja}
 
 \seealso{
 \code{\link{CORElearn}},

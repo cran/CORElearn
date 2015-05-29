@@ -1,5 +1,5 @@
 #
-# support for OpenMP multithreading on different platforms
+# support for OpenMP multithreading 
 # 
 PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
 PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS) 

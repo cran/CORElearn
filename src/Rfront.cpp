@@ -156,7 +156,7 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 
 	if (opt->action == "tree" || opt->action == "bayes"
 			|| opt->action == "knn" || opt->action == "knnKernel"
-			|| opt->action == "rf" || opt->action == "rfNear" )
+					|| opt->action == "rf" || opt->action == "rfNear" )
 		isRegression = mFALSE;
 	else if (opt->action == "regTree")
 		isRegression = mTRUE;
@@ -270,19 +270,6 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 #endif
 }
 
-void destroyOneCoreModel(int* modelID) {
-	// is modelID valid
-	if (modelID != 0 && *modelID >= 0 && *modelID < allModels.len() && allModels[*modelID] != 0) {
-		dataStore *data = allModels[*modelID];
-		if (data->isRegression)
-			delete (regressionTree*) allModels[*modelID];
-		else
-			delete (featureTree*) allModels[*modelID];
-		allModels[*modelID] = 0;
-		*modelID = -1;
-	}
-}
-
 // return class value and its probability for given data with selected model
 void predictWithCoreModel(int *modelID, int *noInst, int *discData,
 		double *numData, double *costMx, int *returnPred, double *returnProb,
@@ -297,7 +284,7 @@ void predictWithCoreModel(int *modelID, int *noInst, int *discData,
 	discreteData.wrap(data->noDiscrete * (*noInst), discData);
 	returnPredicted.wrap(*noInst, returnPred);
 	marray<double> numericData, costMatrix, returnProbability,
-			returnPredictedReg;
+	returnPredictedReg;
 	numericData.wrap(data->noNumeric * (*noInst), numData);
 	costMatrix.wrap(data->noClasses * data->noClasses, costMx);
 	returnProbability.wrap(data->noClasses * (*noInst), returnProb);
@@ -344,14 +331,27 @@ void destroyCore() {
 	/* Check heap status */
 	int heapstatus = _heapchk();
 	if (heapstatus!= _HEAPOK)
-	  merror("destroyCore final check","Heap is not OK !!");
-	  // _HEAPOK, _HEAPEMPTY, _HEAPBADBEGIN, _HEAPBADNODE
+		merror("destroyCore final check","Heap is not OK !!");
+	// _HEAPOK, _HEAPEMPTY, _HEAPBADBEGIN, _HEAPBADNODE
 #endif
 #endif
 
 #if defined(DEBUG_NEW)
 	printf("Still allocated memory blocks: %ld\n",SetSize);
 #endif
+}
+
+void destroyOneCoreModel(int* modelID) {
+	// is modelID valid
+	if (modelID != 0 && *modelID >= 0 && *modelID < allModels.len() && allModels[*modelID] != 0) {
+		dataStore *data = allModels[*modelID];
+		if (data->isRegression)
+			delete (regressionTree*) allModels[*modelID];
+		else
+			delete (featureTree*) allModels[*modelID];
+		allModels[*modelID] = 0;
+		*modelID = -1;
+	}
 }
 
 void availableEstimatorsCore(char **estBrief) {
@@ -367,7 +367,7 @@ void estimateCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 		int *noNumeric, double *numData, double *costMx, char **dscAttrNames,
 		char **dscValNames, char ** nmAttrNames, int *noOptions,
 		char **optName, char **optValue, int *selectedEstimator,
-		double *discEst, double *numEst) {
+		double *discEst, double *numEst, double *numSplitPoint) {
 #if defined(R_PORT)
 	GetRNGstate();
 #endif
@@ -380,9 +380,10 @@ void estimateCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 	marray<char*> optionsName, optionsValue;
 	optionsName.wrap(*noOptions, optName);
 	optionsValue.wrap(*noOptions, optValue);
-	marray<double> discreteEst, numericEst;
+	marray<double> discreteEst, numericEst, numericSplit;
 	numericEst.wrap(*noNumeric, numEst);
 	discreteEst.wrap(*noDiscrete, discEst);
+	numericSplit.wrap(*noNumeric, numSplitPoint) ;
 	marray<char *> discAttrNames, discValNames, numAttrNames;
 	if (dscAttrNames && dscAttrNames[0]) {
 		discAttrNames.wrap(*noDiscrete, dscAttrNames);
@@ -427,8 +428,12 @@ void estimateCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 	discreteEst[0] = NAcont;
 	for (i = 1; i < dT->noDiscrete; i++)
 		discreteEst[i] = Estimator.DiscEstimation[i];
-	for (i = 0; i < dT->noNumeric; i++)
+	for (i = 0; i < dT->noNumeric; i++) {
 		numericEst[i] = Estimator.NumEstimation[i];
+		if (dT->opt->binaryEvaluateNumericAttributes && Estimator.isMyopic(*selectedEstimator))
+			numericSplit[i] = Estimator.splitPoint[i] ;
+		else numericSplit[i] = NAcont ;
+	}
 
 	// unwrap arrays
 	noDiscreteValues.unWrap(dummy);
@@ -439,6 +444,7 @@ void estimateCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 	optionsValue.unWrap(dummy);
 	numericEst.unWrap(dummy);
 	discreteEst.unWrap(dummy);
+	numericSplit.unWrap(dummy) ;
 	if (dscAttrNames && dscAttrNames[0]) {
 		discAttrNames.unWrap(dummy);
 		discValNames.unWrap(dummy);
@@ -457,7 +463,7 @@ void estimateCoreReg(int *noInst, int *noDiscrete, int *noDiscVal,
 		int *discData, int *noNumeric, double *numData, char **dscAttrNames,
 		char **dscValNames, char **nmAttrNames, int *noOptions, char **optName,
 		char **optValue, int *selectedEstimator, double *discEst,
-		double *numEst) {
+		double *numEst, double *numSplitPoint) {
 #if defined(R_PORT)
 	GetRNGstate();
 #endif
@@ -470,9 +476,10 @@ void estimateCoreReg(int *noInst, int *noDiscrete, int *noDiscVal,
 	marray<char*> optionsName, optionsValue;
 	optionsName.wrap(*noOptions, optName);
 	optionsValue.wrap(*noOptions, optValue);
-	marray<double> discreteEst, numericEst;
+	marray<double> discreteEst, numericEst, numericSplit;
 	numericEst.wrap(*noNumeric, numEst);
 	discreteEst.wrap(*noDiscrete, discEst);
+	numericSplit.wrap(*noNumeric, numSplitPoint) ;
 	marray<char *> discAttrNames, discValNames, numAttrNames;
 	if (dscAttrNames && dscAttrNames[0]) {
 		discAttrNames.wrap(*noDiscrete, dscAttrNames);
@@ -515,8 +522,12 @@ void estimateCoreReg(int *noInst, int *noDiscrete, int *noDiscVal,
 	numericEst[0] = NAcont;
 	for (i = 0; i < rT->noDiscrete; i++)
 		discreteEst[i] = Estimator.DiscEstimation[i];
-	for (i = 1; i < rT->noNumeric; i++)
+	for (i = 1; i < rT->noNumeric; i++) {
 		numericEst[i] = Estimator.NumEstimation[i];
+		if (rT->opt->binaryEvaluateNumericAttributes && Estimator.isMyopic(*selectedEstimator))
+			numericSplit[i] = Estimator.splitPoint[i] ;
+		else numericSplit[i] = NAcont ;
+	}
 
 	// unwrap arrays
 	noDiscreteValues.unWrap(dummy);
@@ -526,6 +537,7 @@ void estimateCoreReg(int *noInst, int *noDiscrete, int *noDiscVal,
 	optionsValue.unWrap(dummy);
 	numericEst.unWrap(dummy);
 	discreteEst.unWrap(dummy);
+	numericSplit.unWrap(dummy) ;
 	if (dscAttrNames && dscAttrNames[0]) {
 		discAttrNames.unWrap(dummy);
 		discValNames.unWrap(dummy);
@@ -558,7 +570,7 @@ void rfAttrEval(int *modelID, double *estOut) {
 }
 
 void rfOOB(int *modelID, double *oobAccuracy, double *oobMargin, double *oobCorrelation) {
-if (modelID == 0 || *modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
+	if (modelID == 0 || *modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
 		return;
 	featureTree *dT = (featureTree*) allModels[*modelID]; // get the model
 	if  (dT->learnRF) {
@@ -590,7 +602,7 @@ void ordEvalCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 	optionsName.wrap(*noOptions, optName);
 	optionsValue.wrap(*noOptions, optValue);
 	marray<double> reinfPosOut, reinfNegOut, anchorOut, rndReinfPosOut,
-			rndReinfNegOut, rndAnchorOut;
+	rndReinfNegOut, rndAnchorOut;
 	reinfPosOut.wrap((*noDiscrete - 1) * (maxAttrValues + 1), rePos);
 	reinfNegOut.wrap((*noDiscrete - 1) * (maxAttrValues + 1), reNeg);
 	anchorOut.wrap((*noDiscrete - 1) * (maxAttrValues + 1), anch);
@@ -699,11 +711,11 @@ void ordEvalCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 			anchorOut[iA - 1 + iVout * noAttr] = anchor[iA][iV];
 			for (iS = 0; iS < noOEstats; iS++) {
 				rndReinfPosOut[iA - 1 + iVout * noAttr + iS * noAttr
-						* (maxAttrValues + 1)] = reinfPosRnd(iA, iV)[iS];
+							   * (maxAttrValues + 1)] = reinfPosRnd(iA, iV)[iS];
 				rndReinfNegOut[iA - 1 + iVout * noAttr + iS * noAttr
-						* (maxAttrValues + 1)] = reinfNegRnd(iA, iV)[iS];
+							   * (maxAttrValues + 1)] = reinfNegRnd(iA, iV)[iS];
 				rndAnchorOut[iA - 1 + iVout * noAttr + iS * noAttr
-						* (maxAttrValues + 1)] = anchorRnd(iA, iV)[iS];
+							 * (maxAttrValues + 1)] = anchorRnd(iA, iV)[iS];
 			}
 		}
 	}
@@ -785,7 +797,7 @@ void calibrate(int *calMethod, int *noInst, int *correctCl,
 		cal.binningCal(y, *noBins);
 		break;
 	case 4:
-		cal.mergeCal(y);
+		cal.mergeCal(y, *noBins);
 		break;
 	default:
 		merror("CORElearn C++:", "Invalid calibration method");
@@ -911,6 +923,130 @@ void readRF(char **fileName, int *modelID) {
 	}
 }
 
+
+void discretize(int *isRegression, int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
+		int *noNumeric, double *numData, char **dscAttrNames,
+		char **dscValNames, char ** nmAttrNames, int *noOptions,
+		char **optName, char **optValue, int *selectedEstimator,
+		int *maxBns, int *noBnds, double *bnds) {
+#if defined(R_PORT)
+	GetRNGstate();
+#endif
+	// wrap arrays for security reasons
+	marray<int> noDiscreteValues, discreteData;
+	noDiscreteValues.wrap(*noDiscrete, noDiscVal);
+	discreteData.wrap(*noDiscrete * (*noInst), discData);
+	marray<double> numericData;
+	numericData.wrap(*noNumeric * (*noInst), numData);
+	marray<char*> optionsName, optionsValue;
+	optionsName.wrap(*noOptions, optName);
+	optionsValue.wrap(*noOptions, optValue);
+	marray<int> noBounds, maxBins ;
+	noBounds.wrap(*noNumeric, noBnds) ;
+	marray<double> bounds;
+	bounds.wrap(*noNumeric * (*noInst), bnds);
+
+	marray<char *> discAttrNames, discValNames, numAttrNames;
+	if (dscAttrNames && dscAttrNames[0]) {
+		discAttrNames.wrap(*noDiscrete, dscAttrNames);
+		discValNames.wrap(*noDiscrete, dscValNames);
+	} else {
+		discAttrNames.create(*noDiscrete, 0);
+		discValNames.create(*noDiscrete, 0);
+	}
+	if (nmAttrNames && nmAttrNames[0]) {
+		numAttrNames.wrap(*noNumeric, nmAttrNames);
+	} else {
+		numAttrNames.create(*noNumeric, 0);
+	}
+
+	if (*isRegression == 1){
+		regressionTree *rT = new regressionTree;
+        maxBins.wrap(*noNumeric-1, maxBns) ;
+		// read options
+		rT->opt->optionsFromStrings(*noOptions, optionsName, optionsValue);
+		rT->opt->selectionEstimatorReg = *selectedEstimator ;
+
+		// prepare data, first description than data matrices
+		rT->isRegression = mTRUE ;
+		rT->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, discAttrNames, discValNames, numAttrNames);
+		rT->dataFromR(*noInst, discreteData, numericData, mTRUE);
+
+		// prepare data for training/testing
+		rT->opt->splitSelection = ALL_TRAINING;
+		rT->prepareDataSplits();
+		rT->setDataSplit(rT->opt->splitIdx);
+
+		marray<double> weight(rT->NoTrainCases, 1.0);
+		// double estDummy ;
+		int j ;
+		marray<double> attrBounds ;
+		estimationReg Estimator(rT, rT->DTraining, weight, rT->NoTrainCases);
+		noBounds[0] = 0 ;
+		for (int idx=1 ; idx < Estimator.noNumeric ; idx++)	{
+			rT->discretizeGreedy(idx, Estimator, maxBins[idx-1], attrBounds) ;
+			noBounds[idx] = attrBounds.filled() ;
+			for (j=0 ; j < attrBounds.filled(); j++)
+				bounds[idx*(*noInst)+j] = attrBounds[j] ;
+		}
+		delete rT ;
+	}
+	else {
+		featureTree *dT = new featureTree ;
+        maxBins.wrap(*noNumeric, maxBns) ;
+
+		// read options
+		dT->opt->optionsFromStrings(*noOptions, optionsName, optionsValue);
+		dT->opt->selectionEstimator = *selectedEstimator ;
+
+		// prepare data, first description then data matrices
+		dT->isRegression = mFALSE;
+		dT->dscFromR(*noDiscrete, noDiscreteValues, *noNumeric, discAttrNames, discValNames, numAttrNames);
+		dT->dataFromR(*noInst, discreteData, numericData, mTRUE);
+
+		// prepare data for training/testing
+		dT->opt->splitSelection = ALL_TRAINING;
+		dT->prepareDataSplits();
+		dT->setDataSplit(dT->opt->splitIdx);
+
+		marray<double> weight(dT->NoTrainCases, 1.0);
+		int j ;
+		marray<double> attrBounds ;
+		estimation Estimator(dT, dT->DTraining, weight, dT->NoTrainCases);
+		for (int idx=0 ; idx < Estimator.noNumeric ; idx++)	{
+			Estimator.discretizeGreedy(idx, maxBins[idx], attrBounds, Estimator.noDiscrete) ;
+			noBounds[idx] = attrBounds.filled() ;
+			for (j=0 ; j < attrBounds.filled(); j++)
+				bounds[idx*(*noInst)+j] = attrBounds[j] ;
+		}
+		delete dT;
+	}
+	// unwrap arrays
+	int dummy;
+	noDiscreteValues.unWrap(dummy);
+	discreteData.unWrap(dummy);
+	numericData.unWrap(dummy);
+	optionsName.unWrap(dummy);
+	optionsValue.unWrap(dummy);
+	if (dscAttrNames && dscAttrNames[0]) {
+		discAttrNames.unWrap(dummy);
+		discValNames.unWrap(dummy);
+	}
+	if (nmAttrNames && nmAttrNames[0])
+		numAttrNames.unWrap(dummy);
+	noBounds.unWrap(dummy);
+	bounds.unWrap(dummy);
+    maxBins.unWrap(dummy) ;
+
+#if defined(R_PORT)
+	PutRNGstate();
+#endif
+	return;
+}
+
+
+
+
 #if defined(R_PORT)
 
 SEXP exportSizesRF(SEXP modelID) {
@@ -963,7 +1099,7 @@ SEXP printTree2R(SEXP modelID) {
 	SEXP out;
 	PROTECT(out = allocVector(STRSXP, 1));
 	SET_STRING_ELT(out, 0, mkChar(treeStr));
-    delete [] treeStr ;
+	delete [] treeStr ;
 	UNPROTECT(1);
 	return(out);
 }
@@ -985,9 +1121,38 @@ SEXP printTreeDot2R(SEXP modelID) {
 	SEXP out;
 	PROTECT(out = allocVector(STRSXP, 1));
 	SET_STRING_ELT(out, 0, mkChar(treeStr));
-    delete [] treeStr ;
+	delete [] treeStr ;
 	UNPROTECT(1);
 	return(out);
+}
+
+SEXP noEqualRows(SEXP data1, SEXP data2, SEXP nrowsd1, SEXP nrowsd2, SEXP ncols, SEXP tolerance, SEXP countOnce)
+{
+    int i, j, k, eq=0 ;
+    int nrd1 = INTEGER(nrowsd1)[0], nrd2 = INTEGER(nrowsd2)[0], nc = INTEGER(ncols)[0] ;
+    booleanT once = (booleanT)(INTEGER(countOnce)[0]) ;
+    SEXP ans;
+    double d, eps=REAL(tolerance)[0] ;
+
+    PROTECT(ans = allocVector(INTSXP, 1));
+    for (i=0; i < nrd1 ; i++) {
+        for (j=0; j < nrd2 ; j++) {
+           d = 0 ;
+      	   for (k=0; k < nc; k++) {
+      		   d += fabs(REAL(data1)[i + k*nrd1] - REAL(data2)[j+k*nrd2]) ;
+      		   if (d > eps)
+      			   break ;
+      	   }
+      	   if (d <= eps) {
+      		   eq++ ;
+      	       if (once)
+      		     break ;
+      	   }
+        }
+    }
+    INTEGER(ans)[0] = eq ;
+    UNPROTECT(1);
+    return(ans);
 }
 
 #endif

@@ -93,6 +93,14 @@ int estimationReg::estimate(int selectedEstimator, int contAttrFrom, int contAtt
    }
 }
 
+booleanT estimationReg::isMyopic(int selectedEstimator) {
+	if (selectedEstimator == estMSEofMean  || selectedEstimator == estMSEofModel
+			|| selectedEstimator == estMAEofModel)
+		return mTRUE;
+	else
+		return mFALSE;
+}
+
 
 // ***************************************************************************
 //
@@ -226,6 +234,7 @@ void estimationReg::adjustTables(int newContSize, int newDiscSize)
       NumValues.addColumns(newContSize) ;
       NumEstimation.enlarge(newContSize) ;
       // NumDistance.addColumns(newContSize) ;
+      splitPoint.enlarge(newContSize) ;
 
       minValue.enlarge(newContSize) ;
       maxValue.enlarge(newContSize) ;
@@ -270,6 +279,7 @@ void estimationReg::MSE(int contAttrFrom, int contAttrTo,
    // initialization of estimationRegs
    NumEstimation.init(contAttrFrom,contAttrTo, 0.0) ;
    DiscEstimation.init(discAttrFrom,discAttrTo, 0.0) ;
+   splitPoint.init(contAttrFrom,contAttrTo, DBL_MAX) ;
 
    int i, j ;
    marray<double> valueClass ;
@@ -395,8 +405,10 @@ void estimationReg::MSE(int contAttrFrom, int contAttrTo,
          variance = RightSquares/RightWeight -sqr(RightValues/RightWeight) ;
          if (RightWeight > epsilon && variance > 0.0)
             estimate += (1.0 - pLeft) * variance ;
-         if (estimate < bestEstimate)
+         if (estimate < bestEstimate) {
             bestEstimate = estimate ;
+            splitPoint[i] = (sortedAttr[j].key + sortedAttr[j-1].key)/2.0 ;
+         }
       }
       NumEstimation[i] = - bestEstimate ;
    }
@@ -616,9 +628,9 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
       // initialization of estimationRegs
    NumEstimation.init(contAttrFrom,contAttrTo, 0.0) ;
    DiscEstimation.init(discAttrFrom,discAttrTo, 0.0) ;
+   splitPoint.init(contAttrFrom,contAttrTo, DBL_MAX) ;
 
-   int i, j, idx, greedyPositions; 
-   double exhaustivePositions ;
+   int i, j, idx;
    marray<double> valueWeight ;
    double bestEstimate, estimate, minRound, totalWeight ;
    int val, idxRound ;
@@ -631,14 +643,7 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
    marray<booleanT> leftValues ;
    double leftError=0, rightError=0;
 
-   int maxSample ;
-   if (eopt.discretizationSample==0)
-     maxSample = TrainSize -1;
-   else
-      maxSample = eopt.discretizationSample ;
-
-   for (i=discAttrFrom ; i < discAttrTo ; i++)
-   {
+   for (i=discAttrFrom ; i < discAttrTo ; i++) {
       valueWeight.create(discNoValues[i]+1, 0.0) ;
       leftValues.create(discNoValues[i]+1, mFALSE) ;
       for (j=0 ; j < TrainSize ; j++)
@@ -650,16 +655,13 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
       for (j=1 ; j <= discNoValues[i] ; j++)
          totalWeight += valueWeight[j] ;
 
-      binPartition Generator(discNoValues[i]) ;
       bestEstimate = DBL_MAX ;
 
-      greedyPositions = discNoValues[i] * (discNoValues[i]+1)/2 ;
-      if (discNoValues[i] < maxVal4ExhDisc)
-		 exhaustivePositions = Generator.noPositions() ;
-      else exhaustivePositions = -1 ;
-      if ( (discNoValues[i] < maxVal4ExhDisc) && (exhaustivePositions * 0.8 <= greedyPositions || exhaustivePositions < maxSample))
-      {
-    	  // exhaustive search through all possible partitions
+      if ( discNoValues[i] <= eopt.maxValues4Exhaustive) { // }&& (exhaustivePositions * 0.8 <= greedyPositions || exhaustivePositions < maxSample))
+    	// exhaustive search through all possible partitions
+
+    	binPartition Generator(discNoValues[i]) ;
+
         while (Generator.increment() )
         {
            // save partition
@@ -790,7 +792,7 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
    }
 
 
-   // continuous attributes
+   // numeric attributes
    marray<sortRec> sortedAttr(TrainSize) ;
    int OKvalues;
    for (i=contAttrFrom ; i < contAttrTo ; i++)
@@ -863,11 +865,13 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
           splits[j] = uniqueIdx[j] ;
 
       bestEstimate = DBL_MAX ;
-      // prepare for spliting
+      double leftSum=0, rightSum=0 ;
+      // prepare for splitting
       for (j=0; j < OKvalues ; j++)
       {
          rightTrain[j] = OriginalDTrain[sortedAttr[OKvalues-1-j].value] ;
          rightWeight[j] = weight[sortedAttr[OKvalues-1-j].value] ;
+         rightSum +=  rightWeight[j] ;
       }
       rightTrain.setFilled(OKvalues) ;
       leftTrain.setFilled(0) ;
@@ -879,11 +883,14 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
          do {
            leftTrain.addEnd(rightTrain[rightTrain.filled()-1]) ;
            leftWeight.addEnd(rightWeight[rightTrain.filled()-1]) ;
+           leftSum += rightWeight[rightTrain.filled()-1] ;
+           rightSum -= rightWeight[rightTrain.filled()-1] ;
            rightTrain.decEdge() ;
            j++ ;
          } while (j < splits[splitIdx]) ;
 
-         if (leftTrain.filled() <= 0 || rightTrain.filled() <= 0)
+         if (leftTrain.filled() <= 0 || rightTrain.filled() <= 0 ||
+             leftSum < eopt.minNodeWeightEst || rightSum < eopt.minNodeWeightEst)
              continue ;
          // compute models and their errors
          fTree->buildTreeNode(leftNode, leftTrain, leftWeight, leftTrain.filled()) ;
@@ -904,8 +911,10 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
                        merror("estimationReg::MEofModel", "internal misassumption about type of estimator") ;
          }
          estimate = (leftNode->weight * leftError + rightNode->weight*rightError)/totalWeight ;
-         if (estimate < bestEstimate)
+         if (estimate < bestEstimate) {
 		     bestEstimate = estimate ;
+		     splitPoint[i] = (sortedAttr[splits[splitIdx]].key + sortedAttr[splits[splitIdx]-1].key) /2.0 ;
+         }
 		}
 
       NumEstimation[i] = - bestEstimate ;

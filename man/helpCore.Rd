@@ -32,12 +32,13 @@ and RReliefF in regression and their variants.
           of estimators. With ReliefF-type measures, numeric features are also evaluated "as is". For evaluation
           of numeric features with other (non-ReliefF-type) measures, they are first binarized or discretized.
           The choice between binarization and discretization is controlled by 
-          \code{binaryEvaluateNumericAttributes}.
+          \code{binaryEvaluateNumericAttributes}. Due to performance reasons it is recommended that 
+          \code{binaryEvaluation=FALSE} is used.
           See also \code{discretizationSample}. }
     \item{binaryEvaluateNumericAttributes}{type: logical, default value: TRUE \cr
           ReliefF like measures can evaluate numeric attributes intrinsically, others
           have to discretize or binarize them before evaluation; for those measures
-          this parameter selects binarization (default)or discretization (computationally more demanding). }
+          this parameter selects binarization (default) or discretization (computationally more demanding). }
     \item{multiclassEvaluation}{type: integer, default value: 1, value range: 1, 4 \cr 
                multi-class extension for two-class-only evaluation measures 
                (1-average of all-pairs, 2-best of all-pairs, 
@@ -50,7 +51,7 @@ and RReliefF in regression and their variants.
               number of iterations for all variants of Relief (0=DataSize, -1=ln(DataSize) -2=sqrt(DataSize)). }
     \item{numAttrProportionEqual}{type: numeric, default value: 0.04, value range: 0, 1 \cr
            used in ramp function, proportion of numerical attribute's range to consider two values equal. }
-    \item{numAttrProportionEqual}{type: numeric, default value: 0.1, value range: 0, 1 \cr
+    \item{numAttrProportionDifferent}{type: numeric, default value: 0.1, value range: 0, 1 \cr
            used in ramp function, proportion of numerical attribute's range to consider two values different. }
     \item{kNearestEqual}{type: integer, default value: 10, value range: 0, Inf \cr
         number of neighbors to consider in equal k-nearest attribute evaluation. }
@@ -138,22 +139,41 @@ expressive power of the tree model.
         maximal size of constructs in constructive induction. }
         }
         }
- \section{Attribute discretization}{
- Some algorithms cannot deal with numeric attributes directly, so we have to discretize them. The discretization algorithm
- greedily (exhaustively for small number of candidates) evaluates split candidates and forms intervals of values. 
+ \section{Attribute discretization and binarization}{
+ Some algorithms cannot deal with numeric attributes directly, so we have to discretize them. Also the tree models use
+ binary splits in nodes. The discretization  algorithm  evaluates split candidates and forms intervals of values. 
+ Note that setting \code{discretizationSample=1} will force random selection of splitting point, which will speed-up the algorithm
+ and may be perfectly acceptable for random forest ensembles.
+ 
+ CORElearn builds binary trees so multivalued  discrete attributes have to be binarized i.e., values have to be split into 
+ twoa subset, one going left and the other going right in a node. The method used depends on the parameters 
+ and the number of attribute values. Possible methods are exhaustive (if the number of attribute values is less or equal  
+ \code{maxValues4Exhaustive}), greedy ((if the number of attribute values is less or equal \code{maxValues4Greedy})
+ and random ((if the number of attribute values is more than \code{maxValues4Exhaustive}). 
+ Setting \code{maxValues4Greedy=2} will always randomly selet splitting point. 
+ 
 \describe{
      \item{discretizationLookahead}{type: integer, default value: 3, value range: 0, Inf \cr
-     Discretization is performed with a greedy algorithm which adds a new boundary until there is no
+     Discretization is performed with a greedy algorithm which adds a new boundary, until there is no
      improvement in evaluation function for \code{discretizationLookahead} number of times
      (0=try all possibilities). Candidate boundaries are chosen from a random sample of boundaries,
      whose size is \code{discretizationSample}. }
      \item{discretizationSample}{type: integer, default value: 50, value range: 0, Inf \cr
-     Maximal number of points to try discretization (0=all sensible). Binarization of multivalued discrete features with
-     \eqn{k} values is performed exhaustively, if \eqn{2^k - 1} is at most \code{discretizationSample}. Otherwise binarization
-     is done greedily starting from the best separation of a single value.
+     Maximal number of points to try discretization (0=all sensible). 
      For ReliefF-type measures, binarization of numeric features is performed with \code{discretizationSample} randomly
-     chosen splits. For other measures, the split is searched exhaustively among all possible splits.
+     chosen splits. For other measures, the split is searched among all possible splits.
      }
+    \item{maxValues4Exhaustive}{type: integer, default value: 7, value range: 2, Inf \cr
+     Maximal number of values of a discrete attribute to try finding split exhaustively.
+     If the attribute has more values the split will be searched greedily or selected ranomly based on the 
+     value of parameter \code{maxValues4Greedy}.
+     }
+   \item{maxValues4Greedy}{type: integer, default value: 30, value range: 2, Inf \cr
+     Maximal number of values of a discrete attribute to try finding split greedily.
+     If the attribute has more values the split will be selected ranomly. Setting this parameter to 2 will
+     force random but balanced selection of splits which may be acceptable for random forest ensembles and will greatly
+     speed-up tree construction.
+     }     
      }
      }
 \section{Tree pruning}{

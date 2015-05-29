@@ -10,7 +10,7 @@ ordEval(formula, data, file=NULL, rndFile=NULL,
         variant=c("allNear","attrDist1","classDist1"), ...)
 }
 \arguments{
-  \item{formula}{ Formula specifies the attributes to be evaluated and the target variable. }
+  \item{formula}{ Either a formula specifying the attributes to be evaluated and the target variable, or a name of target variable, or an index of target variable. }
   \item{data}{ Data frame with evaluation data. }
   \item{file}{ Name of file where evaluation results will be written to. }
   \item{rndFile}{ Name of file where evaluation of random normalizing attributes will be written to. }
@@ -18,12 +18,20 @@ ordEval(formula, data, file=NULL, rndFile=NULL,
   \item{\dots }{ Other options specific to ordEval or common to other context-sensitive evaluation methods (e.g., ReliefF). }
 }
 \details{
-  Parameter \code{formula} is used as a mechanism to select features (attributes) 
+   The parameter \code{formula} can be interpreted in three ways, where the formula interface is the most elegant one, 
+  but inefficient and inappropriate for large data sets.   See also examples below. As \code{formula} one can specify:
+\describe{ 
+  \item{an object of class \code{formula}}{used as a mechanism to select features (attributes) 
   and prediction variable (class). Only simple terms can be used and 
   interaction expressed in formula syntax are not supported. The simplest way is
-  to specify just response variable as parameter: \code{class ~ .}.
-  In this case all the other columns in the data set are evaluated.
-  Take car to supply the ordinal data as factors and to provide equal levels for them
+  to specify just response variable: \code{class ~ .}.
+  In this case all other attributes in the data set are evaluated. Note that formula interface is not appropriate for data sets with
+  large number of variables.}
+  \item{a character vector}{specifying the name of target variable, all the other columns in data frame \code{data} are used as predictors.}
+  \item{an integer}{specifying the index of of target variable in data frame \code{data}, all the other columns are used as predictors.}
+}
+ 
+In the data frame \code{data} take care to supply the ordinal data as factors and to provide equal levels for them
   (this is not necessary what one gets with \code{\link{read.table}}).
   See example below.
   

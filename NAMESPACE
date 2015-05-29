@@ -5,12 +5,14 @@ export(attrEval, allTests, infoCore, classDataGen, CoreModel, destroyModels, get
 		regDataGen, rfAttrEval, rfOOB, saveRF, testCoreClass, testCoreAttrEval, testCoreReg,
 		testCoreOrdEval, testCoreNA, testCoreRPORT, testCoreRand, testClassPseudoRandom,
 		testTime, versionCore, calibrate, preparePlot, rfProximity, rfAttrEvalClustering,
-		rfClustering, rfOutliers, classPrototypes, getRpartModel, display
+		rfClustering, rfOutliers, classPrototypes, getRpartModel, display, discretize, applyDiscretization,
+		noEqualRows
 )
 
 import(rpart)
 import(cluster)
 import(stats)
+
 
 S3method(plot, ordEval)
 S3method(predict, CoreModel)

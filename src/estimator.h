@@ -36,7 +36,6 @@ friend class rf ;
     marray<sortRec> distanceEHarray, diffEHsorted,
                     distanceEMarray, diffEMsorted ; // E variant: manipulation of the nearest examples
 
-    int noDiscrete, noNumeric, TrainSize ;
     int currentNumSize, currentDiscSize, discUpper, numUpper ;
     int NoIterations ;
     int kNearestEqual, kDensity ;
@@ -126,6 +125,7 @@ friend class rf ;
 
 
 public:
+    int noDiscrete, noNumeric, TrainSize ;
     marray<double> NumEstimation, DiscEstimation ;
     marray<double> splitPoint ;
     estimation(const featureTree *fTreeParent, marray<int> &DTrain,
@@ -170,7 +170,7 @@ public:
     double bestSplitGeneral(construct &nodeConstruct, int firstFreeDiscSlot) ;
     double impuritySplit(construct &nodeConstruct, double &bestEstimation) ;
     double impuritySplitSample(construct &nodeConstruct, double &bestEstimation);
-    double discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int firstFreeDiscSlot) ;
+    double discretizeGreedy(int ContAttrIdx, int maxBins, marray<double> &Bounds, int firstFreeDiscSlot) ;
 	void estBinarized(int selectedEstimator, int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo, int firstFreeDiscSlot) ;
     double CVVilalta(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;
     double CVmodified(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;

@@ -72,7 +72,7 @@ int featureTree::constructTree(void)
        case 0: break;
        case 1: mPrune() ;
                break ;
-	   default: merror("featureTree::constructTree","unexisting pruner selected") ;
+	   default: merror("featureTree::constructTree","inexistent pruner selected") ;
        }
       return 1 ;
    }

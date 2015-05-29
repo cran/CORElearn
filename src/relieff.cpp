@@ -227,6 +227,15 @@ void estimation::ReliefF(int contAttrFrom, int contAttrTo,
         }
         fprintf(fileRelief, "\n") ;
       #endif
+	  #if defined(_OPENMP)
+		   // destroy data structures for each thread separately
+		   NumDistance.destroy() ;
+		   DiscDistance.destroy() ;
+		   distanceArray.destroy() ;
+		   diffSorted.destroy() ;
+		   incContDiffA.destroy() ;
+		   incDiscDiffA.destroy() ;
+	   #endif
    }  
    for (iAttr=contAttrFrom ; iAttr < contAttrTo ; iAttr ++)
    {

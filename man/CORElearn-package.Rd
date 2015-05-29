@@ -9,9 +9,9 @@ It provides various classification and regression models
 as well as algorithms for feature selection and evaluation.
 Several algorithms support parallel multithreaded execution via OpenMP, 
 but this feature is currently not supported on all platforms.
-It works on Linux, Sun, and Mac. On Windows (both 32 and 64 bit version) it works, 
-but official toolchain does not support it, so  
-we provide binary package with OpenMP support on package website
+It is tested to works on Windows, Linux, and Mac.
+It is possible to run many functions outside the R environment.
+The description and source code is available on the package web site
 \url{http://lkm.fri.uni-lj.si/rmarko/software}.
 }
 \details{
@@ -132,7 +132,9 @@ destroyModels(model) # clean up
 
  
 # evaluate features in given data set with selected method
-estReliefF <- attrEval(Species ~ ., iris, 
+# instead of formula interface one can provide just 
+# the name or index of target variable
+estReliefF <- attrEval("Species", iris, 
                        estimator="ReliefFexpRank", ReliefIterations=30)
 print(estReliefF)
     

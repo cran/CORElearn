@@ -432,7 +432,7 @@ int featureTree::prepareAttrValues(estimation &Estimator, marray<construct> &Can
      {
        tempAttrValue.root->attrIdx = i ;
        // discretize attribute
-       Estimator.discretizeGreedy(i,Bounds, noDiscrete) ;
+       Estimator.discretizeGreedy(i, 0, Bounds, noDiscrete) ;
        // if there is not enough space available, prepare it
        if (Bounds.filled()+1 + Candidates.filled() >= Candidates.len())
           Candidates.enlarge(Bounds.filled()+1 + Candidates.filled() ) ;

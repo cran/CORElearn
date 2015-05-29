@@ -425,7 +425,7 @@ int regressionTree::prepareAttrValues(estimationReg &Estimator, marray<construct
      { 
        tempAttrValue.root->attrIdx = i ;
        // discretize attribute
-       discretizeGreedy(i, Estimator, Bounds) ;
+       discretizeGreedy(i, Estimator, 0, Bounds) ;
        // if there is not enough space available, prepare it
        if (Bounds.filled()+1 + Candidates.filled() >= Candidates.len())
           Candidates.enlarge(Bounds.filled()+1 + Candidates.filled() ) ;

@@ -58,7 +58,7 @@ friend class constructReg ;
 
 public:
     marray<int> OriginalDTrain ;
-    marray<double> NumEstimation, DiscEstimation ;
+    marray<double> NumEstimation, DiscEstimation, splitPoint ;
     int noDiscrete, noNumeric, TrainSize ;
 
 	estimationReg(regressionTree *fTreeParent, marray<int> &DTrain,
@@ -90,6 +90,7 @@ public:
     double ConceptVariation(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;
     double CVmodified(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;
     void advisor(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;
+    booleanT isMyopic(int selectedEstimator) ;
 
 }  ;
 

@@ -7,28 +7,37 @@
    Feature evaluation algorithms available for classification problems 
    are various variants of Relief and ReliefF algorithms (ReliefF,
    cost-sensitive ReliefF, \dots), gain ratio, gini-index, MDL, DKM, information gain, ...
-   For regression problems there are RREliefF, MSE, MAE, ...
+   For regression problems there are RREliefF, MSEofMean, MSEofModel, MAEofModel, ...
    Parallel execution on several cores is supported for speedup.
 }
 \usage{
-  attrEval(formula, data, estimator, costMatrix = NULL, ...)
+  attrEval(formula, data, estimator, costMatrix = NULL, outputNumericSplits=FALSE, ...)
 }
 \arguments{
-  \item{formula}{ Formula specifying the attributes to be evaluated and the target variable. }
+  \item{formula}{ Either a formula specifying the attributes to be evaluated and the target variable, or a name of target variable, or an index of target variable. }
   \item{data}{ Data frame with evaluation data. }
   \item{estimator}{ The name of the evaluation method.}
   \item{costMatrix}{ Optional cost matrix used with certain estimators. }
-  \item{\dots }{ Additional options used by specific evaluation methods as described in \code{\link{helpCore}}
-  . }
+  \item{outputNumericSplits}{ Controls of the output contain also the best split point for numeric attributes. 
+                 This is only sensible for impurity based estimators (like gini, MDL, gain ratio in classification 
+                 and MSEofMean in regression). Additionally, the default value of parameter 
+                 \code{binaryEvaluateNumericAttributes=TRUE} shall not be modified. If the value of 
+                 \code{outputNumericSplits} the output is a list instead of vector, see the returned value description.}
+  \item{\dots }{ Additional options used by specific evaluation methods as described in \code{\link{helpCore}}.}
 }
 \details{
-  Parameter \bold{formula} is used as a mechanism to select features (attributes) 
+  The parameter \code{formula} can be interpreted in three ways, where the formula interface is the most elegant one, 
+  but inefficient and inappropriate for large data sets.   See also examples below. As \code{formula} one can specify:
+\describe{ 
+  \item{an object of class \code{formula}}{used as a mechanism to select features (attributes) 
   and prediction variable (class). Only simple terms can be used and 
   interaction expressed in formula syntax are not supported. The simplest way is
   to specify just response variable: \code{class ~ .}.
-  In this case all other attributes in the data set are evaluated.
-  See also example below.
-  
+  In this case all other attributes in the data set are evaluated. Note that formula interface is not appropriate for data sets with
+  large number of variables.}
+  \item{a character vector}{specifying the name of target variable, all the other columns in data frame \code{data} are used as predictors.}
+  \item{an integer}{specifying the index of of target variable in data frame \code{data}, all the other columns are used as predictors.}
+}  
   The optional parameter \bold{ costMatrix } can provide nonuniform cost matrix to certain
   cost-sensitive measures (ReliefFexpC, ReliefFavgC, ReliefFpe, ReliefFpa, ReliefFsmp,GainRatioCost,     
   DKMcost, ReliefKukar, and MDLsmp). For other measures this parameter is ignored.    
@@ -119,7 +128,11 @@
   Evaluation and visualization of ordered attributes is covered in function \code{\link{ordEval}}.  
 }
 \value{
-  Vector of evaluations for the features in the order specified by the formula.
+  The method returns a vector of evaluations for the features in the order specified by the formula.
+  In case of parameter \code{binaryEvaluateNumericAttributes=TRUE} the method returns a list with two components:
+  \code{attrEval} and \code{splitPointNum}. The \code{attrEval} contains 
+  a vector of evaluations for the features in the order specified by the formula. The \code{splitPointNum}
+  contains the split points of numeric attributes which produced the given attribute evaluation scores.
 }
 \examples{
 # use iris data
@@ -128,6 +141,10 @@
 estReliefF <- attrEval(Species ~ ., iris, 
                             estimator="ReliefFexpRank", ReliefIterations=30)
 print(estReliefF)
+
+# alternatively and more appropriate for large data sets 
+# one can specify just the target variable
+# estReliefF <- attrEval("Species", iris, estimator="ReliefFexpRank", ReliefIterations=30)
 
 # print all available estimators
 infoCore(what="attrEval")
@@ -147,7 +164,7 @@ Some of these references are available also from \url{http://lkm.fri.uni-lj.si/r
 
  }
  
-\author{ Marko Robnik-Sikonja, Petr Savicky }
+\author{ Marko Robnik-Sikonja }
 
 
 \keyword{ regression }

@@ -1,3 +1,5 @@
+CORElearn-0.9.46, 2015-05-29: adding discretization of numeric features, improvements in efficiency, allowing bypass of formula interface, 
+                              bug fixes in formula handling, calibration, small inconveniences, disabling OpenMP on Solaris via configure script  
 CORElearn-0.9.45, 2015-01-28: adding and improving plot functions for tree based models, bug fixes  
 CORElearn-0.9.44, 2014-12-08: bug fix for leaking memory  
 CORElearn-0.9.43, 2014-05-11: bug fix for C++ initialization, examples leaking memory allocated in C++ code, integer parameters larger than 1e5 transferered to C++ 

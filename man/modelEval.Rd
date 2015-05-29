@@ -85,7 +85,7 @@ modelEval(model=NULL, correctClass, predictedClass, predictedProb=NULL,
  \item{RMAE}{Relative Mean Absolute Error} 
  }
   
-\author{ Marko Robnik-Sikonja, Petr Savicky }
+\author{ Marko Robnik-Sikonja}
 
 \seealso{
 \code{\link{CORElearn}},

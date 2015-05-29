@@ -50,7 +50,6 @@ protected:
 
 	void binarize(constructReg &nodeConstruct, estimationReg &Estimator) ;
 	double bestSplit(constructReg &nodeConstruct, estimationReg &Estimator) ;
-	double discretizeGreedy(int ContAttrIdx, estimationReg &Estimator, marray<double> &Bounds) ;
 	void Feature2Str(binnodeReg *Node, char* const Str) ;
 	double mPrune(binnodeReg *Node) ;
 	double mdlBottomUpPrune(binnodeReg *Node) ;
@@ -101,6 +100,7 @@ public:
 	double mdlSelectBestPrune(void) ;
 	double errorComplexityPrune(void) { int Size = 0 ; return errorComplexityPrune(root, Size) ; }
 	int predictRreg(marray<double> &predicted) ;
+	double discretizeGreedy(int ContAttrIdx, estimationReg &Estimator, int maxBins, marray<double> &Bounds) ;
 
 	int getSize(binnodeReg *branch);
 #if defined(R_PORT)

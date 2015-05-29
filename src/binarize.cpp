@@ -19,7 +19,7 @@
 //                       ----------------
 //
 //    creates binary split of attribute values according to the split's  estimate;
-//             search is either exhaustive or greedy depending
+//             search is either exhaustive, greedy or random depending
 //                on the number of computations for each
 //
 // ************************************************************
@@ -27,7 +27,7 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 {
 
 	int i, NoValues = nodeConstruct.noValues ;
-	nodeConstruct.leftValues.create(NoValues+1,mFALSE) ;
+	nodeConstruct.leftValues.create(NoValues+1, mFALSE) ;
 	attributeCount bestType ;
 
 	if (firstFreeDiscSlot == 0)
@@ -38,55 +38,54 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 		return ;
 	}
 
-
 	booleanT binaryEvaluationBefore = eopt.binaryEvaluation ;
 	eopt.binaryEvaluation = mFALSE ;
 
 
-	if (NoValues == 2) // already binary
-			{
+	if (NoValues == 2) { // already binary
 		nodeConstruct.leftValues[1] = mTRUE ;
-
-		// in case we need its estimate
-		//	   adjustTables(0, firstFreeDiscSlot + 1) ;
-		//       for (i=0 ; i < TrainSize ; i++)
-		//          DiscValues.Set(i, firstFreeDiscSlot, nodeConstruct.discreteValue(DiscValues,NumValues,i)) ;
-		//
-		//       prepareDiscAttr(firstFreeDiscSlot, 2) ;
-		//
-		//	   i = estimate(eopt.selectionEstimator, 0, 0, firstFreeDiscSlot, firstFreeDiscSlot+1, bestType) ;
-		//	   bestEstimation =  DiscEstimation[firstFreeDiscSlot] ;
-		return ;
-			}
+    	return ;
+	}
 
 
-	binPartition Generator(NoValues) ;
 	int attrValue ;
 	int bestIdx ;
-	//bestEstimation = -DBL_MAX ;
+	// double bestEstimation = -DBL_MAX ;
 
-	int noBasicAttr = (noDiscrete+noNumeric-1) ;
-	int greedyPositions = NoValues * (NoValues+1)/2 ;
-	double exhaustivePositions ;
-	if (NoValues >= maxVal4ExhDisc) // exhaustive positions would reach more than 2^32 which is way too much
-		exhaustivePositions = -1 ;
-	else
-		exhaustivePositions = Generator.noPositions() ;
-	if (eopt.selectionEstimator == estReliefFkEqual || eopt.selectionEstimator == estReliefFexpRank ||
-			eopt.selectionEstimator == estReliefFbestK || eopt.selectionEstimator == estRelief ||
-			eopt.selectionEstimator == estReliefFmerit || eopt.selectionEstimator == estReliefFdistance ||
-			eopt.selectionEstimator == estReliefFsqrDistance ||  eopt.selectionEstimator == estReliefFexpC ||
-			eopt.selectionEstimator == estReliefFavgC || eopt.selectionEstimator == estReliefFpe ||
-			eopt.selectionEstimator == estReliefFpa ||eopt.selectionEstimator == estReliefFsmp ||
-			eopt.selectionEstimator == estReliefKukar) // ReliefF estimators
-	{
-		greedyPositions += (NoValues-1)*noBasicAttr; // we also have to estimate basic attributes in each round (distances)
+	if (NoValues > eopt.maxValues4Greedy) {
+	    // random binarization
+		marray<int>  valueCount(NoValues+1, 0) ;
+		for (i=0 ; i < TrainSize ; i++)	{
+			attrValue = nodeConstruct.discreteValue(DiscValues, NumValues, i) ;
+			valueCount[attrValue] ++ ;
+		}
+		int validValues = TrainSize - valueCount[NAdisc] ;
+		if ( validValues <= eopt.minNodeWeightEst/2.0) { // split will be invalid anyway
+			nodeConstruct.leftValues.init(mFALSE) ;
+		}
+		double targetLeftVals = randBetween(eopt.minNodeWeightEst, validValues/2.0) ;
+		int leftVal = 0 ;
+		// randomly order the value indexes
+		marray<int> order(NoValues+1) ;
+		for (i = 0 ; i <= NoValues; ++i)
+			order[i] = i ;
+		for (i = 1 ; i < NoValues; ++i) { // shuffle all expect 0th, last can be skipped
+			swap(order[i], order[randBetween(i, NoValues)]) ;
+		}
+		for (int idx=1 ; idx <= NoValues ; ++idx) 	{
+			leftVal += valueCount[order[idx]] ;
+            if (leftVal == validValues)  // do not allow all relevant values on the left
+            	break ;
+			nodeConstruct.leftValues[ order[idx] ] = mTRUE ; // add this value to the left
+			if (leftVal >= targetLeftVals)
+				break ;
+		}
 	}
-	if ( (NoValues < maxVal4ExhDisc) &&
-			(exhaustivePositions * 0.8 <= greedyPositions ||
-					exhaustivePositions < eopt.discretizationSample))
-	{
+	else if ( NoValues <= eopt.maxValues4Exhaustive) { // &&(exhaustivePositions * 0.8 <= greedyPositions ||exhaustivePositions < eopt.discretizationSample))
 		// exhaustive search
+		binPartition Generator(NoValues) ;
+		double exhaustivePositions = Generator.noPositions() ;
+
 		adjustTables(0, firstFreeDiscSlot + int(exhaustivePositions)) ;
 		marray<marray<booleanT> >  leftValues( (int)exhaustivePositions ) ;
 		int noIncrements = 0, noLeft, noRight ;
@@ -94,7 +93,7 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 		{
 			// save partition
 			leftValues[noIncrements] = Generator.leftPartition ;
-			// count values to check if partiotion  is valid
+			// count values to check if partition  is valid
 			noLeft = noRight = 0 ;
 			// compute data column
 			for (i=0 ; i < TrainSize ; i++)
@@ -130,9 +129,7 @@ void estimation::binarizeGeneral(construct &nodeConstruct, int firstFreeDiscSlot
 		   //bestEstimation =  DiscEstimation[bestIdx] ;
 		}
 	}
-	else
-	{
-		// greedy search
+	else  {	// greedy search
 		adjustTables(0, firstFreeDiscSlot + NoValues) ;
 		marray<marray<booleanT> >  leftValues(NoValues) ;
 		marray<int>  noLeft(NoValues), noRight(NoValues) ; // number of instances after a split
@@ -239,15 +236,19 @@ double estimation::bestSplitGeneral(construct &nodeConstruct, int firstFreeDiscS
 		}
 	}
 	OKvalues = lastUnique+1 ;
-	if (OKvalues <= 1)
-	{
+	if (OKvalues <= 1)	{
 		return - DBL_MAX ; // smaller than any value, so all examples will go into one branch
 	}
 
 
+	if (eopt.discretizationSample == 1) { // greedy selection of splitting point
+		int splitIdx = randBetween(0, OKvalues-1) ;
+		return (sortedAttr[splitIdx].key + sortedAttr[splitIdx+1].key)/2.0 ;
+	}
+
 	int sampleSize ;
 	if (eopt.discretizationSample==0)
-		sampleSize = OKvalues -1;
+		sampleSize = OKvalues - 1;
 	else
 		sampleSize = Mmin(eopt.discretizationSample, OKvalues-1) ;
 	marray<int> splits(sampleSize) ;
@@ -295,7 +296,7 @@ double estimation::bestSplitGeneral(construct &nodeConstruct, int firstFreeDiscS
 //      greedy algorithm and returns its estimated quality
 //
 //************************************************************
-double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int firstFreeDiscSlot)
+double estimation::discretizeGreedy(int ContAttrIdx, int maxBins, marray<double> &Bounds, int firstFreeDiscSlot)
 {
 	Bounds.setFilled(0) ;
 
@@ -364,7 +365,7 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
 	double bestEstimate = - DBL_MAX, bound ;
 	int currentLimit=0 ; // number of times the current dicretization was worse than the best discretization
 	int currentNoValues = 2 ;
-	while (currentLimit <= eopt.discretizationLookahead && sampleSize > 0 )
+	while (currentLimit <= eopt.discretizationLookahead && sampleSize > 0 && (maxBins==0 || currentNoValues <= maxBins))
 	{
 		// compute data columns
 		for (i=0 ; i < TrainSize ; i++)
@@ -402,11 +403,6 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
 			currentLimit ++ ;
 		splits[currentIdx-firstFreeDiscSlot] = splits[--sampleSize] ;
 		currentNoValues ++ ;
-		// if (currentNoValues >= 126)
-			// {
-			//  merror("estimation:discretizeGreedy","internal assumption about maximum  number of nominal attribute's values is invalid") ;
-		//  break ;
-		// }
 	}
 
 	eopt.binaryEvaluation = binaryEvaluationBefore ;
@@ -414,147 +410,6 @@ double estimation::discretizeGreedy(int ContAttrIdx, marray<double> &Bounds, int
 	return bestEstimate ;
 }
 
-
-
-//************************************************************
-//
-//                        discretizeGreedyImpurity
-//                        -----------------------
-//
-//     finds best discretization of numeric attribute with
-//      greedy algorithm and returns its estimated quality
-//
-//************************************************************
-// unifished !!!
-/*double estimation::discretizeGreedyImpurity(int ContAttrIdx, marray<double> &Bounds)
-{
-   Bounds.setFilled(0) ;
-   int maxBounds =1+ Mmin(eopt.discretizationSample, TrainSize) ;
-   marray<sortRec> sortedAttr(TrainSize) ;
-   marray<int> noAttrVal(maxBounds, 0) ;
-   mmatrix<int> noClassAttrVal(noClasses+1, maxBounds, 0) ;
-
-   int i, j, idx ;
-   int OKvalues = 0 ;
-   for (j=0 ; j < TrainSize ; j++)
-   {
-      if (isNAcont(NumValues(j, ContAttrIdx)))
-        continue ;
-      sortedAttr[OKvalues].key = NumValues(j, ContAttrIdx) ;
-      sortedAttr[OKvalues].value = j ;
-      noClassAttrVal(NumValues(j, 0), 1) ++ ; // initially we put all in the first column
-      OKvalues ++ ;
-   }
-   if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
-   {
-      // all values of the attribute are missing or equal
-      return - DBL_MAX ;
-   }
-   int validInstances = OKvalues
-
-   sortedAttr.setFilled(OKvalues) ;
-   sortedAttr.sort(ascSortComp) ;
-
-   // eliminate duplicates
-   int unique = 0 ;
-   for (j=1 ; j < OKvalues ; j ++)
-   {
-     if (sortedAttr[j].key != sortedAttr[unique].key)
-     {
-       unique ++ ;
-       sortedAttr[unique] = sortedAttr[j] ;
-     }
-   }
-   OKvalues = unique ;
-   sortedAttr.setFilled(OKvalues) ;
-
-   if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
-   {
-      // all values of the attribute are missing or equal
-      return - DBL_MAX ;
-   }
-
-   booleanT binaryEvaluationBefore = eopt.binaryEvaluation ;
-   eopt.binaryEvaluation = mFALSE ;
-
-   int sampleSize ;
-   // we use all the available values only if explicitely demanded
-   if (eopt.discretizationSample==0)
-     sampleSize = OKvalues -1;
-   else
-     sampleSize = Mmin(eopt.discretizationSample, OKvalues-1) ;
-
-   marray<int> splits(sampleSize) ;
-   randomizedSample(splits, sampleSize, OKvalues-1) ;
-   splits.setFilled(sampleSize);
-   splits.qsortAsc();
-   // prepare candidate splits
-   double splitCandidate(sampleSize-1) ;
-   int ci, noSplitCandidates = sampleSize - 1 ;
-   for (ci=0 ; ci<noSplitCandidates;ci++){
-	   splitCandidate[ci]=(sortedAttr[splits[ci]].key + sortedAttr[splits[ci+1]].key)/2.0;
-
-   double priorImpurity = (this->*fImpurity)(validInstances, noClassAttrVal, 1) ;
-
-   // greedy search
-   marray<double> currentBounds(sampleSize) ;
-   int currentIdx ;
-   double bestEstimate = - DBL_MAX, bound ;
-   int currentLimit=0 ; // number of times the current dicretization was worse than the best discretization
-   int currentNoValues = 2 ;
-   while (currentLimit <= eopt.discretizationLookahead && sampleSize > 0 )
-   {
-      for (ci=0 ; ci < noSplitCandidates ; ci++) {
-
-      // compute statistics for all current candidates
-      for (i=0 ; i < TrainSize ; i++)
-      {
-       attrValue = NumValues(i, ContAttrIdx) ;
-       idx = 0 ;
-       while (idx < currentBounds.filled()  &&  attrValue > currentBounds[idx])
-         idx++ ;
-       idx ++ ; // changes idx to discrete value
-       for (j=0 ; j < sampleSize ; j++)
-       {
-          if (isNAcont(attrValue))
-            DiscValues.Set(i, firstFreeDiscSlot + j, NAdisc) ;
-          else
-            if (attrValue <= sortedAttr[splits[j]].key)
-               DiscValues.Set(i, firstFreeDiscSlot + j, idx) ;
-            else
-               DiscValues.Set(i, firstFreeDiscSlot + j, idx+1) ;
-       }
-     }
-     for (j=0 ; j < sampleSize ; j++)
-        prepareDiscAttr(firstFreeDiscSlot + j, currentNoValues) ;
-     // estimate and select best
-     currentIdx = estimate(eopt.selectionEstimator, 0, 0, firstFreeDiscSlot, firstFreeDiscSlot + sampleSize, bestType) ;
-     bound = (sortedAttr[splits[currentIdx - firstFreeDiscSlot]].key
-              + sortedAttr[splits[currentIdx - firstFreeDiscSlot]+1].key)/2.0 ;
-     currentBounds.addToAscSorted(bound) ;
-     if (DiscEstimation[currentIdx] > bestEstimate)
-     {
-       bestEstimate = DiscEstimation[currentIdx] ;
-       Bounds = currentBounds ;
-       currentLimit = 0 ;
-     }
-     else
-        currentLimit ++ ;
-     splits[currentIdx-firstFreeDiscSlot] = splits[--sampleSize] ;
-     currentNoValues ++ ;
-     // if (currentNoValues >= 126)
-	 // {
-	 //  merror("estimation:discretizeGreedy","internal assumption about maximum  number of nominal attribute's values is invalid") ;
-     //  break ;
-	 // }
-   }
-
-   eopt.binaryEvaluation = binaryEvaluationBefore ;
-
-   return bestEstimate ;
-}
-
- */
 
 
 //************************************************************

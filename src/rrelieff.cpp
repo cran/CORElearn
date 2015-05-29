@@ -115,6 +115,7 @@ estimationReg::estimationReg(regressionTree *fTreeParent, marray<int> &inDTrain,
    //-------------------------------------------------------------
    DiscEstimation.create(noDiscrete, -2.0) ;
    NumEstimation.create(noNumeric, -2.0) ;
+   splitPoint.create(noNumeric, DBL_MAX) ;
    //-------------------------------------------------------------
    // create distance matrix
    //-------------------------------------------------------------

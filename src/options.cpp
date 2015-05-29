@@ -116,8 +116,11 @@ void Options::copy(const Options &cp) {
 	   // discretization
 	   discretizationLookahead = cp.discretizationLookahead;
 	   discretizationSample = cp.discretizationSample;
+	   maxValues4Exhaustive = cp. maxValues4Exhaustive ;
+	   maxValues4Greedy = cp. maxValues4Greedy ;
 	   bayesDiscretization = cp.bayesDiscretization;
 	   bayesEqFreqIntervals = cp.bayesEqFreqIntervals;
+
 
 	   // pruning
 	   selectedPruner = cp.selectedPruner;
@@ -236,6 +239,8 @@ void Options::setDefault(void) {
 
 	discretizationLookahead = 3 ;
     discretizationSample = 50 ;
+    maxValues4Exhaustive = 7 ;
+    maxValues4Greedy = 30 ;
 
     rfNoTrees = 100 ;
     rfNoSelAttr = 0; // meaning square root of the number of attributes
@@ -662,10 +667,16 @@ void Options::outConfig(FILE *to) const
 
 
     // Number of times current discretization can be worse than the best
-	fprintf(to,"discretizationLookahead=%d  # Number of times current discretization can be worse than the best (0-try all possibilities)\n",discretizationLookahead) ;
+	fprintf(to,"discretizationLookahead=%d  # number of times current discretization can be worse than the best (0-try all possibilities)\n",discretizationLookahead) ;
 
-    // Maximal number of points to try discretization (binarization)
+    // Maximal number of points to try discretization
 	fprintf(to,"discretizationSample=%d  # maximal number of points to try discretization (0 means all sensible)\n",discretizationSample) ;
+
+    // Maximal number of attribute values to try finding binary split exhaustively (if more greedily or randomly)
+	fprintf(to,"maxValues4Exhaustive=%d  # maximal number of values of a discrete attribute to try finding split exhaustively)\n",maxValues4Exhaustive) ;
+
+    // Maximal number of attribute values to try finding binary split greedily (if more randomly)
+	fprintf(to,"maxValues4Greedy=%d  # maximal number of values of a discrete attribute to try finding split greedily - if more randomly)\n",maxValues4Greedy) ;
 
 
     fprintf(to, "# ---------- Pruning  options ----------\n") ;
@@ -1256,6 +1267,22 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
       else
          merror("discretizationSample (maximal number of points to try discretization with Relief) should be non-negative","") ;
 	}
+    else if (strcmp(keyword, "maxValues4Exhaustive")==0) {
+       // Maximal values of discrete attribute to try exhaustive binarization (if more greedily or random
+       sscanf(key,"%lf", &dtemp) ;
+       if (dtemp >=2)
+    	   maxValues4Exhaustive = (int)dtemp ;
+       else
+         merror("maxValues4Exhaustive (maximal number of values of discrete attribute to try binarization exhaustively) should be at least 2", "") ;
+	}
+    else if (strcmp(keyword, "maxValues4Greedy")==0) {
+        // Maximal values of discrete attribute to try greedy binarization (if more random)
+        sscanf(key,"%lf", &dtemp) ;
+        if (dtemp >=2)
+     	   maxValues4Greedy = (int)dtemp ;
+        else
+          merror("maxValues4Greedy (maximal number of values of discrete attribute to try binarization greedily) should be at least 2", "") ;
+ 	}
 
     // Pruning options
 

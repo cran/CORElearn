@@ -205,7 +205,7 @@ void expr::createSimpleBayes(estimation &Estimator, binnode *treeNode)
 	{
 		case discrGreedy:
 			 for (iCont = 0 ; iCont < Estimator.noNumeric ; iCont++)
-				Estimator.discretizeGreedy(iCont,Boundary[iCont], Estimator.noDiscrete) ;
+				Estimator.discretizeGreedy(iCont, 0, Boundary[iCont], Estimator.noDiscrete) ;
 			 break ;
 		case discrEqFreq:
 			 for (iCont = 0 ; iCont < Estimator.noNumeric ; iCont++)

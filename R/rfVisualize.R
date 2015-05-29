@@ -68,7 +68,7 @@ getRpartModel <- function(model, dataset) {
         i<-i+1;
     }
     ee$splits<-splits;
-    search <- attr(model$terms, "variables")[[2]];
+    search <- all.vars(model$formula)[1]
     b<-lapply(attr(dataset, 'names'),function(x){x!=search});
     #we can use levels onto dataset, 
     #because rpart.labels matches attributes by name.
@@ -146,13 +146,11 @@ getRpartModel <- function(model, dataset) {
 getRpart <- function(model) {
     #regression tree
     if(model$model == "regTree"){
-        .Call("exportModelRT", as.integer(model$modelID)
-                , PACKAGE="CORElearn")
+        .Call("exportModelRT", as.integer(model$modelID), PACKAGE="CORElearn")
     }
     #classification tree
     else if(model$model == "tree"){
-        .Call("exportModelT", as.integer(model$modelID)
-                , PACKAGE="CORElearn")
+        .Call("exportModelT", as.integer(model$modelID), PACKAGE="CORElearn")
     }
     else{
         stop("The model must be a regresion or a decision tree.");
@@ -161,8 +159,7 @@ getRpart <- function(model) {
 rfProximity <- function(model, outProximity=TRUE){
     if (model$model == "rf"){
         .Call("exportProximity", as.integer(model$modelID),
-              as.integer(outProximity==FALSE),
-              PACKAGE="CORElearn")
+              as.integer(outProximity==FALSE), PACKAGE="CORElearn")
     }
     else{
         stop("The model must be a random forest.");
@@ -188,7 +185,7 @@ rfClustering <- function(model, noClusters=4){
 
 rfOutliers <- function(model, dataset){
     pr <- rfProximity(model, outProximity=TRUE);
-    search <- attr(model$terms, "variables")[[2]];
+    search <- all.vars(model$formula)[1];
     b<-lapply(attr(dataset, 'names'),function(x){x==search});
     attrClass<-c(1:length(b))[b==TRUE]
     caseIndex<-matrix(c(1:dim(pr)[2]), dim(pr)[1], dim(pr)[2], TRUE)
@@ -212,7 +209,7 @@ rfOutliers <- function(model, dataset){
     outliers<-prSum
 }
 classPrototypes<-function(model, dataset, noPrototypes=10){
-    search <- attr(model$terms, "variables")[[2]];
+    search <- all.vars(model$formula)[1];
     b<-unlist(lapply(attr(dataset, 'names'),function(x){x==search}));
     lev<-levels(dataset[, b]);
     nclass<-length(lev);
@@ -296,7 +293,7 @@ varNormalization<-function(md, set){
         }
     }
     out<-NULL;
-    classV<- attr(md$terms, "variables")[[2]];
+    classV<- all.vars(md$formula)[1];
     classV<-unlist(lapply(attr(set, 'names'),function(x){x!=classV}));
     for(ex in 1:n){
         pos<-vector("numeric", column);
@@ -324,6 +321,7 @@ varNormalization<-function(md, set){
     }
     out<-matrix(out, n, column-1, TRUE);
 }
+
 getQuartils<-function(examples){
     int<-0.25;
     i<-1
@@ -337,9 +335,10 @@ getQuartils<-function(examples){
     }
     getQuartils<-examples;
 }
+
 rfAttrEvalClustering<-function(model, dataset, clustering=NULL){
-    search <- attr(model$terms, "variables")[[2]];
-    b<-lapply(attr(dataset, 'names'),function(x){x==search});
+    search <- all.vars(model$formula)[1];
+    b<-lapply(attr(dataset, 'names'),function(x){x==search})
     b<-unlist(b);
     i<-1;
     imp<-NULL;
@@ -373,6 +372,7 @@ rfAttrEvalClustering<-function(model, dataset, clustering=NULL){
     rfAttrEvalClustering<-temp;
 	
 }
+
 plotRFStats <- function(point, cluster=FALSE, plotLine=FALSE, 
         lOffset=0, myCount=7, myAxes=FALSE)
 {
@@ -444,6 +444,7 @@ plotRFStats <- function(point, cluster=FALSE, plotLine=FALSE,
         }
     }
 }
+
 plotRFMulti<-function(point, legendNames=FALSE, lOffset=0, 
         myCount=7, myHoriz=FALSE, myAxes=FALSE)
 {
@@ -485,6 +486,7 @@ plotRFMulti<-function(point, legendNames=FALSE, lOffset=0,
     color<-c(1:noCluster);
     legend(xlim[1], ylim[2], clusterNames, cex=0.8, col=myColor, pch=myPch, horiz=myHoriz);
 }
+
 plotRFNorm<-function(point, cluster, somnames, lOffset, 
         myHoriz=FALSE, myAxes=FALSE)
 {

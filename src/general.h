@@ -47,7 +47,7 @@ const int MaxNameLen = 1024;
 const int MaxFileNameLen = 512 ;
 const int MaxIntLen = 32 ;
 const int MaxFeatureStrLen = 2048 ;
-const int maxVal4ExhDisc = 7 ; // maximum number of values of attribute for considering exhaustive search for discretization
+// const int maxVal4ExhDisc = 7 ; // maximum number of values of attribute for considering exhaustive search for discretization
 const int noOEstats = 9 ;
 
 // const char MaxChar = '\xff' ;

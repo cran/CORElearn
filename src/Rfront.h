@@ -26,12 +26,12 @@ void estimateCore(int *noInst, int *noDiscrete,
 		int *noDiscVal, int *discData, int *noNumeric, double *numData, double *costMx,
 		char **dscAttrNames, char **dscValNames, char ** nmAttrNames,
         int *noOptions, char **optName, char **optValue,
-		int *selectedEstimator, double *discEst, double *numEst) ;
+		int *selectedEstimator, double *discEst, double *numEst, double *numSplitPoint) ;
 void estimateCoreReg(int *noInst, int *noDiscrete,
 		int *noDiscVal, int *discData, int *noNumeric, double *numData,
 		char **dscAttrNames, char **dscValNames, char ** nmAttrNames,
         int *noOptions, char **optName, char **optValue,
-		int *selectedEstimator, double *discEst, double *numEst) ;
+		int *selectedEstimator, double *discEst, double *numEst, double *numSplitPoint) ;
 void ordEvalCore(int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 		char **dscAttrNames, char **dscValNames,
 		int *noOptions, char **optName, char **optValue,
@@ -62,6 +62,7 @@ SEXP exportProximity(SEXP modelID, SEXP dis) ;
 SEXP exportVarImportanceCluster(int *modelID, int *clusterData, double *var) ;
 SEXP printTreeDot2R(SEXP modelID) ;
 SEXP printTree2R(SEXP modelID) ;
+SEXP noEqualRows(SEXP data1, SEXP data2, SEXP nrowsd1, SEXP nrowsd2, SEXP ncol, SEXP tolerance, SEXP countOnce) ;
 
 #endif
 }

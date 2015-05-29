@@ -24,17 +24,25 @@ Regression models:
        ..., costMatrix=NULL)
 }
 \arguments{
-  \item{formula}{ Formula specifying the response and attribute variables. }
+  \item{formula}{ Either a formula specifying the attributes to be evaluated and the target variable, or a name of target variable, or an index of target variable. }
   \item{data}{ Data frame with training data. }
   \item{model}{ The type of model to be learned. }
   \item{... }{ Options for building the model. See \code{\link{helpCore}}. }
   \item{costMatrix}{ Optional cost matrix used with certain models. }
 }
 \details{
-  Parameter \bold{formula} is used as a mechanism to select features (attributes)
-  and the prediction (response) variable (class). Only simple terms can be used.
-  Interaction terms are not supported. The simplest way is
-  to specify just the response variable using e.g. "class ~ .". See examples below.
+   The parameter \code{formula} can be interpreted in three ways, where the formula interface is the most elegant one, 
+  but inefficient and inappropriate for large data sets. See also examples below. As \code{formula} one can specify:
+\describe{ 
+  \item{an object of class \code{formula}}{used as a mechanism to select features (attributes) 
+  and prediction variable (class). Only simple terms can be used and 
+  interaction expressed in formula syntax are not supported. The simplest way is
+  to specify just response variable: \code{class ~ .}.
+  In this case all other attributes in the data set are evaluated. Note that formula interface is not appropriate for data sets with
+  large number of variables.}
+  \item{a character vector}{specifying the name of target variable, all the other columns in data frame \code{data} are used as predictors.}
+  \item{an integer}{specifying the index of of target variable in data frame \code{data}, all the other columns are used as predictors.}
+}
 
   Parameter \bold{model} controls the type of the constructed model. There are several possibilities:
   \describe{
@@ -122,7 +130,9 @@ destroyModels(modelRF) # clean up
 
 
 # build decision tree with naive Bayes in the leaves
-modelDT <- CoreModel(Species ~ ., iris, model="tree", modelType=4)
+# more appropriate for large data sets one can specify just the target variable
+
+modelDT <- CoreModel("Species", iris, model="tree", modelType=4)
 print(modelDT)
 destroyModels(modelDT) # clean up
 

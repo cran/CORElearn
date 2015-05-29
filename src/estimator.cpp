@@ -65,7 +65,7 @@ int estimation::estimate(int selectedEstimator, int contAttrFrom, int contAttrTo
   			marray<double> Bounds ;
             #pragma omp parallel for private(Bounds)
   			for (int idx=contAttrFrom ; idx < contAttrTo ; idx++)	{
-  			   NumEstimation[idx] = discretizeGreedy(idx, Bounds, discAttrTo) ;
+  			   NumEstimation[idx] = discretizeGreedy(idx, 0, Bounds, discAttrTo) ;
   			}
   		 }
   		 eopt.selectionEstimator = beforeEstimator ;

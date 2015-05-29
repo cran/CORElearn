@@ -14,7 +14,7 @@ loadRF(formula, data, fileName)
 \arguments{
   \item{model}{ The model structure as returned by \code{\link{CoreModel}}. }
   \item{fileName}{ Name of the file to save/load the model to/from. }
-  \item{formula}{ Formula shell match the model loaded from file. }
+  \item{formula}{ Formula shell match the model loaded from file. It is either a formula specifying the attributes to be evaluated and the target variable or a name of target variable or an index of target variable. }
   \item{data}{ Data shell match the formula and the model loaded from file. }
   }
 \details{
@@ -22,14 +22,15 @@ loadRF(formula, data, fileName)
    The \code{model} must be a valid structure returned by \code{\link{CoreModel}}.
    The function \code{loadRF} loads the internal structure of random forests saved in a specified file and
    returns access to it in the \code{model}. The parameters \code{formula} and \code{data} have to match
-   the loaded model, and are needed for subsequent predictions with the loaded model.   
+   the loaded model, and are needed for subsequent predictions with the loaded model. 
+   See \code{\link{CoreModel}} for their interpretation.
 }
 \value{
   \code{saveRF} does not return any value, while \code{loadRF}
      returns a loaded model as a list, similarly to \code{\link{CoreModel}}.
 }
 
-\author{ Marko Robnik-Sikonja, Petr Savicky }
+\author{ Marko Robnik-Sikonja}
 
 \keyword{ models }
 \keyword{ regression }

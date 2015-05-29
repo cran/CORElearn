@@ -25,7 +25,7 @@ paramCoreIO(model, fileName, io=c("read","write"))
   \code{list(modelID, filename, io}.
 }
 
-\author{ Marko Robnik-Sikonja, Petr Savicky }
+\author{ Marko Robnik-Sikonja}
 
 \keyword{ models }
 \keyword{ regression }

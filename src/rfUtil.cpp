@@ -31,14 +31,17 @@ void randomSample(int size, double prop, marray<int> &data, marray<int> &ib, mar
 	ib.create(ibSize);
  	oob.create(size, mTRUE) ;
 	oobIdx.create(size) ;
-    int i, sel ;
+	marray<int> selector(size) ;
+    int i, sel, upper=size ;
+    for (i=0 ; i < size ; i++)
+    	selector[i] = i ;
     // prepare data for the bag
 	for (i = 0 ; i < ibSize ; i++) {
-	   do {
-			sel = randBetween(0, size) ;
-	   } while (oob[sel] == mFALSE) ;
-	   ib[i] = data[sel] ;
-	   oob[sel] = mFALSE ;
+	   sel = randBetween(0, upper) ;
+	   ib[i] = data[selector[sel]] ;
+	   oob[selector[sel]] = mFALSE ;
+	   -- upper ;
+	   selector[sel] = selector[upper] ;
 	}
 	for (i = 0 ; i < size ; i++) 
 		if (oob[i])

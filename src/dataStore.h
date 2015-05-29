@@ -43,7 +43,7 @@ class dataStore
 
 public:
    int noAttr, NoOriginalAttr, noNumeric, noDiscrete ;
-   mmatrix<int> DiscData, DiscPredictData ;    // discretized data
+   mmatrix<int> DiscData, DiscPredictData ;    // discrete data
    mmatrix<double> NumData, NumPredictData ;   // numeric data
    marray<int> ContIdx ; // index pointing to the place in description for continuous variable
    marray<int> DiscIdx;  // index pointing to the place in description for discrete variable

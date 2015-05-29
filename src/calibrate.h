@@ -29,7 +29,7 @@ public:
 	void isoRegCal(marray<sort3Rec> &y);
 	void binIsoCal(marray<sort3Rec> &y, int noInitialBins);
 	void binningCal(marray<sort3Rec> &y, int noBins);
-	void mergeCal(marray<sort3Rec> &y);
+	void mergeCal(marray<sort3Rec> &y, int noInitialBins);
 	void writeCSV(char* calFileName);
 	void readCSV(char* calFileName);
 	int getCalibration(marray<double> &intrvl, marray<double> &prob);

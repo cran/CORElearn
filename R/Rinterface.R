@@ -14,21 +14,49 @@ destroyModels <-function(model=NULL)
   }
   else {
     for (i in seq(along=model)) {
-		modelID <- model[i]$modelID
-        tmp <- .C("destroyOneCoreModel", as.integer(modelID), PACKAGE="CORElearn" )
-	}
+      modelID <- model[i]$modelID
+      tmp <- .C("destroyOneCoreModel", as.integer(modelID), PACKAGE="CORElearn" )
+    }
   }
   invisible(NULL) 
 }
 CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKernel","bayes","regTree"), ..., costMatrix=NULL)
 {
-  if (!inherits(formula,"formula")) stop("First argument must be a formula.");
+  # check formula or response index or reponse name
+  if (inherits(formula,"formula")) {
+    dat <- model.frame(formula, data=data, na.action=na.pass)
+    trms <- attr(dat,"terms")
+    attributes(trms) <- NULL
+    formulaExpanded <- as.formula(trms)
+  } 
+  else {
+    if (is.numeric(formula)) {
+      if (formula == round(formula)) {# index of response variable
+        classIdx <- formula
+        className <- names(data)[classIdx]
+      }
+      else  stop("The first argument must be a formula or prediction column name or prediction column index.")
+    }
+    else if (is.character(formula)) { # name of response variable
+      classIdx <- match(formula, names(data))
+      if (length(classIdx) != 1 || is.na(classIdx)) 
+        stop("The first argument must be a formula or prediction column name or prediction column index.")
+      className <- names(data[classIdx])
+    }
+    else stop("The first argument must be a formula or prediction column name or prediction column index.")
+    
+    dat <- data.frame(data[, classIdx], data[, -classIdx, drop=FALSE])
+    names(dat)[1] <- className
+    # get formula explicitly to allow storage of all terms and their manipulation
+	frml <- paste(className, "~",paste(names(dat)[-1], sep="+",collapse="+"),sep="") 
+	formulaExpanded <- as.formula(frml)   
+  }
+  
   model <- match.arg(model) ; 
   isRegression <- model == "regTree"
   if (isRegression && !is.null(costMatrix))
     warning("For regression problems parameter costMatrix is ignored.");  
   
-  dat <- model.frame(formula, data=data, na.action=na.pass);
   if (!isRegression && !inherits(dat[[1]],"factor")) {
     dat[[1]] <- factor(dat[[1]]);
     cat("Changing dependent variable to factor with levels:",levels(dat[[1]]),"\n");
@@ -40,17 +68,11 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
     ## create and fill uniform costs matrix
     costMatrix <- 1 - diag(noClasses);
   }
-  # get formula explicitly to allow storage of all terms and their manipulation
-  trms <- attr(dat,"terms")
-  attributes(trms) <- NULL
-  formulaExpanded <- as.formula(trms)
-  
+   
   aux <- prepare.Data(dat, formulaExpanded, dependent=TRUE,skipNAcolumn=TRUE,skipEqualColumn=TRUE);
   discnumvalues <- aux$discnumvalues;
   discdata <- aux$discdata;
   numdata <- aux$numdata;
-  terms <- terms(aux$formulaOut)  # attr(dat,"terms");
-  attr(terms,"intercept") <- NULL; 
   discAttrNames <- dimnames(discdata)[[2]]
   discValCompressed <- aux$disccharvalues
   discValues <- aux$discValues
@@ -89,7 +111,7 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
   if (tmp$modelID == -1) {
     return(NULL)
   }
-  res <- list(modelID=tmp$modelID, terms=terms, class.lev=class.lev, model=model, formula=aux$formulaOut,
+  res <- list(modelID=tmp$modelID, class.lev=class.lev, model=model, formula=aux$formulaOut,
               noClasses = tmp$noClasses, priorClassProb = tmp$priorClassProb[1:tmp$noClasses],
               avgTrainPrediction = tmp$avgTrainPrediction,
               noNumeric = tmp$noNumeric, noDiscrete=tmp$noDiscrete, discAttrNames = discAttrNames,
@@ -108,10 +130,11 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
   isRegression <- model$model == "regTree"
   class.lev <- model$class.lev;
   noClasses <- length(class.lev);
-  terms <- delete.response(model$terms);
-  newdata <- as.data.frame(newdata)
+  #terms <- delete.response(model$terms);
+  newFormula <- reformulate(all.vars(model$formula)[-1])
+  #newdata <- as.data.frame(newdata)
   #dat <- model.frame(model$formula, data=newdata, na.action=na.pass);
-  dat <- model.frame(terms, data=newdata, na.action=na.pass);
+  dat <- model.frame(newFormula, data=newdata, na.action=na.pass);
   aux <- prepare.Data(dat, model$formula, dependent=FALSE,class.lev, skipNAcolumn=FALSE, skipEqualColumn=FALSE);
   #aux <- prepare.Data(dat[-1], model$formula, dependent=FALSE,class.lev, skipNAcolumn=FALSE, skipEqualColumn=FALSE);
   noInst <- aux$noInst
@@ -161,43 +184,43 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
 display<- function(x, format=c("screen","dot")) UseMethod("display", x)
 
 display.CoreModel <- function(x, format=c("screen","dot")) {
-   format<-match.arg(format)
-   if (x$model %in% c("tree","knn","knnKernel","bayes","regTree")){
-	   if (format=="screen")
-	      treeStr <- .Call("printTree2R", as.integer(x$modelID), PACKAGE="CORElearn")
-	  else if (format == "dot")
-		  treeStr <- .Call("printTreeDot2R", as.integer(x$modelID), PACKAGE="CORElearn")
-   }
-   else {
-	   warning("The model provided is not of appropriate type for this visualization.");
-	   treeStr <- ""
-   }
+  format<-match.arg(format)
+  if (x$model %in% c("tree","knn","knnKernel","bayes","regTree")){
+    if (format=="screen")
+      treeStr <- .Call("printTree2R", as.integer(x$modelID), PACKAGE="CORElearn")
+    else if (format == "dot")
+      treeStr <- .Call("printTreeDot2R", as.integer(x$modelID), PACKAGE="CORElearn")
+  }
+  else {
+    warning("The model provided is not of appropriate type for this visualization.");
+    treeStr <- ""
+  }
   cat(treeStr)
   invisible(treeStr)	
 } 
-	
+
 plot.CoreModel<-function(x, trainSet, rfGraphType=c("attrEval","outliers","scaling", "prototypes","attrEvalCluster"), clustering=NULL,...) 
 {    
   rfGraphType<-match.arg(rfGraphType)
   # regression or decision tree
   if (x$model == "regTree" || x$model == "tree"){           
     rmodel <- getRpartModel(x, trainSet) ;
-	plot(rmodel)  # ,compress=T,branch=0.5);
-	text(rmodel) # , pretty=0);
- }
+    plot(rmodel)  # ,compress=T,branch=0.5);
+    text(rmodel) # , pretty=0);
+  }
   else if (x$model == "rf" || x$model == "rfNear"){
     if (rfGraphType == "attrEval") {
       imp<-rfAttrEval(x);
-      plotRFStats(imp, plotLine=TRUE, myAxes=attr(x$terms,"term.labels"));
+      plotRFStats(imp, plotLine=TRUE, myAxes=all.vars(x$formula)[-1]);
     }
     else if (rfGraphType == "attrEvalCluster") {
       #importance by cluster
       impc<-rfAttrEvalClustering(x, trainSet, clustering);
-      plotRFMulti(impc$imp, impc$levels, myAxes=attr(x$terms,"term.labels"));
+      plotRFMulti(impc$imp, impc$levels, myAxes=all.vars(x$formula)[-1]);
     }
     else if (rfGraphType == "outliers"){
       out<-rfOutliers(x, trainSet);
-      plotRFStats(abs(out), cluster=as.character(trainSet[[as.character(attr(x$terms,"variables")[[2]])]]));
+      plotRFStats(abs(out), cluster=as.character(trainSet[[all.vars(x$formula)[1]]]));
     }
     else if (rfGraphType == "scaling"){
       dis<-rfProximity(x, outProximity=F);
@@ -206,7 +229,7 @@ plot.CoreModel<-function(x, trainSet, rfGraphType=c("attrEval","outliers","scali
       #  display 1. in 2. component
       subDim<-c(space$points[,1], space$points[,2]);
       dim(subDim)<-c(length(space$points[,1]),2);
-      className <- attr(x$terms, "variables")[[2]];
+      className <- all.vars(x$formula)[1];
       cluster<-trainSet[as.character(className)];
       plotRFStats(subDim, t(cluster));
     }
@@ -214,7 +237,7 @@ plot.CoreModel<-function(x, trainSet, rfGraphType=c("attrEval","outliers","scali
       # 10 most typical cases for each class based on predicted class probability
       best<-classPrototypes(x, trainSet, 10);
       vnorm<-varNormalization(x, trainSet[best$prototypes,]);
-      plotRFNorm(vnorm, best$cluster, best$levels, 0.15, myHoriz=TRUE, myAxes=attr(x$terms,"term.labels"));
+      plotRFNorm(vnorm, best$cluster, best$levels, 0.15, myHoriz=TRUE, myAxes=all.vars(x$formula)[-1]);
     }
   }
   else {
@@ -222,9 +245,9 @@ plot.CoreModel<-function(x, trainSet, rfGraphType=c("attrEval","outliers","scali
   }
   invisible(x)
 }
-attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
+attrEval <- function(formula, data, estimator, costMatrix = NULL, outputNumericSplits=FALSE, ...)
 {
-  ## find the e of estimator
+  ## find the index of estimator
   isRegression <- FALSE ;
   estDsc <- infoCore(what="attrEval");
   estIndex <- match(estimator, estDsc, nomatch=-1);
@@ -237,24 +260,48 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
       isRegression = TRUE ;
   }
   
-  if (!inherits(formula,"formula")) stop("First argument must be a formula.");
-  dat <- model.frame(formula, data=data, na.action=na.pass);
+  # check formula or response index or reponse name
+  if (inherits(formula,"formula")) {
+    dat <- model.frame(formula, data=data, na.action=na.pass)
+    trms <- attr(dat,"terms")
+    attributes(trms) <- NULL
+    formulaExpanded <- as.formula(trms)
+  } 
+  else {
+    if (is.numeric(formula)) {
+      if (formula == round(formula)) {# index of response variable
+        classIdx <- formula
+        className <- names(data)[classIdx]
+      }
+      else  stop("The first argument must be a formula or prediction column name or prediction column index.")
+    }
+    else if (is.character(formula)) { # name of response variable
+      classIdx <- match(formula, names(data))
+      if (length(classIdx) != 1 || is.na(classIdx)) 
+        stop("The first argument must be a formula or prediction column name or prediction column index.")
+      className <- names(data[classIdx])
+    }
+    else stop("The first argument must be a formula or prediction column name or prediction column index.")
+    
+    dat <- data.frame(data[, classIdx], data[, -classIdx, drop=FALSE])
+    names(dat)[1] <- className
+    # get formula explicitly to allow storage of all terms and their manipulation
+	frml <- paste(className, "~",paste(names(dat)[-1], sep="+",collapse="+"),sep="") 
+	formulaExpanded <- as.formula(frml)   
+  }
+  
   if (!isRegression && !inherits(dat[[1]],"factor")) {
     dat[[1]] <- factor(dat[[1]]);
     cat("Changing dependent variable to factor with levels:",levels(dat[[1]]),"\n");
     warning("Possibly this is an error caused by regression formula and classification attribute estimator or vice versa.")
   }
-  class.lev <- levels(dat[[1]]);
-  noClasses <- length(class.lev)
   if (!isRegression && is.null(costMatrix)) {
-    ## create and fill uniform costs matrix
+	class.lev <- levels(dat[[1]]);
+	noClasses <- length(class.lev)
+	# create and fill uniform costs matrix
     costMatrix <- 1 - diag(noClasses);
   }
-  # get formula explicitly to allow storage of all terms and their manipulation
-  trms <- attr(dat,"terms")
-  attributes(trms) <- NULL
-  formulaExpanded <- as.formula(trms)
-  
+    
   aux <- prepare.Data(dat,formulaExpanded,dependent=TRUE,skipNAcolumn=TRUE,skipEqualColumn=FALSE);
   discnumvalues <- aux$discnumvalues;
   discdata <- aux$discdata;
@@ -267,6 +314,14 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
   discValues <- aux$discValues
   numAttrNames <- dimnames(numdata)[[2]]    
   options <- prepare.Options(...);
+  
+  #check solaris which cannot handle openMP code and force it to use a single thread
+#  versionStr <- paste(version,sep="",collapse="")
+#  if (grepl("sun",versionStr,fixed=T) || grepl("solaris",versionStr,fixed=TRUE)) {
+#	  options[length(options)+1] <- as.character(1)
+#	  names(options)[length(options)] <- "maxThreads"
+#  }
+  
   checkOptionsValues(options) ;
   optRemain <- checkEstimatorOptions(estimator, options, isRegression) ;
   if (length(optRemain) > 0) warning("Unused options:", paste(names(optRemain), collapse=", "));
@@ -287,6 +342,7 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
               selEst = estIndex,
               estDisc = double(ncol(discdata)),
               estNum = double(ncol(numdata)),
+              splitPointNum = double(ncol(numdata)),
               NAOK=TRUE,
               PACKAGE="CORElearn"
     );
@@ -311,6 +367,7 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
               selEst = estIndex,
               estDisc = double(ncol(discdata)),
               estNum = double(ncol(numdata)),
+              splitPointNum = double(ncol(numdata)),
               NAOK=TRUE,
               PACKAGE="CORElearn"
     );
@@ -322,7 +379,16 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL,  ...)
   est[nummap] <- tmp$estNum;
   names(est)[discmap] <- discAttrNames
   names(est)[nummap] <- numAttrNames   
-  est[-c(1,skipmap)];
+  
+  if (outputNumericSplits) {
+    sp <- double(length(discmap) + length(nummap)+length(skipmap));
+    sp[nummap] <- tmp$splitPointNum
+    names(sp)[nummap] <- numAttrNames
+    return( list(attrEval=est[-c(1,skipmap)], splitPointNum=sp[nummap][-1]))
+  }
+  else { # output only feature evaluations
+    return(est[-c(1,skipmap)])
+  }
 }
 rfAttrEval <- function(model) {
   if (! model$model %in% c("rf","rfNear") ) stop("Only random forest model can evaluate attributes with this function.");
@@ -358,18 +424,41 @@ rfOOB <- function(model) {
 
 ordEval <- function(formula, data, file=NULL, rndFile=NULL, variant=c("allNear","attrDist1","classDist1"), ...)
 {
-  if (!inherits(formula,"formula")) stop("First argument must be a formula.");
+	# check formula or response index or reponse name
+	if (inherits(formula,"formula")) {
+		dat <- model.frame(formula, data=data, na.action=na.pass)
+		trms <- attr(dat,"terms")
+		attributes(trms) <- NULL
+		formulaExpanded <- as.formula(trms)
+	} 
+	else {
+		if (is.numeric(formula)) {
+			if (formula == round(formula)) {# index of response variable
+				classIdx <- formula
+				className <- names(data)[classIdx]
+			}
+			else  stop("The first argument must be a formula or prediction column name or prediction column index.")
+		}
+		else if (is.character(formula)) { # name of response variable
+			classIdx <- match(formula, names(data))
+			if (length(classIdx) != 1 || is.na(classIdx)) 
+				stop("The first argument must be a formula or prediction column name or prediction column index.")
+			className <- names(data[classIdx])
+		}
+		else stop("The first argument must be a formula or prediction column name or prediction column index.")
+		
+		dat <- data.frame(data[, classIdx], data[, -classIdx, drop=FALSE])
+		names(dat)[1] <- className
+		# get formula explicitly to allow storage of all terms and their manipulation
+		frml <- paste(className, "~",paste(names(dat)[-1], sep="+",collapse="+"),sep="") 
+		formulaExpanded <- as.formula(frml)   
+	}	
   variant <- match.arg(variant)
   variantIdx=match(variant,eval(formals()$variant),nomatch=-1)
-  dat <- model.frame(formula, data=data, na.action=na.pass);
   if (!inherits(dat[[1]],"factor")) {
     dat[[1]] <- factor(dat[[1]]);
   }
   class.lev <- levels(dat[[1]]);
-  # get formula explicitly to allow storage of all terms and their manipulation
-  trms <- attr(dat,"terms")
-  attributes(trms) <- NULL
-  formulaExpanded <- as.formula(trms)    
   aux <- prepare.Data(dat, formulaExpanded,dependent=TRUE, discreteOrdered=TRUE,skipNAcolumn=TRUE,skipEqualColumn=TRUE);
   discnumvalues <- aux$discnumvalues;
   discdata <- aux$discdata;
@@ -645,7 +734,8 @@ modelEval <- function(model=NULL, correctClass, predictedClass, predictedProb=NU
       predictedClass <- model$class.lev[apply(predictedProb, 1, which.max)]
     return(modelEvaluationClass.Core(correctClass,predictedClass,predictedProb,costMatrix,priorClProb,beta))
   }
-}   
+}  
+
 modelEvaluationClass.Core <- function(correctClass, predictedClass, predictedProb=NULL, costMatrix=NULL, priorClassProb=NULL, beta=1) {
   # common vector of levels
   if (inherits(correctClass,"factor")) {
@@ -718,6 +808,7 @@ modelEvaluationClass.Core <- function(correctClass, predictedClass, predictedPro
        precision = tmp$precision, recall = tmp$sensitivity, Fmeasure = Fmeasure, 
        Gmean = tmp$Gmean, KS = tmp$KS, TPR = tmp$TPR, FPR = tmp$FPR)
 }
+
 modelEvaluationReg.Core <- function(correct, predicted, avgTrainPredicted) {
   noInst <- length(correct) ;
   tmp <- .C("modelEvaluateReg",
@@ -734,6 +825,7 @@ modelEvaluationReg.Core <- function(correct, predicted, avgTrainPredicted) {
   )
   list(MSE = tmp$MSE, RMSE = tmp$RMSE, MAE = tmp$MAE, RMAE = tmp$RMAE)
 }
+
 paramCoreIO <- function(model, fileName, io=c("read","write")) {
   io = match.arg(io)
   tmp <- .C("optionsInOut",
@@ -745,6 +837,7 @@ paramCoreIO <- function(model, fileName, io=c("read","write")) {
   )
   invisible(tmp)
 }
+
 saveRF <- function(model, fileName) {
   if (model$model != "rf") stop("Only random forest model can be saved at the moment.");
   modelID <- model$modelID
@@ -755,19 +848,45 @@ saveRF <- function(model, fileName) {
   )
   invisible(tmp)
 }
+
 loadRF <- function(formula, data, fileName) {
   model="rf"
-  if (!inherits(formula,"formula")) stop("First argument must be a formula.");
-  dat <- model.frame(formula, data=data, na.action=na.pass);
+  # check formula or response index or reponse name
+  if (inherits(formula,"formula")) {
+	  dat <- model.frame(formula, data=data, na.action=na.pass)
+	  trms <- attr(dat,"terms")
+	  attributes(trms) <- NULL
+	  formulaExpanded <- as.formula(trms)
+  } 
+  else {
+	  if (is.numeric(formula)) {
+		  if (formula == round(formula)) {# index of response variable
+			  classIdx <- formula
+			  className <- names(data)[classIdx]
+		  }
+		  else  stop("The first argument must be a formula or prediction column name or prediction column index.")
+	  }
+	  else if (is.character(formula)) { # name of response variable
+		  classIdx <- match(formula, names(data))
+		  if (length(classIdx) != 1 || is.na(classIdx)) 
+			  stop("The first argument must be a formula or prediction column name or prediction column index.")
+		  className <- names(data[classIdx])
+	  }
+	  else stop("The first argument must be a formula or prediction column name or prediction column index.")
+	  
+	  dat <- data.frame(data[, classIdx], data[, -classIdx, drop=FALSE])
+	  names(dat)[1] <- className
+	  # get formula explicitly to allow storage of all terms and their manipulation
+	  frml <- paste(className, "~",paste(names(dat)[-1], sep="+",collapse="+"),sep="") 
+	  formulaExpanded <- as.formula(frml)   
+  }
   if (!inherits(dat[[1]],"factor")) {
     dat[[1]] <- factor(dat[[1]]);
     cat("Changing dependent variable to factor with levels:",levels(dat[[1]]),"\n");
   }
   class.lev <- levels(dat[[1]]);
   noClasses <- length(class.lev);
-  terms <- attr(dat,"terms");
-  attr(terms,"intercept") <- NULL; 
-  
+   
   tmp <- .C("readRF",
             fileName=as.character(fileName),
             modelID = integer(1),
@@ -776,10 +895,11 @@ loadRF <- function(formula, data, fileName) {
   if (tmp$modelID == -1) {
     return(NULL)
   }
-  res <- list(modelID=tmp$modelID, terms=terms, class.lev=class.lev, model=model, formula=formula,  noClasses = noClasses)
+  res <- list(modelID=tmp$modelID, class.lev=class.lev, model=model, formula=formula,  noClasses = noClasses)
   class(res) <- "CoreModel"
   res
 }
+
 getRFsizes <- function(model, type=c("size", "sumdepth")) {
   if (model$model != "rf") stop("The model must be a random forest.");
   type <- match.arg(type)
@@ -787,15 +907,18 @@ getRFsizes <- function(model, type=c("size", "sumdepth")) {
          size=.Call("exportSizesRF", as.integer(model$modelID), PACKAGE="CORElearn"),
          sumdepth=.Call("exportSumOverLeavesRF", as.integer(model$modelID), PACKAGE="CORElearn"))
 }   
+
 getCoreModel <- function(model) {
   if (model$model != "rf") stop("The model must be a random forest.");
   .Call("exportModel", as.integer(model$modelID), PACKAGE="CORElearn")    
 }
 
-calibrate <- function(correctClass, predictedProb, class1=1, method = c("isoReg","binIsoReg","binning","chiMerge"), weight=NULL,noBins=10){
+calibrate <- function(correctClass, predictedProb, class1=1, method = c("isoReg","binIsoReg","binning","mdlMerge"), weight=NULL,noBins=10, assumeProbabilities=FALSE){
   noClasses <- length(levels(correctClass)) ;
   method <- match.arg(method)
   methodIdx = match(method, eval(formals()$method), nomatch=-1)
+  if (assumeProbabilities==TRUE && any(predictedProb >1.0 | predictedProb<0))
+	  stop("Predicted probabilities in predictedValues are expected to be in [0,1] range.")
   noInst <- length(correctClass) ;
   if (is.null(weight)) {
     weight<-numeric(noInst)
@@ -826,6 +949,150 @@ calibrate <- function(correctClass, predictedProb, class1=1, method = c("isoReg"
             NAOK=TRUE,
             PACKAGE="CORElearn"
   )
+  if (assumeProbabilities == TRUE)
+	  tmp$interval[tmp$noIntervals] <- 1 # set sentinel for probabilities
   list(interval = tmp$interval[1:tmp$noIntervals], calProb = tmp$calProb[1:tmp$noIntervals])
 }
 
+applyDiscretization <- function(data, boundsList) {
+	for (i in 1:length(boundsList)) {
+		attrName <- names(boundsList)[i]
+		discValues <- apply( outer(data[,attrName], boundsList[[i]], ">"), 1, sum) 
+		data[,attrName] <- factor(discValues, levels=0:length(boundsList[[i]]))
+		levels(data[,attrName]) <- intervalNames(boundsList[[i]])
+	}
+	data
+}
+discretize <- function(formula, data, estimator, discretizationLookahead=3,discretizationSample=0, maxBins=0, ...)
+{
+	## find the index of estimator
+	isRegression <- FALSE ;
+	estDsc <- infoCore(what="attrEval");
+	estIndex <- match(estimator, estDsc, nomatch=-1);
+	if (estIndex == -1) {
+		estDscReg <- infoCore(what="attrEvalReg");
+		estIndex <- match(estimator, estDscReg, nomatch=-1);
+		if (estIndex == -1) 
+			stop("Invalid estimator parameter")
+		else 
+			isRegression = TRUE ;
+	}
+	
+	# check formula or response index or reponse name
+	if (inherits(formula,"formula")) {
+		dat <- model.frame(formula, data=data, na.action=na.pass)
+		trms <- attr(dat,"terms")
+		attributes(trms) <- NULL
+		formulaExpanded <- as.formula(trms)
+	} 
+	else {
+		if (is.numeric(formula)) {
+			if (formula == round(formula)) {# index of response variable
+				classIdx <- formula
+				className <- names(data)[classIdx]
+			}
+			else  stop("The first argument must be a formula or prediction column name or prediction column index.")
+		}
+		else if (is.character(formula)) { # name of response variable
+			classIdx <- match(formula, names(data))
+			if (length(classIdx) != 1 || is.na(classIdx)) 
+				stop("The first argument must be a formula or prediction column name or prediction column index.")
+			className <- names(data[classIdx])
+		}
+		else stop("The first argument must be a formula or prediction column name or prediction column index.")
+		
+		dat <- data.frame(data[, classIdx], data[, -classIdx, drop=FALSE])
+		names(dat)[1] <- className
+		# get formula explicitly to allow storage of all terms and their manipulation
+		frml <- paste(className, "~",paste(names(dat)[-1], sep="+",collapse="+"),sep="") 
+		formulaExpanded <- as.formula(frml)   
+	}
+	
+	if (!isRegression && !inherits(dat[[1]],"factor")) {
+		dat[[1]] <- factor(dat[[1]]);
+		cat("Changing dependent variable to factor with levels:",levels(dat[[1]]),"\n");
+		warning("Possibly this is an error caused by regression formula and classification attribute estimator or vice versa.")
+	}
+
+	aux <- prepare.Data(dat,formulaExpanded,dependent=TRUE,skipNAcolumn=TRUE,skipEqualColumn=FALSE);
+	discnumvalues <- aux$discnumvalues;
+	discdata <- aux$discdata;
+	discmap <- aux$discmap;
+	numdata <- aux$numdata;
+	nummap <- aux$nummap;
+	skipmap<-aux$skipmap
+	discAttrNames <- dimnames(discdata)[[2]]
+	discValCompressed <- aux$disccharvalues
+	discValues <- aux$discValues
+	numAttrNames <- dimnames(numdata)[[2]]    
+	bounds <- matrix(0, nrow=nrow(numdata),ncol=ncol(numdata))
+	options <- prepare.Options(...);
+	options[[length(options)+1]] <- discretizationLookahead
+	options[[length(options)+1]] <- discretizationSample
+	names(options)[(length(options)-1):length(options)] <- c("discretizationLookahead","discretizationSample")
+	checkOptionsValues(options) ;
+	#optRemain <- checkEstimatorOptions(estimator, options, isRegression) ;
+	#if (length(optRemain) > 0) warning("Unused options:", paste(names(optRemain), collapse=", "));
+	if (isRegression) {
+		if (nummap[1] != 1) stop("No dependent variable in prepared regression data.");
+		attr2Disc <- ncol(numdata)-1
+	}
+	else {
+		if (discmap[1] != 1) stop("No class in prepared data."); 
+		attr2Disc <- ncol(numdata)
+	}
+	if (!is.numeric(maxBins))
+		stop("The maximal number of bins shall be an integer or integer vector of length equal to the number of numeric attributes.")
+	if (any(maxBins<0 | maxBins==1))
+		stop("The maximal number of bins shall be 0 (don't care) or an integer >=2")
+	
+	maxBins <- rep(maxBins, length.out=attr2Disc)
+	tmp <- .C("discretize",
+				isRegression = as.integer(isRegression),
+				noInst = aux$noInst,
+				noDiscrete = ncol(discdata),
+				noDiscreteValues = as.integer(discnumvalues),
+				discreteData = as.integer(discdata), # vector of length noInst*noDiscrete, columnwise
+				noNumeric = ncol(numdata),
+				numericData = as.double(numdata), # vector of length noInst*noNumeric, columnwise
+				discAttrNames = as.character(discAttrNames),
+				discValNames = as.character(discValCompressed),
+				numAttrNames = as.character(numAttrNames),            
+				numOptions = length(options),
+				optionsName = names(options),
+				optionsVal = options,
+				selEst = estIndex,
+				maxBins = as.integer(maxBins),
+				noBounds = integer(ncol(bounds)),
+				bounds = as.double(bounds), # vector of length noInst*noNumeric, columnwise
+				NAOK=TRUE,
+				PACKAGE="CORElearn"
+		)
+    boundsMx <- matrix(tmp$bounds, nrow=nrow(bounds),ncol=ncol(bounds),byrow=FALSE)
+    outBounds <- list()
+	for (i in 1:ncol(boundsMx)) {
+		if (tmp$noBounds[i]>0)
+	       outBounds[[i]] <-  boundsMx[1:tmp$noBounds[i], i]
+	   else
+		   outBounds[[i]] <- NA
+	}
+  names(outBounds) <- numAttrNames
+	
+  if (isRegression)
+	  outBounds[[1]] <- NULL
+  return(outBounds)
+ }
+
+ noEqualRows <- function(data1, data2, tolerance=1e-5, countOnce=TRUE) {
+    if (ncol(data1) != ncol(data2))
+	   stop("Only data sets with equal number of columns can be compared.")
+   d1 <- data.matrix(data1)
+   d2 <- data.matrix(data2)
+   replaceNA <- (max(d1,d2, na.rm=TRUE)+tolerance)*1.0001 # larger value than any existing
+   d1[is.na(d1)] <- replaceNA
+   d2[is.na(d2)] <- replaceNA
+   storage.mode(d1) <- "double"
+   storage.mode(d2) <- "double" 
+   .Call("noEqualRows", d1, d2, as.integer(nrow(d1)), as.integer(nrow(d2)), as.integer(ncol(d1)), 
+		                as.double(tolerance), as.integer(countOnce), PACKAGE="CORElearn")
+ }

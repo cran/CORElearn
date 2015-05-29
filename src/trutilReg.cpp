@@ -486,11 +486,11 @@ void regressionTree::Feature2Str(binnodeReg *Node, char* const Str)
 //                        discretizeGreedy
 //                        -----------------
 //
-//     finds best discretization of continuous attribute with
+//     finds best discretization of numeric attribute with
 //      greedy algorithm and returns its estimated quality
 //
 //************************************************************
-double regressionTree::discretizeGreedy(int ContAttrIdx, estimationReg &Estimator, marray<double> &Bounds)
+double regressionTree::discretizeGreedy(int ContAttrIdx, estimationReg &Estimator, int maxBins, marray<double> &Bounds)
 {
 	Bounds.setFilled(0) ;
 
@@ -534,34 +534,13 @@ double regressionTree::discretizeGreedy(int ContAttrIdx, estimationReg &Estimato
 
 
 	int sampleSize ;
-	// we use all the available values only if explicitely demanded
+	// we use all the available values only if explicitly demanded
 	if (opt->discretizationSample==0)
 		sampleSize = OKvalues -1;
 	else
 		sampleSize = Mmin(opt->discretizationSample, OKvalues-1) ;
 	marray<int> splits(sampleSize) ;
 	randomizedSample(splits, sampleSize, OKvalues-1) ;
-
-	//   if (OKvalues-1 > sampleSize)
-	//   {
-	//       // do sampling
-	//       marray<int> sortedCopy(OKvalues) ;
-	//       for (i=0 ; i < OKvalues ; i++)
-	//         sortedCopy[i] = i ;
-	//
-	//       int upper = OKvalues - 1 ;
-	//       int selected ;
-	//       for (i=0 ; i < sampleSize ; i++)
-	//       {
-	//          selected = randBetween(0, upper) ;
-	//          splits[i] = sortedCopy[selected] ;
-	//          upper -- ;
-	//          sortedCopy[selected] = sortedCopy[upper] ;
-	//       }
-	//   }
-	//   else
-	//     for (i=0 ; i < sampleSize ; i++)
-	//        splits[i] = i ;
 
 	attributeCount bestType ;
 	double attrValue ;
@@ -572,10 +551,9 @@ double regressionTree::discretizeGreedy(int ContAttrIdx, estimationReg &Estimato
 	marray<double> currentBounds(sampleSize) ;
 	int currentIdx ;
 	double bestEstimate = - DBL_MAX, bound ;
-	int currentLimit=0 ; // number of times the current dicretization was
-	// worse than the best discretization
+	int currentLimit=0 ; // number of times the current discretization was worse than the best discretization
 	int currentNoValues = 2 ;
-	while (currentLimit <= opt->discretizationLookahead && sampleSize > 0 )
+	while (currentLimit <= opt->discretizationLookahead && sampleSize > 0 && (maxBins==0 || currentNoValues <= maxBins))
 	{
 		// compute data columns
 		for (i=0 ; i < Estimator.TrainSize ; i++)
@@ -599,10 +577,8 @@ double regressionTree::discretizeGreedy(int ContAttrIdx, estimationReg &Estimato
 		for (j=0 ; j < sampleSize ; j++)
 			Estimator.prepareDiscAttr(noDiscrete + j, currentNoValues) ;
 		// estimate and select best
-		currentIdx = Estimator.estimate(opt->selectionEstimatorReg, 1, 1,
-				noDiscrete, noDiscrete+sampleSize, bestType) ;
-		bound = (sortedAttr[splits[currentIdx-noDiscrete]].key
-				+ sortedAttr[splits[currentIdx-noDiscrete]+1].key)/2.0 ;
+		currentIdx = Estimator.estimate(opt->selectionEstimatorReg, 1, 1, noDiscrete, noDiscrete+sampleSize, bestType) ;
+		bound = (sortedAttr[splits[currentIdx-noDiscrete]].key	+ sortedAttr[splits[currentIdx-noDiscrete]+1].key)/2.0 ;
 		currentBounds.addToAscSorted(bound) ;
 		if (Estimator.DiscEstimation[currentIdx] > bestEstimate)
 		{
@@ -614,8 +590,6 @@ double regressionTree::discretizeGreedy(int ContAttrIdx, estimationReg &Estimato
 			currentLimit ++ ;
 		splits[currentIdx-noDiscrete] = splits[--sampleSize] ;
 		currentNoValues ++ ;
-		// if (currentNoValues >= 126)
-			//   break ;
 	}
 	return bestEstimate ;
 }

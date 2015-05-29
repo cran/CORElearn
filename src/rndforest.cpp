@@ -130,10 +130,10 @@ int featureTree::buildForest(void) {
 		   if (opt->rfNoTerminals == 0)
 	         forest[it].t.root = buildForestTree(trainSize, forest[it].ib, estim[it], wProb, it) ;
 		   else
-			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, trainSize, forest[it].ib, estim[it], wProb, it) ;
+			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, forest[it].ib.len(), forest[it].ib, estim[it], wProb, it) ;
 	   }
 	   else {
-   	      if (opt->rfNoTerminals ==0)
+   	      if (opt->rfNoTerminals == 0)
   	         forest[it].t.root = buildForestTree(trainSize, forest[it].ib, estim[it], eProb, it) ;
 		   else
 			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, forest[it].ib.len(), forest[it].ib, estim[it], eProb, it) ;
@@ -271,6 +271,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
    marray<BinNodeRec> pq(noTerminal) ; // priority queue of the nodes
    BinNodeRec nodeEl ;
    nodeEl.value = rtNode ;
+
    // for estimation of the attributes
    marray<double> pDTrain(TrainSize, 1.0) ;
    estimation Estimator(this, DTrain, pDTrain, TrainSize) ;
@@ -293,7 +294,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 	  Node = nodeEl.value ;
 
 	  // split the data according to attribute (call by reference)
-      rfSplit(DTrain, TrainSize, Node, LeftTrain, LeftSize, RightTrain, RightSize) ;
+      rfSplit(Node->DTrain, Node->DTrain.filled(), Node, LeftTrain, LeftSize, RightTrain, RightSize) ;
       Node->weightLeft = LeftSize ;
 	  if (LeftSize==0 || RightSize==0 || LeftSize < opt->minNodeWeightRF || RightSize < opt->minNodeWeightRF){
 	  //if (LeftSize==0 || RightSize==0) {   // is the resulting split inappropriate
@@ -307,6 +308,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 			--noTerminal ;
 		 }
 		 else {
+			 pDTrain.create(LeftSize, 1.0) ;
 			 Estimator.initialize(LeftTrain,pDTrain,LeftSize) ;
 			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->left, attrProb, rndIdx)) == -DBL_MAX) {
 	              rfRevertToLeaf(Node->left) ;
@@ -323,6 +325,7 @@ binnode* featureTree::rfBuildLimitedTree(int noTerminal, int TrainSize, marray<i
 			--noTerminal ;
 		 }
 		 else {
+			 pDTrain.create(RightSize, 1.0) ;
 			 Estimator.initialize(RightTrain,pDTrain,RightSize) ;
 			 if ((nodeEl.key = rfBuildConstruct(Estimator, Node->right, attrProb, rndIdx)) == -DBL_MAX) {
 	              rfRevertToLeaf(Node->right) ;

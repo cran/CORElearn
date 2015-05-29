@@ -22,7 +22,7 @@ of all leaves.
 Numerical vector of the length equal to the number of trees in RF.
 }
 
-\author{ Marko Robnik-Sikonja, Petr Savicky}
+\author{ Petr Savicky}
 
 \seealso{
 \code{\link{CoreModel}},
