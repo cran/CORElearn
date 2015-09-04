@@ -47,6 +47,11 @@ void modelEvaluateReg(int *noInst, double *truePred,
 		double *pred, double *avgPrediction, double *MSE, double *RMSE, double *MAE, double *RMAE) ;
 void calibrate(int *calMethod, int *noInst, int *correctCl, double *predictedPr, double *wght, int *noBins,
 		       int *noIntervals, double *interval, double *calProb);
+void discretize(int *methodIdx, int *isRegression, int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
+		int *noNumeric, double *numData, char **dscAttrNames,
+		char **dscValNames, char ** nmAttrNames, int *noOptions,
+		char **optName, char **optValue, int *selectedEstimator,
+		int *maxBns, int *noBnds, double *bnds) ;
 void rfAttrEval(int *modelID, double *estOut) ;
 void rfOOB(int *modelID, double *oobAccuracy, double *oobMargin, double *oobCorrelation) ;
 void optionsInOut(int *modelID, char **fileName, char **io) ;

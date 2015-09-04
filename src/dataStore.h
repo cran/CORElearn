@@ -10,7 +10,7 @@
 
 
 
-enum discretizationConst { discrGreedy=1, discrEqFreq = 2} ;
+enum discretizationConst { discrGreedy=1, discrEqFreq = 2, discrEqWidth=3} ;
 
 // data needed to describe attribute
 class attribute

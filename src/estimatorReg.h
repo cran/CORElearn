@@ -91,6 +91,9 @@ public:
     double CVmodified(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;
     void advisor(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;
     booleanT isMyopic(int selectedEstimator) ;
+    double discretizeGreedy(int ContAttrIdx, int maxBins, marray<double> &Bounds) ;
+    void discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marray<double> &Bounds) ;
+    void discretizeEqualWidth(int ContAttrIdx, int noIntervals, marray<double> &Bounds) ;
 
 }  ;
 

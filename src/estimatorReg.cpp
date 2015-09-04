@@ -922,6 +922,3 @@ void estimationReg::MEofModel(int contAttrFrom, int contAttrTo, int discAttrFrom
    delete leftNode ;
    delete rightNode ;
 }
-
-
-

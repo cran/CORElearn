@@ -25,7 +25,7 @@ Other parameters may be used only in context sensitive measures, i.e., ReliefF i
 and RReliefF in regression and their variants.  
 \describe{
     \item{binaryEvaluation}{type: logical, default value: FALSE \cr
-          Shell we treat all attributes as binary and binarize them before evaluation if necessary.
+          Shall we treat all attributes as binary and binarize them before evaluation if necessary.
           If \code{TRUE}, then for all multivalued discrete and all numeric features a search for the
           best binarization is performed. The evaluation of the best binarization found is reported.
           If \code{FALSE}, then multivalued discrete features are evaluated "as is" with multivalued versions
@@ -112,10 +112,10 @@ expressive power of the tree model.
     \item{kInNN}{type: integer, default value: 10, value range: 0, Inf \cr
          number of neighbors in k-nearest neighbors models (0=all). }
     \item{nnKernelWidth}{type: numeric, default value: 2, value range: 0, Inf \cr  kernel width in k-nearest neighbors models. }
-    \item{bayesDiscretization}{type: integer, default value: 2, value range: 1, 2 \cr
-       type of discretization for naive Bayesian models (1=greedy with selection estimator, 2=equal frequency). }
-    \item{bayesEqFreqIntervals}{type: integer, default value: 4, value range: 1, Inf \cr
-        number of intervals in equal frequency discretization for naive Bayesian models. }
+    \item{bayesDiscretization}{type: integer, default value: 2, value range: 1, 3 \cr
+       type of discretization for naive Bayesian models (1=greedy with selection estimator, 2=equal frequency, 3=equal width). }
+    \item{discretizationIntervals}{type: integer, default value: 4, value range: 1, Inf \cr
+        number of intervals in equal frequency or equal width discretizations. }
  }
  }
  \section{Constructive induction aka. feature construction}{

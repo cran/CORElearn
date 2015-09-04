@@ -209,7 +209,12 @@ void expr::createSimpleBayes(estimation &Estimator, binnode *treeNode)
 			 break ;
 		case discrEqFreq:
 			 for (iCont = 0 ; iCont < Estimator.noNumeric ; iCont++)
-				Estimator.discretizeEqualFrequency(iCont, gFT->opt->bayesEqFreqIntervals, Boundary[iCont]) ;
+				Estimator.discretizeEqualFrequency(iCont, gFT->opt->discretizationIntervals, Boundary[iCont]) ;
+			 break ;
+
+		case discrEqWidth:
+			 for (iCont = 0 ; iCont < Estimator.noNumeric ; iCont++)
+				Estimator.discretizeEqualWidth(iCont, gFT->opt->discretizationIntervals, Boundary[iCont]) ;
 			 break ;
 
 		default: merror("expr::createSimpleBayes", "invalid discretization type for simple bayes") ;

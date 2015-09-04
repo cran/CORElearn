@@ -18,8 +18,8 @@ modelEval(model=NULL, correctClass, predictedClass, predictedProb=NULL,
   \item{predictedClass}{ A vector of predicted class labels for classification problem and function values for regression problem. }
   \item{predictedProb}{ An optional matrix of predicted class probabilities for classification.}
   \item{costMatrix}{ Optional cost matrix can provide nonuniform costs for classification problems. }
-  \item{priorClProb}{ If \code{model=NULL} a vector of prior class probabilities shell be provided in case of classification. }
-  \item{avgTrainPrediction}{ If \code{model=NULL} mean of prediction values on training set shell be provided in case of regression. }
+  \item{priorClProb}{ If \code{model=NULL} a vector of prior class probabilities shall be provided in case of classification. }
+  \item{avgTrainPrediction}{ If \code{model=NULL} mean of prediction values on training set shall be provided in case of regression. }
   \item{beta}{For two class problems \code{beta} controls the relative importance of precision and recall in F-measure.}
   }
 \details{
@@ -46,8 +46,8 @@ modelEval(model=NULL, correctClass, predictedClass, predictedProb=NULL,
    for \code{i} not equal to \code{j}. See the example below.
    
    If a non-CORElearn model is evaluated, one should set \code{model=NULL}, and  a vector of prior of class 
-   probabilities \code{priorClProb} shell be provided in case of classification,
-   and in case of regression \code{avgTrainPrediction} shell be the mean of prediction values 
+   probabilities \code{priorClProb} shall be provided in case of classification,
+   and in case of regression \code{avgTrainPrediction} shall be the mean of prediction values 
    (estimated on a e.g., training set).
    
 }

@@ -617,15 +617,13 @@ void estimation::estBinarized(int selectedEstimator, int contAttrFrom, int contA
 
 
 
-
-
 //************************************************************
 //
 //                        discretizeEqualFrequency
 //                        -----------------------
 //
-//     discretize numeric attribute with
-//      to fixed number of intervals with approximately the same number of examples in each
+//     discretize numeric attribute with a fixed number of intervals
+//        with approximately the same number of examples in each interval
 //
 //************************************************************
 void estimation::discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marray<double> &Bounds)
@@ -697,6 +695,47 @@ void estimation::discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marr
 			Bounds.addEnd(boundry) ;
 			grouped = 0 ;
 		}
+	}
+}
+
+//************************************************************
+//
+//                        discretizeEqualWidth
+//                        -----------------------
+//
+//     discretize numeric attribute with a fixed number of intervals of equal width
+//
+//************************************************************
+void estimation::discretizeEqualWidth(int ContAttrIdx, int noIntervals, marray<double> &Bounds)
+{
+	Bounds.setFilled(0) ;
+
+	int j=0 ;
+	while (j < TrainSize && isNAcont(NumValues(j, ContAttrIdx)))
+		j++ ;
+	if (j == TrainSize)
+		return ; // all values are missing
+	double value, minValue, maxValue ;
+	minValue = maxValue = NumValues(j, ContAttrIdx) ;
+	for (++j ; j < TrainSize ; j++)
+	{
+		value = NumValues(j, ContAttrIdx) ;
+		if (isNAcont(value))
+			continue ;
+		else if (value < minValue)
+			minValue = value ;
+		else if (value > maxValue)
+			maxValue = value ;
+	}
+	if (minValue == maxValue)    //  only one non missing value
+		return  ;
+    double intervalWidth = (maxValue - minValue) / noIntervals ;
+	Bounds.create(noIntervals-1) ;
+
+	for (int i = 1 ; i < noIntervals ; i++)
+	{
+		value = minValue + i * intervalWidth ;
+		Bounds.addEnd(value) ;
 	}
 }
 

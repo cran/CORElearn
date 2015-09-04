@@ -13,7 +13,7 @@ rfClustering(model, noClusters=4)
   \item{noClusters}{number of clusters}
 }
 \details{
-The method calls \code{link{pam}} function for clustering, initializing its distance matrix with random forest based similarity by calling
+The method calls \code{\link{pam}} function for clustering, initializing its distance matrix with random forest based similarity by calling
 \code{\link{rfProximity}} with argument \code{model}.
 }
 \value{

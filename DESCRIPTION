@@ -1,25 +1,29 @@
 Package: CORElearn
 Title: Classification, Regression and Feature Evaluation
-Version: 0.9.46
-Date: 2015-05-29
+Version: 1.47.1
+Date: 2015-09-03
 Author: Marko Robnik-Sikonja and Petr Savicky with contributions from John Adeyanju Alao
 Maintainer: "Marko Robnik-Sikonja" <marko.robnik@fri.uni-lj.si>
-Description: This is a suite of machine learning algorithms written in C++ with R interface. 
- It contains several machine learning model learning techniques in classification and regression,
- for example classification and regression trees with optional constructive induction and models in the leaves, 
- random forests, kNN, naive Bayes, and locally weighted regression.
- It is especially strong in feature evaluation where it contains several variants of Relief
- algorithm and many impurity based attribute evaluation functions, e.g., Gini, information gain, MDL, DKM.
- These methods can be used for example to discretize numeric attributes.
- Its additional strength is OrdEval algorithm and its visualization used for evaluation of data sets with 
- ordinal features and class enabling analysis according to the Kano model. 
+Description: This is a suite of machine learning algorithms written in C++ with R 
+ interface. It contains several machine learning model learning techniques in 
+ classification and regression, for example classification and regression trees with
+ optional constructive induction and models in the leaves, random forests, kNN, 
+ naive Bayes, and locally weighted regression. All predictions obtained with these
+ models can be explained and visualized with ExplainPrediction package.  
+ The package is especially strong in feature evaluation where it contains several variants of
+ Relief algorithm and many impurity based attribute evaluation functions, e.g., Gini, 
+ information gain, MDL, and DKM. These methods can be used for example to discretize 
+ numeric attributes.
+ Its additional feature is OrdEval algorithm and its visualization used for evaluation
+ of data sets with ordinal features and class, enabling analysis according to the 
+ Kano model of customer satisfaction. 
  Several algorithms support parallel multithreaded execution via OpenMP.  
  The top-level documentation is reachable through ?CORElearn.
 License: GPL-3
 URL: http://lkm.fri.uni-lj.si/rmarko/software/
-Imports: cluster, rpart, stats
+Imports: cluster,rpart, stats
 Suggests: lattice,MASS,rpart.plot
 NeedsCompilation: yes
-Packaged: 2015-06-02 12:04:19 UTC; rmarko
+Packaged: 2015-09-03 21:19:25 UTC; rmarko
 Repository: CRAN
-Date/Publication: 2015-06-03 19:06:30
+Date/Publication: 2015-09-04 07:35:24

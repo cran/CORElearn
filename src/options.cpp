@@ -119,7 +119,7 @@ void Options::copy(const Options &cp) {
 	   maxValues4Exhaustive = cp. maxValues4Exhaustive ;
 	   maxValues4Greedy = cp. maxValues4Greedy ;
 	   bayesDiscretization = cp.bayesDiscretization;
-	   bayesEqFreqIntervals = cp.bayesEqFreqIntervals;
+	   discretizationIntervals = cp.discretizationIntervals;
 
 
 	   // pruning
@@ -229,7 +229,7 @@ void Options::setDefault(void) {
     kInNN = 10 ;
     nnKernelWidth = 2.0 ;
 	bayesDiscretization = 2 ; // equal frequency discretization
-    bayesEqFreqIntervals = 4 ;
+    discretizationIntervals = 4 ;
 
 	constructionMode = cSINGLEattribute+cCONJUNCTION+cSUM+cPRODUCT ;  // single + conjunctions + addition + multiplication
     constructionDepth = 0 ; // 0 - no construction by default, 1- only at the root
@@ -639,7 +639,7 @@ void Options::outConfig(FILE *to) const
 	fprintf(to, "bayesDiscretization=%d  # type of discretization for naive Bayes models (1-greedy with selection estimator, 2-equal frequency)\n", bayesDiscretization) ;
 
 	// number of intervals for equal frequency discretization for simple Bayes models
-	fprintf(to, "bayesEqFreqIntervals=%d  # number of intervals in equal frequency discretization for naive Bayes models\n", bayesEqFreqIntervals) ;
+	fprintf(to, "discretizationIntervals=%d  # number of intervals in equal frequency or equal width discretization, e.g., for naive Bayes models\n", discretizationIntervals) ;
 
 
     fprintf(to, "# ---------- Constructive induction options ----------\n") ;
@@ -1176,18 +1176,18 @@ void Options::parseOption(char *optString, char *keyword, char *key) {
     else if (strcmp(keyword, "bayesDiscretization")==0) {
        // type or discretizationn for simple bayes
        sscanf(key,"%d", &temp) ;
-       if (temp >= 1 && temp <= 2)
+       if (temp >= 1 && temp <= 3)
           bayesDiscretization = temp ;
        else
-         merror("bayesDiscretization (discretization for naive Bayes) should be 1 or 2", "") ;
+         merror("bayesDiscretization (discretization for naive Bayes) should be 1, 2, or 3", "") ;
 	}
-    else if (strcmp(keyword, "bayesEqFreqIntervals")==0) {
-  	   // number of intervals for equal frequency discretization for simple Bayes models
+    else if (strcmp(keyword, "discretizationIntervals")==0) {
+  	   // number of intervals for equal frequency or equal width discretizations
        sscanf(key,"%lf", &dtemp) ;
        if (dtemp > 1)
-         bayesEqFreqIntervals = (int)dtemp ;
+         discretizationIntervals = (int)dtemp ;
        else
-          merror("bayesEqFreqIntervals (number of intervals in equal-frequency discretization for naive Bayes models) should be greater than 1", "") ;
+          merror("discretizationIntervals (number of intervals in equal-frequency or equal-width discretization) should be greater than 1", "") ;
 	}
     // Constructive induction options
 

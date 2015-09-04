@@ -1,5 +1,6 @@
 \name{predict.CoreModel}
 \alias{predict.CoreModel}
+\alias{predict}
 
 \title{ Prediction using constructed model }
 \description{

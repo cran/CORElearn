@@ -175,6 +175,7 @@ public:
     double CVVilalta(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;
     double CVmodified(int contAttrFrom, int contAttrTo, int discAttrFrom, int discAttrTo) ;
     void discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marray<double> &Bounds) ;
+    void discretizeEqualWidth(int ContAttrIdx, int noIntervals, marray<double> &Bounds) ;
     double estImpurityDisc(int discidx) ;
     double distMulticlassEvaluation(double priorImpurity, int weight, marray<int> &attrVal, mmatrix<int> &noClassAttrVal);
 

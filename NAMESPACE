@@ -6,13 +6,20 @@ export(attrEval, allTests, infoCore, classDataGen, CoreModel, destroyModels, get
 		testCoreOrdEval, testCoreNA, testCoreRPORT, testCoreRand, testClassPseudoRandom,
 		testTime, versionCore, calibrate, preparePlot, rfProximity, rfAttrEvalClustering,
 		rfClustering, rfOutliers, classPrototypes, getRpartModel, display, discretize, applyDiscretization,
-		noEqualRows
+		intervalMidPoint, noEqualRows
 )
 
 import(rpart)
-import(cluster)
-import(stats)
-
+importFrom(cluster,pam,daisy)
+importFrom("grDevices", "bitmap", "bmp", "dev.cur", "dev.new", "gray",
+     "jpeg", "pdf", "png", "postscript", "tiff")
+importFrom("graphics", "arrows", "axis", "legend", "lines", "mtext",
+     "par", "plot", "points", "polygon", "rect", "segments",
+     "text", "title")
+importFrom("utils", "read.table")
+importFrom("stats", "cmdscale","as.formula", "median", "model.frame", "na.pass",
+             "predict", "qnorm", "reformulate", "rnorm", "runif", "sd",
+             "update.formula")    
 
 S3method(plot, ordEval)
 S3method(predict, CoreModel)

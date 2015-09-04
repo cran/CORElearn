@@ -1,6 +1,6 @@
-prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrdered=FALSE, skipNAcolumn=TRUE, skipEqualColumn=TRUE)
+prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, numericAsOrdered=FALSE, orderedAsNumeric=TRUE, skipNAcolumn=TRUE, skipEqualColumn=TRUE)
 {
-  if (dependent) { # shell we fill in the column with the dependent data 
+  if (dependent) { # shall we fill in the column with the dependent data 
     if (inherits(data[[1]],"ordered")) {
       data[[1]] <- factor(data[[1]],ordered=FALSE,levels=levels(data[[1]])); # protect against transformation to numeric
       cat("Changing dependent variable to unordered factor.\n");
@@ -64,10 +64,12 @@ prepare.Data <- function(data, formulaIn, dependent, class.lev=NULL, discreteOrd
         else warning(sprintf("Dependent variable %s has all values equal.",names(data)[i]))
       }
     }
-    if (inherits(data[[i]],"character") || (!inherits(data[[i]],"factor") && discreteOrdered==TRUE)) {
+	# this transformation is needed for ordEval algorithm
+    if (inherits(data[[i]],"character") || (!inherits(data[[i]],"factor") && numericAsOrdered==TRUE)) {
       data[[i]] <- factor(data[[i]]);
     }
-    if (inherits(data[[i]],"factor") && (discreteOrdered==TRUE || !inherits(data[[i]],"ordered"))) {
+    if (inherits(data[[i]],"factor") && 
+		(numericAsOrdered==TRUE || !inherits(data[[i]],"ordered") || !orderedAsNumeric)) {
       column <- as.integer(data[[i]]);
       column[is.na(column)] <- as.integer(0);
       column <- matrix(column,ncol=1,dimnames=list(NULL,col.names[i]))
@@ -216,8 +218,8 @@ optionData <- function() {
     list("modelTypeReg", "integer", 5, 1, 8),
     list("kInNN", "integer", 10, 0, Inf),
     list("nnKernelWidth", "numeric", 2, 0, Inf),
-    list("bayesDiscretization", "integer", 2, 1, 2),
-    list("bayesEqFreqIntervals", "integer", 4, 1, Inf),
+    list("bayesDiscretization", "integer", 2, 1, 3),
+    list("discretizationIntervals", "integer", 4, 1, Inf),
     ## \section{Constructive induction aka. feature construction}
     list("constructionMode", "integer", 15, 1, 15),
     list("constructionDepth", "integer", 0, 0, Inf),
@@ -428,7 +430,7 @@ checkModelOptions <- function(model, options) {
   ## first check options by models, later handle special cases
   discretizationOpts <- c("selectionEstimator","discretizationLookahead","discretizationSample","maxValues4Exhaustive","maxValues4Greedy")
   discretizationOptsReg <- c("selectionEstimatorReg","discretizationLookahead","discretizationSample","maxValues4Exhaustive","maxValues4Greedy") # currently not used
-  bayesOpts <- c(discretizationOpts,"bayesDiscretization","bayesEqFreqIntervals")
+  bayesOpts <- c(discretizationOpts,"bayesDiscretization","discretizationIntervals")
   knnOpts <- c("kInNN")
   knnKernelOpts <- c("kInNN","nnKernelWidth")
   miscOpts <-c("maxThreads") 
@@ -531,7 +533,7 @@ preparePlot<-function(fileName="Rplot", ...)
     interactive = TRUE
   else if (tolower(fileType[2])=="pdf")
     pdf(file = fileName, paper="default", ...)
-  else if (tolower(fileType[2])=="ps") 
+  else if (tolower(fileType[2])=="ps" || tolower(fileType[2])=="eps") 
     postscript(file = fileName, paper="default", horizontal=FALSE, encoding="ISOLatin1.enc",...)
   else if (tolower(fileType[2])=="emf" && .Platform$OS.type == "windows")
     eval(call(paste("win","metafile",sep="."), filename=quote(fileName),quote(...)))
@@ -553,13 +555,37 @@ preparePlot<-function(fileName="Rplot", ...)
   invisible()
 }
 
-intervalNames<-function(sortedBounds) {
-	nms <- c(paste("<=", sortedBounds[1], sep=""))
+# construct named inetrvals from the discretization bounds
+intervalNames<-function(sortedBounds, noDecimalsInValueName=2) {
+	nms <- c(paste("<=", sprintf("%.*f",noDecimalsInValueName, sortedBounds[1]), sep=""))
 	i <- 2
 	while (i<=length(sortedBounds)) {
-		nms <- c(nms, paste(">", sortedBounds[i-1], ", <=", sortedBounds[i], sep=""))
+		# nms <- c(nms, paste(">", sortedBounds[i-1], ", <=", sortedBounds[i], sep=""))
+		nms <- c(nms, paste("(", sprintf("%.*f",noDecimalsInValueName,sortedBounds[i-1]), ", ",sprintf("%.*f",noDecimalsInValueName,sortedBounds[i]), "]",sep=""))
 		i <- i+1
 	}
-	nms <- c(nms, paste(">", sortedBounds[length(sortedBounds)], sep=""))
+	nms <- c(nms, paste(">", sprintf("%.*f",noDecimalsInValueName,sortedBounds[length(sortedBounds)]), sep=""))
 	nms
+}
+
+# finds middle points of discretization intervals
+intervalMidPoint <- function(data, boundsList, midPointMethod=c("equalFrequency", "equalWidth")) {
+	method <- match.arg(midPointMethod)
+	if (is.null(boundsList))
+		return(NULL)
+	midPoints <- list()
+	for (i in 1:length(boundsList)) {
+		attrName <- names(boundsList)[i]
+		discValues <- apply( outer(data[,attrName], boundsList[[i]], ">"), 1, sum) 
+		midPoints[[i]] <- vector(mode="numeric", length=length(boundsList[[i]])+1)
+		for (j in 0:length(boundsList[[i]])) {
+			values <- data[discValues==j,attrName]
+			if (method == "equalFrequency")
+				midPoints[[i]][j+1] <- median(values)
+			else if (method=="equalWidth")
+				midPoints[[i]][j+1] <- (min(values) + max(values)) / 2.0
+		}
+	}
+	names(midPoints) <- names(boundsList)
+	midPoints	
 }

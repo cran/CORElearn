@@ -77,7 +77,7 @@ public:
    int discretizationLookahead ; // number of times current discretization can be worse than the best
    int discretizationSample ;
    int bayesDiscretization ;
-   int bayesEqFreqIntervals ;
+   int discretizationIntervals ;
    int maxValues4Exhaustive ; // maximal values of discrete attribute values to try exhaustive binarization
    int maxValues4Greedy ; // maximal values of discrete attribute values to try greedy binarization;
                           // if an attribute has more vaèues than this random binarization is tried

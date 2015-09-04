@@ -41,7 +41,7 @@ For regression models it returns the predicted function value.
 \item \code{\link{attrEval}}  evaluates the quality of the attributes (dependent variables)
 with the selected heuristic method.  
 Feature evaluation algorithms are various variants of Relief algorithms (ReliefF, RReliefF,
-cost-sensitive ReliefF, ..), gain ratio, gini-index, MDL, DKM, information gain, MSE, MAE, ....
+cost-sensitive ReliefF, etc), gain ratio, gini-index, MDL, DKM, information gain, MSE, MAE, etc.
 \item \code{\link{ordEval}} evaluates ordinal attributes with ordEval algorithm and visualizes them with \code{\link{plot.ordEval}}, 
 \item \code{\link{infoCore}}  outputs certain information about CORElearn methods,
 \item \code{\link{helpCore}} prints short description of a given parameter,
@@ -109,26 +109,34 @@ library(CORElearn)
 cat(versionCore(),"\n")
 
 # use iris data set
+trainIdxs <- sample(x=nrow(iris), size=0.7*nrow(iris), replace=FALSE)
+testIdxs <- c(1:nrow(iris))[-trainIdxs]
 
 # build random forests model with certain parameters
-# setting maxThreads to 0 or more than 1 uses several processor cores 
-model <- CoreModel(Species ~ ., iris, model="rf", 
+# setting maxThreads to 0 or more than 1 forces utilization of several processor cores 
+modelRF <- CoreModel(Species ~ ., iris[trainIdxs,], model="rf",
               selectionEstimator="MDL",minNodeWeightRF=5,
-              rfNoTrees=100, maxThreads=1)                    
-              
-print(model)
-plot(model, iris, rfGraphType="prototypes")
+              rfNoTrees=100, maxThreads=1)
 
-# prediction with node distribution
-pred <- predict(model, iris, rfPredictClass=FALSE)
-print(pred)
+print(modelRF) # simple visualization, test also others with function plot
 
-# Model evaluation
-mEval <- modelEval(model, iris[["Species"]], pred$class, pred$prob)
-# print(mEval)
+pred <- predict(modelRF, iris[testIdxs,], type="both") # prediction on testing set
 
+# compute statistics
+mEval <- modelEval(modelRF, iris[["Species"]][testIdxs], pred$class, pred$prob)
+print(mEval) 
+
+\dontrun{
+# explain predictions on the level of model and individual instances
+require(ExplainPrediction)
+explainVis(modelRF, iris[trainIdxs,], iris[testIdxs,], method="EXPLAIN",visLevel="model",
+           problemName="iris", fileType="none", classValue=1, displayColor="color") 
+# turn on the history in visualization window to see all instances
+explainVis(modelRF, iris[trainIdxs,], iris[testIdxs,], method="EXPLAIN",visLevel="instance",
+           problemName="iris", fileType="none", classValue=1, displayColor="color") 
+}
 # Clean up. otherwise the memory is still taken
-destroyModels(model) # clean up
+destroyModels(modelRF) # clean up
 
  
 # evaluate features in given data set with selected method

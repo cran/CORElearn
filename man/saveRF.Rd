@@ -14,8 +14,8 @@ loadRF(formula, data, fileName)
 \arguments{
   \item{model}{ The model structure as returned by \code{\link{CoreModel}}. }
   \item{fileName}{ Name of the file to save/load the model to/from. }
-  \item{formula}{ Formula shell match the model loaded from file. It is either a formula specifying the attributes to be evaluated and the target variable or a name of target variable or an index of target variable. }
-  \item{data}{ Data shell match the formula and the model loaded from file. }
+  \item{formula}{ Formula shall match the model loaded from file. It is either a formula specifying the attributes to be evaluated and the target variable or a name of target variable or an index of target variable. }
+  \item{data}{ Data shall match the formula and the model loaded from file. }
   }
 \details{
    The function \code{saveRF} saves the internal structure of given random forests model to specified file.

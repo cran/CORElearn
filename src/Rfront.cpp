@@ -924,7 +924,7 @@ void readRF(char **fileName, int *modelID) {
 }
 
 
-void discretize(int *isRegression, int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
+void discretize(int *methodIdx, int *isRegression, int *noInst, int *noDiscrete, int *noDiscVal, int *discData,
 		int *noNumeric, double *numData, char **dscAttrNames,
 		char **dscValNames, char ** nmAttrNames, int *noOptions,
 		char **optName, char **optValue, int *selectedEstimator,
@@ -962,7 +962,7 @@ void discretize(int *isRegression, int *noInst, int *noDiscrete, int *noDiscVal,
 
 	if (*isRegression == 1){
 		regressionTree *rT = new regressionTree;
-        maxBins.wrap(*noNumeric-1, maxBns) ;
+		maxBins.wrap(*noNumeric-1, maxBns) ;
 		// read options
 		rT->opt->optionsFromStrings(*noOptions, optionsName, optionsValue);
 		rT->opt->selectionEstimatorReg = *selectedEstimator ;
@@ -984,7 +984,19 @@ void discretize(int *isRegression, int *noInst, int *noDiscrete, int *noDiscVal,
 		estimationReg Estimator(rT, rT->DTraining, weight, rT->NoTrainCases);
 		noBounds[0] = 0 ;
 		for (int idx=1 ; idx < Estimator.noNumeric ; idx++)	{
-			rT->discretizeGreedy(idx, Estimator, maxBins[idx-1], attrBounds) ;
+			switch (*methodIdx) {
+			case discrGreedy:
+				Estimator.discretizeGreedy(idx, maxBins[idx-1], attrBounds) ;
+				break ;
+			case discrEqFreq:
+				Estimator.discretizeEqualFrequency(idx, maxBins[idx-1], attrBounds) ;
+				break ;
+			case discrEqWidth:
+				Estimator.discretizeEqualWidth(idx, maxBins[idx-1], attrBounds) ;
+				break ;
+			default: merror("Invalid discretization method in function discretize for regression ","Rfront.cpp") ;
+			         break ;
+			}
 			noBounds[idx] = attrBounds.filled() ;
 			for (j=0 ; j < attrBounds.filled(); j++)
 				bounds[idx*(*noInst)+j] = attrBounds[j] ;
@@ -993,7 +1005,7 @@ void discretize(int *isRegression, int *noInst, int *noDiscrete, int *noDiscVal,
 	}
 	else {
 		featureTree *dT = new featureTree ;
-        maxBins.wrap(*noNumeric, maxBns) ;
+		maxBins.wrap(*noNumeric, maxBns) ;
 
 		// read options
 		dT->opt->optionsFromStrings(*noOptions, optionsName, optionsValue);
@@ -1014,7 +1026,19 @@ void discretize(int *isRegression, int *noInst, int *noDiscrete, int *noDiscVal,
 		marray<double> attrBounds ;
 		estimation Estimator(dT, dT->DTraining, weight, dT->NoTrainCases);
 		for (int idx=0 ; idx < Estimator.noNumeric ; idx++)	{
-			Estimator.discretizeGreedy(idx, maxBins[idx], attrBounds, Estimator.noDiscrete) ;
+			switch (*methodIdx) {
+				case discrGreedy:
+					Estimator.discretizeGreedy(idx, maxBins[idx], attrBounds, Estimator.noDiscrete) ;
+					break ;
+				case discrEqFreq:
+					Estimator.discretizeEqualFrequency(idx, maxBins[idx], attrBounds) ;
+					break ;
+				case discrEqWidth:
+					Estimator.discretizeEqualWidth(idx, maxBins[idx], attrBounds) ;
+					break ;
+				default: merror("Invalid discretization method in function discretize for classification","Rfront.cpp") ;
+				         break ;
+				}
 			noBounds[idx] = attrBounds.filled() ;
 			for (j=0 ; j < attrBounds.filled(); j++)
 				bounds[idx*(*noInst)+j] = attrBounds[j] ;
@@ -1036,7 +1060,7 @@ void discretize(int *isRegression, int *noInst, int *noDiscrete, int *noDiscVal,
 		numAttrNames.unWrap(dummy);
 	noBounds.unWrap(dummy);
 	bounds.unWrap(dummy);
-    maxBins.unWrap(dummy) ;
+	maxBins.unWrap(dummy) ;
 
 #if defined(R_PORT)
 	PutRNGstate();
@@ -1128,31 +1152,31 @@ SEXP printTreeDot2R(SEXP modelID) {
 
 SEXP noEqualRows(SEXP data1, SEXP data2, SEXP nrowsd1, SEXP nrowsd2, SEXP ncols, SEXP tolerance, SEXP countOnce)
 {
-    int i, j, k, eq=0 ;
-    int nrd1 = INTEGER(nrowsd1)[0], nrd2 = INTEGER(nrowsd2)[0], nc = INTEGER(ncols)[0] ;
-    booleanT once = (booleanT)(INTEGER(countOnce)[0]) ;
-    SEXP ans;
-    double d, eps=REAL(tolerance)[0] ;
+	int i, j, k, eq=0 ;
+	int nrd1 = INTEGER(nrowsd1)[0], nrd2 = INTEGER(nrowsd2)[0], nc = INTEGER(ncols)[0] ;
+	booleanT once = (booleanT)(INTEGER(countOnce)[0]) ;
+	SEXP ans;
+	double d, eps=REAL(tolerance)[0] ;
 
-    PROTECT(ans = allocVector(INTSXP, 1));
-    for (i=0; i < nrd1 ; i++) {
-        for (j=0; j < nrd2 ; j++) {
-           d = 0 ;
-      	   for (k=0; k < nc; k++) {
-      		   d += fabs(REAL(data1)[i + k*nrd1] - REAL(data2)[j+k*nrd2]) ;
-      		   if (d > eps)
-      			   break ;
-      	   }
-      	   if (d <= eps) {
-      		   eq++ ;
-      	       if (once)
-      		     break ;
-      	   }
-        }
-    }
-    INTEGER(ans)[0] = eq ;
-    UNPROTECT(1);
-    return(ans);
+	PROTECT(ans = allocVector(INTSXP, 1));
+	for (i=0; i < nrd1 ; i++) {
+		for (j=0; j < nrd2 ; j++) {
+			d = 0 ;
+			for (k=0; k < nc; k++) {
+				d += fabs(REAL(data1)[i + k*nrd1] - REAL(data2)[j+k*nrd2]) ;
+				if (d > eps)
+					break ;
+			}
+			if (d <= eps) {
+				eq++ ;
+				if (once)
+					break ;
+			}
+		}
+	}
+	INTEGER(ans)[0] = eq ;
+	UNPROTECT(1);
+	return(ans);
 }
 
 #endif

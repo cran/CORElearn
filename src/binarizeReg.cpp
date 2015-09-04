@@ -662,3 +662,243 @@ void estimationReg::estBinarized(int selectedEstimator, int contAttrFrom, int co
    eopt.binaryEvaluation = binaryEvaluationBefore ;
 }
 
+
+
+//************************************************************
+//
+//                        discretizeGreedy
+//                        -----------------
+//
+//     finds best discretization of numeric attribute with
+//      greedy algorithm and returns its estimated quality
+//
+//************************************************************
+double estimationReg::discretizeGreedy(int ContAttrIdx, int maxBins, marray<double> &Bounds)
+{
+	Bounds.setFilled(0) ;
+
+	marray<sortRec> sortedAttr(TrainSize) ;
+	int i, j, idx ;
+	int OKvalues = 0 ;
+	for (j=0 ; j < TrainSize ; j++)
+	{
+		if (isNAcont(NumValues(j, ContAttrIdx)))
+			continue ;
+		sortedAttr[OKvalues].key = NumValues(j, ContAttrIdx) ;
+		sortedAttr[OKvalues].value = j ;
+		OKvalues ++ ;
+	}
+	if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
+	{
+		// merror("regressionTree::discretizeGreedy", "all values of the attribute are missing or equal") ;
+		return - DBL_MAX ;
+	}
+	sortedAttr.setFilled(OKvalues) ;
+	sortedAttr.qsortAsc() ;
+
+	// eliminate duplicates
+	int unique = 0 ;
+	for (j=1 ; j < OKvalues ; j ++)
+	{
+		if (sortedAttr[j].key != sortedAttr[unique].key)
+		{
+			unique ++ ;
+			sortedAttr[unique] = sortedAttr[j] ;
+		}
+	}
+	OKvalues = unique ;
+	sortedAttr.setFilled(OKvalues) ;
+
+	if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
+	{
+		// merror("regressionTree::discretizeGreedy", "all values of the attribute are missing or equal") ;
+		return - DBL_MAX ;
+	}
+
+
+	int sampleSize ;
+	// we use all the available values only if explicitly demanded
+	if (eopt.discretizationSample==0)
+		sampleSize = OKvalues -1;
+	else
+		sampleSize = Mmin(eopt.discretizationSample, OKvalues-1) ;
+	marray<int> splits(sampleSize) ;
+	randomizedSample(splits, sampleSize, OKvalues-1) ;
+
+	attributeCount bestType ;
+	double attrValue ;
+
+	adjustTables(0, noDiscrete + sampleSize) ;
+	// greedy search
+
+	marray<double> currentBounds(sampleSize) ;
+	int currentIdx ;
+	double bestEstimate = - DBL_MAX, bound ;
+	int currentLimit=0 ; // number of times the current discretization was worse than the best discretization
+	int currentNoValues = 2 ;
+	while (currentLimit <= eopt.discretizationLookahead && sampleSize > 0 && (maxBins==0 || currentNoValues <= maxBins))
+	{
+		// compute data columns
+		for (i=0 ; i < TrainSize ; i++)
+		{
+			attrValue = NumValues(i, ContAttrIdx) ;
+			idx = 0 ;
+			while (idx < currentBounds.filled()  &&  attrValue > currentBounds[idx])
+				idx++ ;
+			idx ++ ; // changes idx to discrete value
+			for (j=0 ; j < sampleSize ; j++)
+			{
+				if (isNAcont(attrValue))
+					DiscValues.Set(i, noDiscrete + j, NAdisc) ;
+				else
+					if (attrValue <= sortedAttr[splits[j]].key)
+						DiscValues.Set(i, noDiscrete + j, idx) ;
+					else
+						DiscValues.Set(i, noDiscrete + j, idx+1) ;
+			}
+		}
+		for (j=0 ; j < sampleSize ; j++)
+			prepareDiscAttr(noDiscrete + j, currentNoValues) ;
+		// estimate and select best
+		currentIdx = estimate(eopt.selectionEstimatorReg, 1, 1, noDiscrete, noDiscrete+sampleSize, bestType) ;
+		bound = (sortedAttr[splits[currentIdx-noDiscrete]].key	+ sortedAttr[splits[currentIdx-noDiscrete]+1].key)/2.0 ;
+		currentBounds.addToAscSorted(bound) ;
+		if (DiscEstimation[currentIdx] > bestEstimate)
+		{
+			bestEstimate = DiscEstimation[currentIdx] ;
+			Bounds = currentBounds ;
+			currentLimit = 0 ;
+		}
+		else
+			currentLimit ++ ;
+		splits[currentIdx-noDiscrete] = splits[--sampleSize] ;
+		currentNoValues ++ ;
+	}
+	return bestEstimate ;
+}
+
+
+
+
+//************************************************************
+//
+//                        discretizeEqualFrequency
+//                        -----------------------
+//
+//     discretize numeric attribute with a fixed number of intervals
+//        with approximately the same number of examples in each interval
+//
+//************************************************************
+void estimationReg::discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marray<double> &Bounds)
+{
+	Bounds.setFilled(0) ;
+
+	marray<sortRec> sortedAttr(TrainSize) ;
+	int j ;
+	int OKvalues = 0 ;
+	for (j=0 ; j < TrainSize ; j++)
+	{
+		if (isNAcont(NumValues(j, ContAttrIdx)))
+			continue ;
+		sortedAttr[OKvalues].key = NumValues(j, ContAttrIdx) ;
+		sortedAttr[OKvalues].value = 1 ;  // later used as a counter for number of unique values
+		OKvalues ++ ;
+	}
+	if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
+	{
+		// all values of the attribute are missing
+		return  ;
+	}
+	sortedAttr.setFilled(OKvalues) ;
+	sortedAttr.qsortAsc() ;
+
+	// eliminate and count duplicates
+	int unique = 0 ;
+	for (j=1 ; j < OKvalues ; j++)
+	{
+		if (sortedAttr[j].key != sortedAttr[unique].key)
+		{
+			unique ++ ;
+			sortedAttr[unique] = sortedAttr[j] ;
+		}
+		else
+			sortedAttr[unique].value ++ ;
+	}
+	sortedAttr.setFilled(unique) ;
+
+	if (unique <= 1)
+	{
+		// all the cases have missing value of the attribute or only one OK
+		return  ;
+	}
+	if (unique -1 <= noIntervals)
+	{
+		// all unique values should form boundaries)
+
+		Bounds.create(unique-1) ;
+		Bounds.setFilled(unique -1) ;
+		for (j=0 ; j < unique-1 ; j++)
+			Bounds[j] = (sortedAttr[j].key + sortedAttr[j+1].key)/2.0 ;
+		return ;
+	}
+
+	Bounds.create(noIntervals-1) ;
+
+	int noDesired = int(ceil(double(OKvalues) / noIntervals)) ;
+	double boundry ;
+
+	int grouped = 0 ;
+	for (j = 0 ; j < unique ; j++)
+	{
+		if (grouped + sortedAttr[j].value < noDesired)
+			grouped += sortedAttr[j].value ;
+		else {
+			// form new boundry
+			boundry = (sortedAttr[j].key + sortedAttr[j+1].key) / 2.0 ;
+			Bounds.addEnd(boundry) ;
+			grouped = 0 ;
+		}
+	}
+}
+
+//************************************************************
+//
+//                        discretizeEqualWidth
+//                        -----------------------
+//
+//     discretize numeric attribute with a fixed number of intervals of equal width
+//
+//************************************************************
+void estimationReg::discretizeEqualWidth(int ContAttrIdx, int noIntervals, marray<double> &Bounds)
+{
+	Bounds.setFilled(0) ;
+
+	int j=0 ;
+	while (j < TrainSize && isNAcont(NumValues(j, ContAttrIdx)))
+		j++ ;
+	if (j == TrainSize)
+		return ; // all values are missing
+	double value, minValue, maxValue ;
+	minValue = maxValue = NumValues(j, ContAttrIdx) ;
+	for (++j ; j < TrainSize ; j++)
+	{
+		value = NumValues(j, ContAttrIdx) ;
+		if (isNAcont(value))
+			continue ;
+		else if (value < minValue)
+			minValue = value ;
+		else if (value > maxValue)
+			maxValue = value ;
+	}
+	if (minValue == maxValue)    //  only one non missing value
+		return  ;
+    double intervalWidth = (maxValue - minValue) / noIntervals ;
+	Bounds.create(noIntervals-1) ;
+
+	for (int i = 1 ; i < noIntervals ; i++)
+	{
+		value = minValue + i * intervalWidth ;
+		Bounds.addEnd(value) ;
+	}
+}
+
