@@ -109,7 +109,7 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		int *discData, int *noNumeric, double *numData, double *costMx,
 		char **dscAttrNames, char **dscValNames, char ** nmAttrNames,
 		int *noOptions, char **optName, char **optValue, int *modelID,
-		int *noClasses, double *priorClassProb, double *avgPrediction) {
+		int *noClasses) {
 #if defined(R_PORT)
 	GetRNGstate();
 #endif
@@ -119,7 +119,7 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 	discreteData.wrap(*noDiscrete * (*noInst), discData);
 	marray<double> numericData, costMatrix, priorClProb;
 	numericData.wrap(*noNumeric * (*noInst), numData);
-	priorClProb.wrap(256, priorClassProb);
+	// priorClProb.wrap(1024, priorClassProb);
 	marray<char*> optionsName, optionsValue;
 	optionsName.wrap(*noOptions, optName);
 	optionsValue.wrap(*noOptions, optValue);
@@ -196,9 +196,9 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 
 	// copy some data to output
 	*noClasses = data->noClasses;
-	if (!data->isRegression)
-		for (int c = 1; c <= *noClasses; c++)
-			priorClProb[c - 1] = data->AttrDesc[0].valueProbability[c];
+	//if (!data->isRegression)
+	//	for (int c = 1; c <= *noClasses; c++)
+	//		priorClProb[c - 1] = data->AttrDesc[0].valueProbability[c];
 
 	if (data->opt->action == "tree") {
 		dT->learnRF = mFALSE;
@@ -240,8 +240,8 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		*modelID = -1;
 	}
 
-	if (data->isRegression)
-		*avgPrediction = rT->rootAverage;
+	//if (data->isRegression)
+	//	*avgPrediction = rT->rootAverage;
 	// for some models we can destroy the data here
 	if ((data->opt->action == "tree" && (data->opt->modelType == 1
 			|| data->opt->modelType == 4))
@@ -253,7 +253,7 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 	noDiscreteValues.unWrap(dummy);
 	discreteData.unWrap(dummy);
 	numericData.unWrap(dummy);
-	priorClProb.unWrap(dummy);
+	// priorClProb.unWrap(dummy);
 
 	costMatrix.unWrap(dummy);
 	optionsName.unWrap(dummy);
@@ -321,9 +321,11 @@ void predictWithCoreModel(int *modelID, int *noInst, int *discData,
 
 // destroy all the models
 void destroyCore() {
-	int i;
-	for (i = 0; i < allModels.len(); i++)
-		destroyOneCoreModel(&i);
+	int i, modelID;
+	for (i = 0; i < allModels.len(); i++) {
+		modelID = i ;
+		destroyOneCoreModel(&modelID);
+	}
 	allModels.destroy();
 
 #if defined(DEBUG)
@@ -343,7 +345,11 @@ void destroyCore() {
 
 void destroyOneCoreModel(int* modelID) {
 	// is modelID valid
-	if (modelID != 0 && *modelID >= 0 && *modelID < allModels.len() && allModels[*modelID] != 0) {
+	if (modelID != 0)
+		if (allModels.defined())
+			if (*modelID >= 0)
+		       if (*modelID < allModels.len())
+		    	   if (allModels[*modelID] != 0) {
 		dataStore *data = allModels[*modelID];
 		if (data->isRegression)
 			delete (regressionTree*) allModels[*modelID];
@@ -897,7 +903,7 @@ void optionsInOut(int *modelID, char **fileName, char **io) {
 
 void saveRF(int *modelID, char **fileName) {
 	// is modelID valid
-	if (modelID == 0 || *modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
+	if (modelID == 0 || !allModels.defined() || *modelID < 0 || *modelID >= allModels.len() || allModels[*modelID] == 0)
 		return;
 	featureTree *dT = (featureTree*) allModels[*modelID]; // working Model
 	dT->learnRF = mTRUE;
@@ -1206,14 +1212,12 @@ void simRcall() {
 				costMx[i + j * noClasses] = 1.0;
 	int modelID;
 	int noOptions = 4;
-	double avgPrediction = 0, *priorClProb = new double[noClasses];
 	char const* optionsName[] = { "action", "domainName", "rfNoTrees",
 			"rfPredictClass" };
 	char const* optionsVal[] = { "rf", "test", "100", "N" };
 	buildCoreModel(&noInst, &noDisc, noDiscreteValues, discData, &noNumeric,
 			numData, costMx, 0, 0, 0, &noOptions, (char**) optionsName,
-			(char**) optionsVal, &modelID, &noClasses, priorClProb,
-			&avgPrediction);
+			(char**) optionsVal, &modelID, &noClasses);
 	int noPredict = noInst;
 	int *pred = new int[noPredict];
 	double *prob = new double[noPredict * noDiscreteValues[0]];
@@ -1242,7 +1246,6 @@ void simRcall() {
 
 	delete[] interval;
 	delete[] calProb;
-	delete[] priorClProb;
 }
 
 } //extern "C"

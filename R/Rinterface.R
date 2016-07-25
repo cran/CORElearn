@@ -64,6 +64,15 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
 	}
 	class.lev <- levels(dat[[1]]);
 	noClasses <- length(class.lev);
+	if (!isRegression) {
+		priorClassProb = table(dat[[1]])/nrow(dat)
+		avgTrainPrediction <- 0
+	}
+	else {
+		priorClassProb <- 0
+		avgTrainPrediction <- mean(dat[[1]])
+	}
+	
 	if (!isRegression && is.null(costMatrix)) {
 		## create and fill uniform costs matrix
 		costMatrix <- 1 - diag(noClasses);
@@ -103,8 +112,6 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
 			optionsVal = options,
 			modelID = integer(1),
 			noClasses = integer(1),
-			priorClassProb = numeric(256),
-			avgTrainPrediction=numeric(1),
 			NAOK=TRUE,
 			PACKAGE="CORElearn"
 	);
@@ -112,8 +119,8 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
 		return(NULL)
 	}
 	res <- list(modelID=tmp$modelID, class.lev=class.lev, model=model, formula=aux$formulaOut,
-			noClasses = tmp$noClasses, priorClassProb = tmp$priorClassProb[1:tmp$noClasses],
-			avgTrainPrediction = tmp$avgTrainPrediction,
+			noClasses = tmp$noClasses, priorClassProb = priorClassProb,
+			avgTrainPrediction = avgTrainPrediction,
 			noNumeric = tmp$noNumeric, noDiscrete=tmp$noDiscrete, discAttrNames = discAttrNames,
 			discValNames = discValues, numAttrNames = numAttrNames,   
 			discmap = discmap, nummap = nummap, skipmap = skipmap
@@ -846,47 +853,48 @@ saveRF <- function(model, fileName) {
 			fileName=as.character(fileName),
 			PACKAGE="CORElearn"
 	)
+	save(model,file=paste(fileName,".Rda",sep=""))
 	invisible(tmp)
 }
 
-loadRF <- function(formula, data, fileName) {
-	model="rf"
-	# check formula or response index or reponse name
-	if (inherits(formula,"formula")) {
-		dat <- model.frame(formula, data=data, na.action=na.pass)
-		trms <- attr(dat,"terms")
-		attributes(trms) <- NULL
-		formulaExpanded <- as.formula(trms)
-	} 
-	else {
-		if (is.numeric(formula)) {
-			if (formula == round(formula)) {# index of response variable
-				classIdx <- formula
-				className <- names(data)[classIdx]
-			}
-			else  stop("The first argument must be a formula or prediction column name or prediction column index.")
-		}
-		else if (is.character(formula)) { # name of response variable
-			classIdx <- match(formula, names(data))
-			if (length(classIdx) != 1 || is.na(classIdx)) 
-				stop("The first argument must be a formula or prediction column name or prediction column index.")
-			className <- names(data[classIdx])
-		}
-		else stop("The first argument must be a formula or prediction column name or prediction column index.")
-		
-		dat <- data.frame(data[, classIdx], data[, -classIdx, drop=FALSE])
-		names(dat)[1] <- className
-		# get formula explicitly to allow storage of all terms and their manipulation
-		frml <- paste(className, "~",paste(names(dat)[-1], sep="+",collapse="+"),sep="") 
-		formulaExpanded <- as.formula(frml)   
-	}
-	if (!inherits(dat[[1]],"factor")) {
-		dat[[1]] <- factor(dat[[1]]);
-		cat("Changing dependent variable to factor with levels:",levels(dat[[1]]),"\n");
-	}
-	class.lev <- levels(dat[[1]]);
-	noClasses <- length(class.lev);
-	
+loadRF <- function(fileName) {
+#	model="rf"
+#	# check formula or response index or reponse name
+#	if (inherits(formula,"formula")) {
+#		dat <- model.frame(formula, data=data, na.action=na.pass)
+#		trms <- attr(dat,"terms")
+#		attributes(trms) <- NULL
+#		formulaExpanded <- as.formula(trms)
+#	} 
+#	else {
+#		if (is.numeric(formula)) {
+#			if (formula == round(formula)) {# index of response variable
+#				classIdx <- formula
+#				className <- names(data)[classIdx]
+#			}
+#			else  stop("The first argument must be a formula or prediction column name or prediction column index.")
+#		}
+#		else if (is.character(formula)) { # name of response variable
+#			classIdx <- match(formula, names(data))
+#			if (length(classIdx) != 1 || is.na(classIdx)) 
+#				stop("The first argument must be a formula or prediction column name or prediction column index.")
+#			className <- names(data[classIdx])
+#		}
+#		else stop("The first argument must be a formula or prediction column name or prediction column index.")
+#		
+#		dat <- data.frame(data[, classIdx], data[, -classIdx, drop=FALSE])
+#		names(dat)[1] <- className
+#		# get formula explicitly to allow storage of all terms and their manipulation
+#		frml <- paste(className, "~",paste(names(dat)[-1], sep="+",collapse="+"),sep="") 
+#		formulaExpanded <- as.formula(frml)   
+#	}
+#	if (!inherits(dat[[1]],"factor")) {
+#		dat[[1]] <- factor(dat[[1]]);
+#		cat("Changing dependent variable to factor with levels:",levels(dat[[1]]),"\n");
+#	}
+#	class.lev <- levels(dat[[1]]);
+#	noClasses <- length(class.lev);
+	load(file=paste(fileName,".Rda",sep="")) #loads object with name model
 	tmp <- .C("readRF",
 			fileName=as.character(fileName),
 			modelID = integer(1),
@@ -895,10 +903,13 @@ loadRF <- function(formula, data, fileName) {
 	if (tmp$modelID == -1) {
 		return(NULL)
 	}
-	res <- list(modelID=tmp$modelID, class.lev=class.lev, model=model, formula=formula,  noClasses = noClasses)
-	class(res) <- "CoreModel"
-	res
+	model$modelID <- tmp$modelID
+	#res <- list(modelID=tmp$modelID, class.lev=class.lev, model=model, formula=formula,  noClasses = noClasses)
+	#class(res) <- "CoreModel"
+	#res
+    model
 }
+
 
 getRFsizes <- function(model, type=c("size", "sumdepth")) {
 	if (model$model != "rf") stop("The model must be a random forest.");

@@ -323,16 +323,16 @@ double estimation::discretizeGreedy(int ContAttrIdx, int maxBins, marray<double>
 	sortedAttr.qsortAsc() ;
 
 	// eliminate duplicates 
-	int unique = 0 ;
+	int lastUnique = 0 ;
 	for (j=1 ; j < OKvalues ; j ++)
 	{
-		if (sortedAttr[j].key != sortedAttr[unique].key)
+		if (sortedAttr[j].key != sortedAttr[lastUnique].key)
 		{
-			unique ++ ;
-			sortedAttr[unique] = sortedAttr[j] ;
+			lastUnique ++ ;
+			sortedAttr[lastUnique] = sortedAttr[j] ;
 		}
 	}
-	OKvalues = unique ;
+	OKvalues = lastUnique+1 ;
 	sortedAttr.setFilled(OKvalues) ;
 
 	if (OKvalues <= 1)    // all the cases have missing value of the attribute or only one OK
@@ -650,31 +650,33 @@ void estimation::discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marr
 	sortedAttr.qsortAsc() ;
 
 	// eliminate and count duplicates
-	int unique = 0 ;
+	int lastUnique = 0 ;
 	for (j=1 ; j < OKvalues ; j++)
 	{
-		if (sortedAttr[j].key != sortedAttr[unique].key)
+		if (sortedAttr[j].key != sortedAttr[lastUnique].key)
 		{
-			unique ++ ;
-			sortedAttr[unique] = sortedAttr[j] ;
+			lastUnique ++ ;
+			sortedAttr[lastUnique] = sortedAttr[j] ;
 		}
 		else
-			sortedAttr[unique].value ++ ;
+			sortedAttr[lastUnique].value ++ ;
 	}
-	sortedAttr.setFilled(unique) ;
+	sortedAttr.setFilled(lastUnique+1) ;
 
-	if (unique <= 1)
+	// value lastUnique equals upper bound of the array, the actual number of unique values is 1 larger
+
+	if (lastUnique < 1)
 	{
 		// all the cases have missing value of the attribute or only one OK
 		return  ;
 	}
-	if (unique -1 <= noIntervals)
+	if (lastUnique < noIntervals)
 	{
 		// all unique values should form boundaries)
 
-		Bounds.create(unique-1) ;
-		Bounds.setFilled(unique -1) ;
-		for (j=0 ; j < unique-1 ; j++)
+		Bounds.create(lastUnique) ;
+		Bounds.setFilled(lastUnique) ;
+		for (j=0 ; j < lastUnique ; j++)
 			Bounds[j] = (sortedAttr[j].key + sortedAttr[j+1].key)/2.0 ;
 		return ;
 	}
@@ -685,7 +687,7 @@ void estimation::discretizeEqualFrequency(int ContAttrIdx, int noIntervals, marr
 	double boundry ;
 
 	int grouped = 0 ;
-	for (j = 0 ; j < unique ; j++)
+	for (j = 0 ; j < lastUnique ; j++)
 	{
 		if (grouped + sortedAttr[j].value < noDesired)
 			grouped += sortedAttr[j].value ;

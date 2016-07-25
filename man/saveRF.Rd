@@ -8,25 +8,24 @@
   }
 \usage{
 saveRF(model, fileName) 
-loadRF(formula, data, fileName) 
+loadRF(fileName) 
  }
 
 \arguments{
   \item{model}{ The model structure as returned by \code{\link{CoreModel}}. }
   \item{fileName}{ Name of the file to save/load the model to/from. }
-  \item{formula}{ Formula shall match the model loaded from file. It is either a formula specifying the attributes to be evaluated and the target variable or a name of target variable or an index of target variable. }
-  \item{data}{ Data shall match the formula and the model loaded from file. }
-  }
+ }
 \details{
-   The function \code{saveRF} saves the internal structure of given random forests model to specified file.
+   The function \code{saveRF} saves the internal structure of given random forests model to file. 
+   The structures from C++ code are stored to the file with specified file, while internal structures
+   from R are stored to file named \code{fileName.Rda}.   
    The \code{model} must be a valid structure returned by \code{\link{CoreModel}}.
-   The function \code{loadRF} loads the internal structure of random forests saved in a specified file and
-   returns access to it in the \code{model}. The parameters \code{formula} and \code{data} have to match
-   the loaded model, and are needed for subsequent predictions with the loaded model. 
-   See \code{\link{CoreModel}} for their interpretation.
-}
+   
+   The function \code{loadRF} loads the internal structure of random forests saved in a specified files and
+   returns access to it. 
+   }
 \value{
-  \code{saveRF} does not return any value, while \code{loadRF}
+  \code{saveRF} invisibly returns some debugging information, while \code{loadRF}
      returns a loaded model as a list, similarly to \code{\link{CoreModel}}.
 }
 
@@ -61,11 +60,13 @@ pred <- predict(modelRF, iris, rfPredictClass=FALSE, type="both")
 saveRF(modelRF, "tempRF.txt")
 
 # restore the model to another model
-loadedRF = loadRF(Species ~ ., iris, "tempRF.txt")
+loadedRF = loadRF("tempRF.txt")
 
 # prediction should be the same
 predLoaded <- predict(loadedRF, iris, rfPredictClass=FALSE, type="both")
 # print(predLoaded)
+# sum of differences should be zero subject to numeric imprecision 
+sum(pred$probabilities - predLoaded$probabilities) 
 
 cat("Are predicted classes of original and retrieved models equal? ", 
                            all(pred$class == predLoaded$class), "\n" ) 

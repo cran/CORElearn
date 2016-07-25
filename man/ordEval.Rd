@@ -49,7 +49,7 @@ In the data frame \code{data} take care to supply the ordinal data as factors an
   current case into account. This makes sense if we want to observe strictly small
   changes in upward/downward reinforcement and has little effect in practical applications.
   
-  There are some additional parameters \bold{\dots } some of which are common with other context-sensitive evaluation methods (e.g., ReliefF). 
+  There are some additional parameters (note \bold{\dots }) some of which are common with other context-sensitive evaluation methods (e.g., ReliefF). 
   Their list of common parameters is available in \code{\link{helpCore}} (see subsection on attribute evaluation therein).
   The parameters specific to \code{\link{ordEval}} are: 
   \describe{

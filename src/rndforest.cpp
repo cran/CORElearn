@@ -128,13 +128,13 @@ int featureTree::buildForest(void) {
 
     	if ( it/(double)opt->rfNoTrees < opt->rfPropWeightedTrees) {
 		   if (opt->rfNoTerminals == 0)
-	         forest[it].t.root = buildForestTree(trainSize, forest[it].ib, estim[it], wProb, it) ;
+	         forest[it].t.root = buildForestTree(forest[it].ib.len(), forest[it].ib, estim[it], wProb, it) ;
 		   else
 			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, forest[it].ib.len(), forest[it].ib, estim[it], wProb, it) ;
 	   }
 	   else {
    	      if (opt->rfNoTerminals == 0)
-  	         forest[it].t.root = buildForestTree(trainSize, forest[it].ib, estim[it], eProb, it) ;
+  	         forest[it].t.root = buildForestTree(forest[it].ib.len(), forest[it].ib, estim[it], eProb, it) ;
 		   else
 			 forest[it].t.root = rfBuildLimitedTree(opt->rfNoTerminals, forest[it].ib.len(), forest[it].ib, estim[it], eProb, it) ;
 	   }

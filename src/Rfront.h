@@ -13,8 +13,7 @@ void buildCoreModel(int *noInst, int *noDiscrete, int *noDiscVal,
 		int *discData, int *noNumeric, double *numData, double *costMx,
 		char **dscAttrNames, char **dscValNames, char ** nmAttrNames,
 		int *noOptions, char **optName, char **optValue,
-		int *modelID, int *noClasses, double *priorClassProb, double *avgPrediction
-) ;
+		int *modelID, int *noClasses) ;
 void destroyOneCoreModel(int* modelID) ;
 void predictWithCoreModel(int *modelID, int *noInst, int *discData,
 		double *numData, double *costMx, int *returnPred, double *returnProb,

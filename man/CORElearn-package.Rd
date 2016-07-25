@@ -135,7 +135,7 @@ explainVis(modelRF, iris[trainIdxs,], iris[testIdxs,], method="EXPLAIN",visLevel
 explainVis(modelRF, iris[trainIdxs,], iris[testIdxs,], method="EXPLAIN",visLevel="instance",
            problemName="iris", fileType="none", classValue=1, displayColor="color") 
 }
-# Clean up. otherwise the memory is still taken
+# Clean up, otherwise the memory is still taken
 destroyModels(modelRF) # clean up
 
  

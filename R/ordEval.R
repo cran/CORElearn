@@ -74,22 +74,22 @@ oeInst<-function(ord, noAttr, graphTitle = "", normalization=TRUE, instSelection
 
 avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), ciDisplay=c("box","color"), 
         graphTitle = NULL, ylabLeft = "attribute values", ylabRight="number of values" ,
-        xlabel="reinforcement", attrIdx=0, equalUpDown=FALSE, bw=FALSE) 
+        xlabel="reinforcement", attrIdx=0, equalUpDown=FALSE, colors=c("green","lightgreen","blue","lightblue")) 
 {
     ci<-match.arg(ci)
     ciDisplay<-match.arg(ciDisplay)
     
-    if (bw) {
+    if (is.null(colors)) { # vlack and white
         downColor <- gray(0.7)
         downOverColor <- gray(0.9)
         upColor <- gray(0.5)
         upOverColor <- gray(0.3)        
     }
     else {
-        downColor <- "blue"
-        downOverColor <- "lightblue"
-        upColor <- "red"
-        upOverColor <- "orange"
+        downColor <- colors[1]
+        downOverColor <- colors[2]
+        upColor <- colors[3]
+        upOverColor <- colors[4]
     }
     noStats <- length(getStatNames())
     
@@ -122,6 +122,7 @@ avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), ciDispla
         noAttrValues <- length(oe$valueNames[[iA]])
         x <- c(0, 0)
         y <- c(1, noAttrValues)
+		par(xpd=NA,mar=c(5.5,7,5,7))
         plot(x, y, type = "l", xlim = c(-1, 1), ylim = c(0.9, noAttrValues-equalUD+0.9), xlab = xlab,
                 ylab = ylab, axes = FALSE)
         ## plot title
@@ -214,28 +215,27 @@ avNormBarObject<-function(oe, ci=c("two.sided","upper","lower","none"), ciDispla
 
 
 
-avSlopeObject<- function(oe, ci=c("two.sided","upper","lower","none"),attrIdx=0, graphTitle=NULL, xlabel = "attribute values", bw=FALSE)
+avSlopeObject<- function(oe, ci=c("two.sided","upper","lower","none"),attrIdx=0, graphTitle=NULL, xlabel = "attribute values", colors=c("green","lightgreen","blue","lightblue"))
 {
     ci<-match.arg(ci)
     
     noAttr <- oe$noAttr
     ordVal <- oe$ordVal
     
-    if (bw) {
+    if (is.null(colors)) {
         downColor <- "black"
         downOverColor <- gray(0.9)
         upColor <- "black"
         upOverColor <- gray(0.3)     
-        ciColor = gray(0.9)
     }
     else {
-        downColor <- "blue"
-        downOverColor <- "lightblue"
-        upColor <- "red"
-        upOverColor <- "orange"
-        ciColor = gray(0.9)
+        downColor <- colors[1]
+        downOverColor <- colors[2]
+        upColor <- colors[3]
+        upOverColor <- colors[4]
     }
-        
+	ciColor = gray(0.9)
+	
     yU<-matrix(nrow=noAttr,ncol=ordVal)
     yUlow<-matrix(nrow=noAttr,ncol=ordVal)
     yUhigh<-matrix(nrow=noAttr,ncol=ordVal)
@@ -328,24 +328,24 @@ avSlopeObject<- function(oe, ci=c("two.sided","upper","lower","none"),attrIdx=0,
 
 
 attrNormBarObject<-function(oe, graphTitle = "OrdEval for all attributes", 
-        ci=c("two.sided","upper","lower","none"),ciDisplay=c("box","color"), bw=FALSE)
+        ci=c("two.sided","upper","lower","none"),ciDisplay=c("box","color"), colors=c("green","lightgreen","blue","lightblue"))
 {
     ci = match.arg(ci)
     ciDisplay=match.arg(ciDisplay)
     noAttr <- oe$noAttr
     ordVal <- oe$ordVal
     noStats <- length(getStatNames())
-    if (bw) {
+    if (is.null(colors)) {
         downColor <- gray(0.7)
         downOverColor <- gray(0.9)
         upColor <- gray(0.5)
         upOverColor <- gray(0.3)        
     }
     else {
-        downColor <- "blue"
-        downOverColor <- "lightblue"
-        upColor <- "red"
-        upOverColor <- "orange"
+        downColor <- colors[1]
+        downOverColor <- colors[2]
+        upColor <- colors[3]
+        upOverColor <- colors[4]
     }
     
     boxHeight <- 1.0
@@ -354,24 +354,32 @@ attrNormBarObject<-function(oe, graphTitle = "OrdEval for all attributes",
     x <- c(0, 0)
     y <- c(1, noAttr+0.85)   
     ylabName <- "" ## "attributes"
-    plot(x, y, type = "l", xlim = c(-1, 1), ylim = c(0.9, noAttr+0.9), xlab = "downward            upward     ",
+	par(xpd=NA,mgp=c(3,0.7,0),mar=c(5,12,4,1))
+	plot(x, y, type = "l", xlim = c(-1, 1), ylim = c(0.9, noAttr+0.9), xlab = "downward            upward     ",
             ylab = ylabName, axes = FALSE)
     ## plot title
     subtitleName <- "reinforcement"
     title(main=graphTitle, sub=subtitleName)
     ## x axis
     axis(1, at = c(-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1), labels = c(1,0.8, 0.6, 0.4, 0.2, 0, 0.2, 0.4, 0.6, 0.8, 1))
-    ## left y axis, attribute values
     
+	## left y axis, attributes
     attrSelection <- 1:noAttr
     attrNames <- oe$attrNames
     noAV <- oe$noAVattr
-    for(iA in attrSelection) {
-        if (nchar(attrNames[[iA]],type="chars") > 7) {
-            attrNames[[iA]] <-  paste(strsplit(attrNames[[iA]],split="_",fixed=TRUE)[[1]],sep="",collapse="\n")
-        }
-     }
-    axis(2, at = boxHeight/4+c(1:noAttr), labels = attrNames, las = 1, line = 1, cex.axis = 0.5)
+#     for(iA in attrSelection) {
+#         if (nchar(attrNames[[iA]],type="chars") > 7) {
+#             attrNames[[iA]] <-  paste(strsplit(attrNames[[iA]],split="_",fixed=TRUE)[[1]],sep="",collapse="\n")
+#         }
+# 	}
+	cex.axisA = 1.0    
+	maxCharsA = max(nchar(attrNames[attrSelection]))
+	if (maxCharsA > 15) {
+		 cex.axisA = 0.9    
+		 if (maxCharsA > 20)
+			 cex.axisA = 0.6    
+	 }	
+    axis(2, at = boxHeight/4+c(1:noAttr), labels = attrNames, las = 1, line = 1, cex.axis = cex.axisA)
     ## right y axis, number of instances
     #axis(4, at = boxHeight/4+c(1:noAttr), line = -0.8, labels = noAV, las = 1, cex.axis = 0.7)
     #axisLabel4 <- "number of values" 
