@@ -12,11 +12,11 @@
 *               - some maths
 *
 *********************************************************************/
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <limits.h>
-#include <float.h>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <climits>
+#include <cfloat>
 
 
 #include "general.h"
@@ -43,6 +43,7 @@ int (*fcmp3) (sort3Rec &X, sort3Rec& Y) ;
 
 marray<sortRec> *heap ;
 
+using namespace std ;
 
 
 //************************************************************

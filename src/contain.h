@@ -1,11 +1,11 @@
 #if !defined(CONTAIN_H)
 #define CONTAIN_H
 
-#include <stdlib.h>
+#include <cstdlib>
 #include "general.h"
 #include "error.h"
 
-
+using namespace std ;
 
 template <class T> T Mmin(T a, T b) {  return ((a<b) ? a : b ) ; }
 template <class T> T Mmax(T a, T b) {  return ((a>b) ? a : b ) ; }

@@ -1,5 +1,5 @@
-#include <stdlib.h>
-#include <float.h>
+#include <cstdlib>
+#include <cfloat>
 
 #include "general.h"
 #include "error.h"
@@ -9,7 +9,7 @@
 #include "constrct.h"
 #include "options.h"
 
-//extern Options *opt ;
+using namespace std ;
 
 // ************************************************************
 //

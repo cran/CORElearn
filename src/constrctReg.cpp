@@ -5,8 +5,8 @@
 // *   Description:      deals with constructs 
 // *
 // *********************************************************************
-#include <float.h>
-#include <string.h>
+#include <cfloat>
+#include <cstring>
 
 #include "general.h"
 #include "estimatorReg.h"
@@ -14,8 +14,7 @@
 #include "regtree.h"
 #include "error.h"
 
-//extern regressionTree* gRT ;
-
+using namespace std ;
 
 
 

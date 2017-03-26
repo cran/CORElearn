@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 
 #include "general.h"
 #include "error.h"
@@ -16,6 +16,7 @@ extern binnodeReg *currentNode ; // used for LWR
 extern int currentCase ; // used for LWR
 extern double *LWRweight ; // used for LWR
 
+using namespace std ;
 
 // ************************************************************
 //

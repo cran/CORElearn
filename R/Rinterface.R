@@ -1,11 +1,9 @@
 versionCore <- function()
 {
-	tmp <- .C("versionCore",
-			libVersion = paste(rep(".",times=256),collapse=""),
-			PACKAGE="CORElearn"
-	)
+	tmp <- .C(C_versionCore, libVersion = paste(rep(".",times=256),collapse=""))
 	tmp$libVersion
 }
+
 destroyModels <-function(model=NULL)
 {
 	if (is.null(model)) {
@@ -13,13 +11,16 @@ destroyModels <-function(model=NULL)
 		initCore()
 	}
 	else {
-		for (i in seq(along=model)) {
-			modelID <- model[i]$modelID
-			tmp <- .C("destroyOneCoreModel", as.integer(modelID), PACKAGE="CORElearn" )
-		}
+			if ( !("CoreModel" %in% class(model)) ){
+				stop("Only models of class CoreModel can be destroyed with this function. The parameter is of class ", class(model))
+				return(NULL) ;
+			}		
+			modelID <- model$modelID
+			tmp <- .C(C_destroyOneCoreModel, as.integer(modelID) )
 	}
 	invisible(NULL) 
 }
+
 CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKernel","bayes","regTree"), ..., costMatrix=NULL)
 {
 	# check formula or response index or reponse name
@@ -96,7 +97,7 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
 	if (length(optRemain) > 0) warning("Unused options:", paste(names(optRemain), collapse=", "));
 	options <- convert.Options(options)
 	options <- c(options, action=model)
-	tmp <- .C("buildCoreModel",
+	tmp <- .C(C_buildCoreModel,
 			noInst = aux$noInst,
 			noDiscrete = ncol(discdata),
 			noDiscreteValues = as.integer(discnumvalues),
@@ -112,9 +113,7 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
 			optionsVal = options,
 			modelID = integer(1),
 			noClasses = integer(1),
-			NAOK=TRUE,
-			PACKAGE="CORElearn"
-	);
+			NAOK=TRUE)
 	if (tmp$modelID == -1) {
 		return(NULL)
 	}
@@ -155,7 +154,7 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
 	optRemain <- checkPredictOptions(model, options)
 	if (length(optRemain) > 0) warning("Unused options:", paste(names(optRemain), collapse=", "));       
 	
-	tmp <- .C("predictWithCoreModel",
+	tmp <- .C(C_predictWithCoreModel,
 			as.integer(modelID),
 			noInst = noInst,
 			discreteData = as.integer(discdata), # vector of length noInst*noDiscrete, columnwise
@@ -167,9 +166,7 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
 			numOptions = length(options),
 			optionsName = names(options),
 			optionsVal = options,
-			NAOK=TRUE,
-			PACKAGE="CORElearn"
-	);
+			NAOK=TRUE)
 	if (model$model == "regTree") {
 		returnList <- tmp$predictedReg
 	}
@@ -194,9 +191,9 @@ display.CoreModel <- function(x, format=c("screen","dot")) {
 	format<-match.arg(format)
 	if (x$model %in% c("tree","knn","knnKernel","bayes","regTree")){
 		if (format=="screen")
-			treeStr <- .Call("printTree2R", as.integer(x$modelID), PACKAGE="CORElearn")
+			treeStr <- .Call(C_printTree2R, as.integer(x$modelID))
 		else if (format == "dot")
-			treeStr <- .Call("printTreeDot2R", as.integer(x$modelID), PACKAGE="CORElearn")
+			treeStr <- .Call(C_printTreeDot2R, as.integer(x$modelID))
 	}
 	else {
 		warning("The model provided is not of appropriate type for this visualization.");
@@ -333,7 +330,7 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL, outputNumericS
 	optRemain <- checkEstimatorOptions(estimator, options, isRegression) ;
 	if (length(optRemain) > 0) warning("Unused options:", paste(names(optRemain), collapse=", "));
 	if (isRegression) {
-		tmp <- .C("estimateCoreReg",
+		tmp <- .C(C_estimateCoreReg,
 				noInst= aux$noInst,
 				noDiscrete = ncol(discdata),
 				noDiscreteValues = as.integer(discnumvalues),
@@ -350,14 +347,12 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL, outputNumericS
 				estDisc = double(ncol(discdata)),
 				estNum = double(ncol(numdata)),
 				splitPointNum = double(ncol(numdata)),
-				NAOK=TRUE,
-				PACKAGE="CORElearn"
-		);
+				NAOK=TRUE);
 		# assumes length(estNum) == noNumeric, but estNum[1] for predictor is not used
 		if (nummap[1] != 1) stop("no dependent variable in prepared regression data"); 
 	}
 	else {
-		tmp <- .C("estimateCore",
+		tmp <- .C(C_estimateCore,
 				noInst = aux$noInst,
 				noDiscrete = ncol(discdata),
 				noDiscreteValues = as.integer(discnumvalues),
@@ -375,9 +370,7 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL, outputNumericS
 				estDisc = double(ncol(discdata)),
 				estNum = double(ncol(numdata)),
 				splitPointNum = double(ncol(numdata)),
-				NAOK=TRUE,
-				PACKAGE="CORElearn"
-		);
+				NAOK=TRUE);
 		# assumes length(estDisc) == noDiscrete, but estDist[1] for class is not used
 		if (discmap[1] != 1) stop("no class in prepared data"); # for debugging only
 	}
@@ -400,11 +393,9 @@ attrEval <- function(formula, data, estimator, costMatrix = NULL, outputNumericS
 rfAttrEval <- function(model) {
 	if (! model$model %in% c("rf","rfNear") ) stop("Only random forest model can evaluate attributes with this function.");
 	modelID <- model$modelID
-	tmp <- .C("rfAttrEval",
+	tmp <- .C(C_rfAttrEval,
 			modelID = as.integer(modelID),
-			est = double(model$noDiscrete+model$noNumeric),    
-			PACKAGE="CORElearn"
-	)
+			est = double(model$noDiscrete+model$noNumeric))
 	est <- double(length(model$discmap) + length(model$nummap)+length(model$skipmap));
 	est[model$discmap] <- tmp$est[1:length(model$discmap)];
 	est[model$nummap] <- tmp$est[(length(model$discmap)+1) : (length(model$discmap) + length(model$nummap)) ];
@@ -417,13 +408,11 @@ rfOOB <- function(model) {
 	if (! model$model %in% c("rf","rfNear") ) 
 		stop("Only random forest models can output out of bag performance estimators. Current model is of type ", model$model);
 	modelID <- model$modelID
-	tmp <- .C("rfOOB",
+	tmp <- .C(C_rfOOB,
 			modelID = as.integer(modelID),
 			oobAccuracy = double(1),  
 			oobMargin = double(1),
-			oobCorrelation = double(1),
-			PACKAGE="CORElearn"
-	)
+			oobCorrelation = double(1))
 	res<-list(accuracy=tmp$oobAccuracy, margin=tmp$oobMargin, correlation=tmp$oobCorrelation)
 	return(res)
 }
@@ -480,7 +469,7 @@ ordEval <- function(formula, data, file=NULL, rndFile=NULL, variant=c("allNear",
 	maxAttrValues <- max(discnumvalues[-1])+1	
 	statNames<-getStatNames() ;
 	noStats <- length(statNames)  ## we get 8 statistics about random normalizers
-	tmp <- .C("ordEvalCore",
+	tmp <- .C(C_ordEvalCore,
 			noInst =  aux$noInst,
 			noDiscrete = ncol(discdata),
 			noDiscreteValues = as.integer(discnumvalues),
@@ -500,9 +489,7 @@ ordEval <- function(formula, data, file=NULL, rndFile=NULL, variant=c("allNear",
 			file = as.character(file),
 			rndFile = as.character(rndFile),
 			variant = as.integer(variantIdx),
-			NAOK=TRUE,
-			PACKAGE="CORElearn"
-	)
+			NAOK=TRUE)
 	attrNames <- names(dat)[-1]
 	attrMap <- (discmap[-1]) - 1
 	attrMapLen <- length(attrMap)
@@ -725,7 +712,7 @@ modelEval <- function(model=NULL, correctClass, predictedClass, predictedProb=NU
 			return(modelEvaluationClass.Core(correctClass,predictedClass,predictedProb,costMatrix,priorClProb,beta))
 		}
 	}
-	if (class(model) != "CoreModel"){
+	if ( !("CoreModel" %in% class(model)) ){
 		warning("Only models of type CoreModel can be evaluated with this type of call. Others shall supply NULL for parameter model, and provide value of avgTrainPrediction in case of regression.")
 		return(NULL) ;
 	}
@@ -777,7 +764,7 @@ modelEvaluationClass.Core <- function(correctClass, predictedClass, predictedPro
 	}
 	if (is.null(priorClassProb))
 		priorClassProb <- table(correctClass)/noInst
-	tmp <- .C("modelEvaluate",
+	tmp <- .C(C_modelEvaluate,
 			noInst = length(correctClass),
 			correctClass = as.integer(correctClass),
 			# predictedClass = as.integer(predictedClass), # computed from predictedProb and CostMatrix
@@ -799,9 +786,7 @@ modelEvaluationClass.Core <- function(correctClass, predictedClass, predictedPro
 			KS = double(1),
 			TPR = double(1),
 			FPR = double(1),
-			NAOK=TRUE,
-			PACKAGE="CORElearn"
-	)
+			NAOK=TRUE)
 	recall = tmp$sensitivity
 	denominator <- (beta*beta * recall + tmp$precision)
 	if (denominator == 0)
@@ -818,7 +803,7 @@ modelEvaluationClass.Core <- function(correctClass, predictedClass, predictedPro
 
 modelEvaluationReg.Core <- function(correct, predicted, avgTrainPredicted) {
 	noInst <- length(correct) ;
-	tmp <- .C("modelEvaluateReg",
+	tmp <- .C(C_modelEvaluateReg,
 			noInst = length(correct),
 			correct = as.double(correct),
 			predicted = as.double(predicted),
@@ -827,32 +812,26 @@ modelEvaluationReg.Core <- function(correct, predicted, avgTrainPredicted) {
 			RMSE = double(1),
 			MAE = double(1),
 			RMAE = double(1),
-			NAOK=TRUE,
-			PACKAGE="CORElearn"
-	)
+			NAOK=TRUE)
 	list(MSE = tmp$MSE, RMSE = tmp$RMSE, MAE = tmp$MAE, RMAE = tmp$RMAE)
 }
 
 paramCoreIO <- function(model, fileName, io=c("read","write")) {
 	io = match.arg(io)
-	tmp <- .C("optionsInOut",
+	tmp <- .C(C_optionsInOut,
 			modelID = as.integer(model$modelID),
 			fileName=as.character(fileName),
 			io=as.character(io),
-			NAOK=FALSE,
-			PACKAGE="CORElearn"
-	)
+			NAOK=FALSE)
 	invisible(tmp)
 }
 
 saveRF <- function(model, fileName) {
 	if (model$model != "rf") stop("Only random forest model can be saved at the moment.");
 	modelID <- model$modelID
-	tmp <- .C("saveRF",
+	tmp <- .C(C_saveRF,
 			modelID = as.integer(modelID),
-			fileName=as.character(fileName),
-			PACKAGE="CORElearn"
-	)
+			fileName=as.character(fileName))
 	save(model,file=paste(fileName,".Rda",sep=""))
 	invisible(tmp)
 }
@@ -895,11 +874,9 @@ loadRF <- function(fileName) {
 #	class.lev <- levels(dat[[1]]);
 #	noClasses <- length(class.lev);
 	load(file=paste(fileName,".Rda",sep="")) #loads object with name model
-	tmp <- .C("readRF",
+	tmp <- .C(C_readRF,
 			fileName=as.character(fileName),
-			modelID = integer(1),
-			PACKAGE="CORElearn"
-	);
+			modelID = integer(1))
 	if (tmp$modelID == -1) {
 		return(NULL)
 	}
@@ -907,7 +884,7 @@ loadRF <- function(fileName) {
 	#res <- list(modelID=tmp$modelID, class.lev=class.lev, model=model, formula=formula,  noClasses = noClasses)
 	#class(res) <- "CoreModel"
 	#res
-    model
+	model
 }
 
 
@@ -915,16 +892,17 @@ getRFsizes <- function(model, type=c("size", "sumdepth")) {
 	if (model$model != "rf") stop("The model must be a random forest.");
 	type <- match.arg(type)
 	switch(type,
-			size=.Call("exportSizesRF", as.integer(model$modelID), PACKAGE="CORElearn"),
-			sumdepth=.Call("exportSumOverLeavesRF", as.integer(model$modelID), PACKAGE="CORElearn"))
+			size=.Call(C_exportSizesRF, as.integer(model$modelID)),
+			sumdepth=.Call(C_exportSumOverLeavesRF, as.integer(model$modelID)))
 }   
 
 getCoreModel <- function(model) {
 	if (model$model != "rf") stop("The model must be a random forest.");
-	.Call("exportModel", as.integer(model$modelID), PACKAGE="CORElearn")    
+	.Call(C_exportModel, as.integer(model$modelID))    
 }
 
-calibrate <- function(correctClass, predictedProb, class1=1, method = c("isoReg","binIsoReg","binning","mdlMerge"), weight=NULL,noBins=10, assumeProbabilities=FALSE){
+calibrate <- function(correctClass, predictedProb, class1=1, method = c("isoReg","binIsoReg","binning","mdlMerge"), 
+		weight=NULL,noBins=10, assumeProbabilities=FALSE){
 	noClasses <- length(levels(correctClass)) ;
 	method <- match.arg(method)
 	methodIdx = match(method, eval(formals()$method), nomatch=-1)
@@ -947,7 +925,7 @@ calibrate <- function(correctClass, predictedProb, class1=1, method = c("isoReg"
 	tc[]<-0
 	tc[correctClass==class1]<-1
 	
-	tmp <- .C("calibrate",
+	tmp <- .C(C_calibrate,
 			methodIdx = as.integer(methodIdx),
 			noInst = as.integer(noInst),
 			correctClass = as.integer(tc),
@@ -957,12 +935,19 @@ calibrate <- function(correctClass, predictedProb, class1=1, method = c("isoReg"
 			noIntervals = integer(1),
 			interval = double(noInst),
 			calProb = double(noInst),
-			NAOK=TRUE,
-			PACKAGE="CORElearn"
-	)
+			NAOK=TRUE)
 	if (assumeProbabilities == TRUE)
 		tmp$interval[tmp$noIntervals] <- 1 # set sentinel for probabilities
 	list(interval = tmp$interval[1:tmp$noIntervals], calProb = tmp$calProb[1:tmp$noIntervals])
+}
+
+applyCalibration <- function(predictedProb, calibration) {
+	if (is.null(calibration))
+		return(predictedProb)
+	calIntervals <- apply( outer(predictedProb, calibration$interval, ">"), 1, sum) 
+	
+	calProbs  <- calibration$calProb[calIntervals+1]
+	return(calProbs)
 }
 
 applyDiscretization <- function(data, boundsList, noDecimalsInValueName=2) {
@@ -1094,14 +1079,14 @@ discretize <- function(formula, data, method=c("greedy", "equalFrequency", "equa
 	
 	if (attr2Disc==0)
 		return(NULL)
-
+	
 	if (method == "greedy") 
 		maxBins <- rep(maxBins, length.out=attr2Disc)
 	else 
-	  maxBins <- rep(equalDiscBins, length.out
-	                 =attr2Disc)	
+		maxBins <- rep(equalDiscBins, length.out
+						=attr2Disc)	
 	
-	tmp <- .C("discretize",
+	tmp <- .C(C_discretize,
 			methodIdx = as.integer(methodIdx),
 			isRegression = as.integer(isRegression),
 			noInst = aux$noInst,
@@ -1120,9 +1105,7 @@ discretize <- function(formula, data, method=c("greedy", "equalFrequency", "equa
 			maxBins = as.integer(maxBins),
 			noBounds = integer(ncol(bounds)),
 			bounds = as.double(bounds), # vector of length noInst*noNumeric, columnwise
-			NAOK=TRUE,
-			PACKAGE="CORElearn"
-	)
+			NAOK=TRUE)
 	boundsMx <- matrix(tmp$bounds, nrow=nrow(bounds),ncol=ncol(bounds),byrow=FALSE)
 	outBounds <- list()
 	for (i in 1:ncol(boundsMx)) {
@@ -1148,6 +1131,6 @@ noEqualRows <- function(data1, data2, tolerance=1e-5, countOnce=TRUE) {
 	d2[is.na(d2)] <- replaceNA
 	storage.mode(d1) <- "double"
 	storage.mode(d2) <- "double" 
-	.Call("noEqualRows", d1, d2, as.integer(nrow(d1)), as.integer(nrow(d2)), as.integer(ncol(d1)), 
-			as.double(tolerance), as.integer(countOnce), PACKAGE="CORElearn")
+	.Call(C_noEqualRows, d1, d2, as.integer(nrow(d1)), as.integer(nrow(d2)), as.integer(ncol(d1)), 
+			as.double(tolerance), as.integer(countOnce))
 }

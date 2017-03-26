@@ -1,6 +1,6 @@
 \name{destroyModels}
 \alias{destroyModels}
-\title{Destroy single or all CORElearn models }
+\title{Destroy single model or all CORElearn models }
 \description{
   Destroys internal representation of a given model or all constructed models.
   As side effect the memory used by the model(s) is freed.

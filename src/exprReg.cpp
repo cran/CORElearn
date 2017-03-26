@@ -7,7 +7,7 @@
 *
 *********************************************************************/
 
-#include <float.h>
+#include <cfloat>
 
 #include "general.h"
 #include "exprReg.h"

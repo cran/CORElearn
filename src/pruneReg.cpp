@@ -5,12 +5,14 @@
 *
 *********************************************************************/
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "general.h"
 #include "error.h"
 #include "utils.h"
 #include "regtree.h"
+
+using namespace std ;
 
 //************************************************************
 //

@@ -1,5 +1,6 @@
-#include <stdlib.h>
-#include <float.h>
+#include <cstdlib>
+#include <cfloat>
+
 #if defined(_OPENMP)
 #include <omp.h>
 #endif
@@ -11,6 +12,8 @@
 #include "utils.h"
 #include "binpart.h"
 #include "options.h"
+
+using namespace std ;
 
 
 // ***************************************************************************

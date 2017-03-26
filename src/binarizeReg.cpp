@@ -1,4 +1,4 @@
-#include <float.h>
+#include <cfloat>
 
 #include "general.h"
 #include "error.h"
@@ -7,6 +7,7 @@
 #include "estimatorReg.h"
 #include "binpart.h"
 
+using namespace std ;
 
 
 // ************************************************************

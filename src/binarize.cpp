@@ -1,4 +1,4 @@
-#include <float.h>
+#include <cfloat>
 
 #include "general.h"
 #include "error.h"
@@ -10,7 +10,7 @@
 
 //extern Options *opt ;
 
-
+using namespace std ;
 
 
 // ************************************************************

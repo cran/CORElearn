@@ -1,9 +1,8 @@
 #if !defined(UTILS_H)
 #define UTILS_H
 
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdlib>
 
 #include "general.h"
 #include "contain.h"

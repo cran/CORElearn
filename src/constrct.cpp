@@ -5,9 +5,9 @@
 // *   Description:      deals with constructs 
 // *
 // *********************************************************************
-#include <float.h>
-#include <string.h>
-#include <math.h>
+#include <cfloat>
+#include <cstring>
+#include <cmath>
 
 #include "general.h"
 #include "estimator.h"

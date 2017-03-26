@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include <float.h>
-#include <limits.h>
-//#include <conio.h>
+#include <cfloat>
+#include <climits>
 
 #include "general.h"
 #include "ftree.h"
@@ -12,6 +10,7 @@
 #include "options.h"
 #include "error.h"
 
+using namespace std ;
 
 void forestTree::copy(forestTree &Source)
 {

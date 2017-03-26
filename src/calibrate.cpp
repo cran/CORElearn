@@ -5,8 +5,7 @@
  *      Author: rmarko
  */
 
-#include <stdio.h>
-#include <float.h>
+#include <cfloat>
 
 #include "general.h"
 #include "contain.h"
@@ -14,6 +13,8 @@
 #include "utils.h"
 #include "dataStore.h"
 #include "calibrate.h"
+
+using namespace std ;
 
 double Calibrate::cal(double p) {
 	// find appropriate with bisection. the highest interval entry has to be the sentinel
@@ -32,7 +33,7 @@ double Calibrate::cal(double p) {
 			upper = middle - 1;
 	}
 	// p is smaller than calProb[lower]
-								 return calProb[lower];
+	return calProb[lower];
 }
 
 void Calibrate::calFromTo(int from, int to, marray<double> &p) {
@@ -125,8 +126,8 @@ void Calibrate::binningCal(marray<sort3Rec> &y, int noBins) {
 		for (i=0 ; i < y.filled() ; i++) {
 			if (i==y.filled()-1)
 				interval[y.filled()-1] = y[i].key ; // 1.0;   sentinel
-				else // set interval to weighted middle point to next
-					interval[i] = y[i].key + (y[i+1].key - y[i].key) * y[i].weight / (y[i].weight + y[i+1].weight);
+			else // set interval to weighted middle point to next
+				interval[i] = y[i].key + (y[i+1].key - y[i].key) * y[i].weight / (y[i].weight + y[i+1].weight);
 			calProb[i] = y[i].value ;
 			w[i] = y[i].weight ;
 		}
@@ -200,7 +201,7 @@ void Calibrate::mergeCal(marray<sort3Rec> &yi, int noInitialBins) {
 	booleanT tryMerging = mTRUE;
 	// slow algorithm, worst case is O(N^2), to speed up one needs different data structure (e.g. heap), which precomputes all possible mergers
 
-    int binsLeft = y.filled()-1 ;
+	int binsLeft = y.filled()-1 ;
 	while (tryMerging) {
 		maxGain = -DBL_MAX;
 		// find the most similar to merge
