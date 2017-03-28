@@ -1180,7 +1180,7 @@ double estimation::infGainCostImpurity(int weightNode, mmatrix<int> &noClassAttr
    for (i=1 ; i <= noClasses ;i++)   {
       pC1[i] = pC[i] * eC[i] / eCsum ;
       if (pC1[i] > 0 && pC[i] < 1.0)
-         Ec -= pC1[i] * log2(pC1[i]) ;
+         Ec -= pC1[i] * mlog2(pC1[i]) ;
       //else merror("estimation::infGainCostImpurity","invalid probability") ;
    }
    return Ec ;

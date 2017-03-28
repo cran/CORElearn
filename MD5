@@ -1,5 +1,5 @@
 4f1a8a64fd925d03673faf7357855bb9 *ChangeLog
-05a13785ce1935ca89b862ecb2a01bec *DESCRIPTION
+4abebf1100839c563ccedf85272e358f *DESCRIPTION
 bc2c7290901a101e1c70b586dbbfe688 *NAMESPACE
 f961534c16063be1418f78b622d650a0 *R/Rinterface.R
 ec31240bfb72989a6041a78a9844b776 *R/dataGenerator.R
@@ -80,7 +80,7 @@ aebc4713243d47a1131093e4841c68c7 *src/dataStore.cpp
 3252ab148e5d4c1e309a6353bd202e8f *src/error.h
 32b5e461da4b137eb00adcd64cd26be0 *src/estCommon.cpp
 20a102fb9ab24d6c6ccff3d2ec9a4e08 *src/estOrdAttr.cpp
-5bf651e5e052238719da3b3dd027f7a0 *src/estimator.cpp
+0f41239b024075db4cb49be1cf3cb363 *src/estimator.cpp
 60501b4572cd23fcfa24fb0e6ee1ecca *src/estimator.h
 fe2999795d1b833e7748e186434d8025 *src/estimatorReg.cpp
 635b9a7bc5e2419e4b16bf6af4bc2392 *src/estimatorReg.h
@@ -88,7 +88,7 @@ fe5a9b50b69b5f533c851297a2221340 *src/expr.cpp
 62907f9e94a3eb250b661d078e383f4b *src/expr.h
 ccb1453cfedcb3a0de1e2a7b2cfdbdf2 *src/exprReg.cpp
 b60aefce4a55ce300f956da7177b1593 *src/exprReg.h
-9cbba966c2121c82dbc262af7caf94c3 *src/frontend.cpp
+ff9ce638ae59c77de7c5016631c081f5 *src/frontend.cpp
 5a80b57755b993363d70a206562be30d *src/frontend.h
 71f52c180d9d5be235ae984e43bc48ad *src/ftree.cpp
 090569ca2aff7b0bdfd77dca069a5f54 *src/ftree.h
