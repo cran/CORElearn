@@ -4,6 +4,9 @@ versionCore <- function()
 	tmp$libVersion
 }
 
+predict <- function(object, ...) UseMethod("predict", object)
+#plot <- function(object, ...) UseMethod("plot", object)
+
 destroyModels <-function(model=NULL)
 {
 	if (is.null(model)) {
@@ -47,6 +50,7 @@ CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKern
 		else stop("The first argument must be a formula or prediction column name or prediction column index.")
 		
 		dat <- data.frame(data[, classIdx], data[, -classIdx, drop=FALSE])
+			
 		names(dat)[1] <- className
 		# get formula explicitly to allow storage of all terms and their manipulation
 		frml <- paste(className, "~",paste(names(dat)[-1], sep="+",collapse="+"),sep="") 
@@ -141,6 +145,7 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
 	#newdata <- as.data.frame(newdata)
 	#dat <- model.frame(model$formula, data=newdata, na.action=na.pass);
 	dat <- model.frame(newFormula, data=newdata, na.action=na.pass);
+	
 	aux <- prepare.Data(dat, model$formula, dependent=FALSE,class.lev=class.lev, numericAsOrdered=FALSE,skipNAcolumn=FALSE, skipEqualColumn=FALSE);
 	#aux <- prepare.Data(dat[-1], model$formula, dependent=FALSE,class.lev, skipNAcolumn=FALSE, skipEqualColumn=FALSE);
 	noInst <- aux$noInst
@@ -449,6 +454,7 @@ ordEval <- function(formula, data, file=NULL, rndFile=NULL, variant=c("allNear",
 		frml <- paste(className, "~",paste(names(dat)[-1], sep="+",collapse="+"),sep="") 
 		formulaExpanded <- as.formula(frml)   
 	}	
+	
 	variant <- match.arg(variant)
 	variantIdx=match(variant,eval(formals()$variant),nomatch=-1)
 	if (!inherits(dat[[1]],"factor")) {
@@ -1040,7 +1046,6 @@ discretize <- function(formula, data, method=c("greedy", "equalFrequency", "equa
 		if (any(equalDiscBins<2))
 			stop("The number of bins (equalDiscBins) shall be an integer >=2")
 	}
-	
 	
 	#if (is.null(isRegression)) # in case of equal width or equal frequency discretization 
 	#	isRegression <- ! inherits(dat[[1]], "factor")

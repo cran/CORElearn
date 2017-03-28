@@ -74,7 +74,7 @@ double MdlCodeLen(double parameter[], marray<int> &Mask)
    double len = multinomLog2(Multinom) ;
 
    // code for the  length of the exprRegession
-   len += log2((double)gT->noNumeric) ; // +1 -1
+   len += mlog2((double)gT->noNumeric) ; // +1 -1
 
   // codes for model
    int counter = 1;  // counter for real model size

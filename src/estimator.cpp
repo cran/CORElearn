@@ -739,7 +739,7 @@ double estimation::infGainImpurity(int weightNode, mmatrix<int> &noClassAttrVal,
 	      if (noClassAttrVal(classIdx, valIdx) > 0)
 	      {
 	         tempP = ((double)noClassAttrVal(classIdx, valIdx)) / weightNode ;
-	         Hc -= tempP * log2(tempP) ;
+	         Hc -= tempP * mlog2(tempP) ;
 	      }
    }
    return Hc ;
@@ -748,7 +748,7 @@ double estimation::infOnDistribution(marray<double> &dist) {
    double Hc = 0.0 ;
    for (int classIdx=1 ; classIdx <= noClasses ;classIdx++)	   {
 	      if (dist[classIdx]>0.0)
-	         Hc -= dist[classIdx] * log2(dist[classIdx]) ;
+	         Hc -= dist[classIdx] * mlog2(dist[classIdx]) ;
    }
    return Hc ;
 }
@@ -767,7 +767,7 @@ double estimation::gainRatio(double priorImpurity, int weightNode, marray<int> &
 	double tempP, Ha=0.0, Hc_a=0.0 ;
     for (int valIdx = 1 ; valIdx < attrVal.filled() ; valIdx++) {
 	   tempP = ((double)attrVal[valIdx])/ weightNode ;
-	   Ha -=  tempP * log2(tempP);
+	   Ha -=  tempP * mlog2(tempP);
 	   if (attrVal[valIdx] >0)
           Hc_a += tempP * (this->*fImpurity)(attrVal[valIdx], noClassAttrVal, valIdx) ;
     }

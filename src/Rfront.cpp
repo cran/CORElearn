@@ -19,7 +19,7 @@
 #include "ftree.h"    // decision tree with feature construction
 #include "regtree.h"
 #include "rndforest.h"  // random forests
-#include "utils.h"    // various utilities eg. computing of std. dev.
+#include "utils.h"    // various utilities e.g., computing of std. dev.
 #include "random.h"
 #include "estimator.h"
 #include "estimatorReg.h"
