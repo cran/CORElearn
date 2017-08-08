@@ -53,7 +53,6 @@ extern "C" {
 
 marray<dataStore*> allModels; // stores pointers to all the active models, one for each
 
-
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
 const static R_CallMethodDef R_CallDef[] = {
@@ -105,6 +104,7 @@ void R_init_CORElearn(DllInfo *dll)
     R_forceSymbols(dll, TRUE);
 
 }
+
 
 
 // on entry to library

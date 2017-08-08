@@ -24,7 +24,62 @@ destroyModels <-function(model=NULL)
 	invisible(NULL) 
 }
 
-CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKernel","bayes","regTree"), ..., costMatrix=NULL)
+cvCoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKernel","bayes","regTree"), costMatrix=NULL,
+		folds=10, stratified=TRUE, returnModel=TRUE, ...) 
+{
+	# check formula or response index or reponse name
+	if (inherits(formula,"formula")) 
+		className <- all.vars(formula)[1]
+	else if (is.numeric(formula)) {
+		if (formula == round(formula)) {# index of response variable
+			classIdx <- formula
+			className <- names(data)[classIdx]
+		}
+		else  stop("The first argument must be a formula or prediction column name or prediction column index.")
+	}
+	else if (is.character(formula)) { # name of response variable
+		classIdx <- match(formula, names(data))
+		if (length(classIdx) != 1 || is.na(classIdx)) 
+			stop("The first argument must be a formula or prediction column name or prediction column index.")
+		className <- names(data[classIdx])
+	}
+	else stop("The first argument must be a formula or prediction column name or prediction column index.")
+	
+	
+	if (stratified)
+		foldIdx <- cvGenStratified(data[,className], k=folds)
+	else
+		foldIdx <- cvGen(nrow(data), k=folds)
+	
+	evalCore<-list()
+	for (j in 1:folds) {
+		dTrain <- data[foldIdx!=j,]
+		dTest  <- data[foldIdx==j,]
+		modelCore <- CoreModel(formula, dTrain, model, costMatrix, ...) 
+			
+		predCore <- predict(modelCore, dTest)
+		evalCore[[j]] <- modelEval(modelCore, correctClass=dTest[[className]],predictedClass=predCore$class, predictedProb=predCore$prob ) 
+		destroyModels(modelCore)
+	}
+	
+	resList <- gatherFromList(evalCore)
+	avgs <- sapply(resList, mean)
+	stds <- sapply(resList, sd)
+	
+	if (returnModel) {
+		modelCore <- CoreModel(formula, data, model, costMatrix, ...) 
+	}
+	else {
+		modelCore <- list()
+	}
+	modelCore$avgs <- avgs
+	modelCore$stds <- stds
+	modelCore$evalList <- resList
+	
+	modelCore
+}
+	
+CoreModel <- function(formula, data, model=c("rf","rfNear","tree","knn","knnKernel","bayes","regTree"), costMatrix=NULL, ...)
 {
 	# check formula or response index or reponse name
 	if (inherits(formula,"formula")) {
@@ -141,7 +196,26 @@ predict.CoreModel <- function(object, newdata, ..., costMatrix=NULL,  type=c("bo
 	noClasses <- model$noClasses;
 	class.lev <- model$class.lev;
 	#terms <- delete.response(model$terms);
-	newFormula <- reformulate(all.vars(model$formula)[-1])
+	allVars <- all.vars(model$formula)
+	if (length(allVars)<=1) { # formula was striped to no variables probably due to equal or missing data 
+		# thereofre predict with default classifier
+		if (model$model == "regTree") {
+			returnList <- rep(object$avgTrainPrediction, nrow(newdata))
+		}
+		else {
+			maxPrior <- nnet::which.is.max(object$priorClassProb)
+			pred <- rep(factor(class.lev[maxPrior],levels=class.lev), nrow(newdata))
+			prob <- matrix(object$priorClassProb, nrow=nrow(newdata), ncol=noClasses,dimnames=list(NULL,class.lev),byrow=TRUE);
+			if (type == "both")
+				returnList <- list(class=pred,probabilities=prob)
+			else if (type=="class")
+				returnList <- pred
+			else if (type == "probability")
+				returnList <- prob
+		}
+		return(returnList)	
+	}
+	newFormula <- reformulate(allVars[-1])
 	#newdata <- as.data.frame(newdata)
 	#dat <- model.frame(model$formula, data=newdata, na.action=na.pass);
 	dat <- model.frame(newFormula, data=newdata, na.action=na.pass);

@@ -47,9 +47,9 @@
       
     There are some additional optional parameters \bold{\dots } which are important to all or for some graph types.
     \itemize{
-    \item \code{ci} The type of the confidence interval in "avBar" and "attrBar" graph types. Can be \code{"two.sided"},
+    \item \code{ciType} The type of the confidence interval in "avBar" and "attrBar" graph types. Can be \code{"two.sided"},
          \code{"upper"}, \code{"lower"}, or \code{"none"}. 
-      Together with \code{ordEvalNormalizingPercentile} parameter in \code{\link{ordEval}}, \code{ci}, and \code{ciDisplay}
+      Together with \code{ordEvalNormalizingPercentile} parameter in \code{\link{ordEval}}, \code{ciType}, and \code{ciDisplay}
        controls the type, length and display of of confidence intervals for each value.    
     \item \code{ciDisplay} The way how confidence intervals are displayed. Can be \code{"box"} or \code{"color"}. The value
          \code{"box"} displays confidence interval as box and whiskers plot above the actual value with whiskers representing 
