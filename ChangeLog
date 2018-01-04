@@ -1,3 +1,4 @@
+CORElearn-1.52.0, 2017-12-27: making discretization more robust to NA values
 CORElearn-1.51.2, 2017-08-08: fixing grammar error in Description file
 CORElearn-1.51.1, 2017-08-08: added support for cross-validated evaluation of CoreModel
 CORElearn-1.51.0, 2017-06-23: added support for cross-validated evaluation of CoreModel

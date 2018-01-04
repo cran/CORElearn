@@ -1030,20 +1030,27 @@ applyCalibration <- function(predictedProb, calibration) {
 	return(calProbs)
 }
 
+
 applyDiscretization <- function(data, boundsList, noDecimalsInValueName=2) {
 	if (is.null(boundsList))
 		return(data)
 	
 	for (i in 1:length(boundsList)) {
+		noDecimals  <- noDecimalsInValueName 
 		attrName <- names(boundsList)[i]
-		discValues <- apply( outer(data[,attrName], boundsList[[i]], ">"), 1, sum) 
-		data[,attrName] <- factor(discValues, levels=0:length(boundsList[[i]]))
-		repeat {
-			levels(data[,attrName]) <- intervalNames(boundsList[[i]], noDecimalsInValueName)
-			if (length(unique(levels(data[,attrName])))==length(boundsList[[i]])+1)
-				break
-			else
-				noDecimalsInValueName <- noDecimalsInValueName +1	
+		if (length(boundsList[[i]]) == 1 && is.na(boundsList[[i]])) {
+			data[,attrName] <- factor(NA)
+		}
+		else { 
+			discValues <- apply( outer(data[,attrName], boundsList[[i]], ">"), 1, sum) 
+			data[,attrName] <- factor(discValues, levels=0:length(boundsList[[i]]))
+			repeat {
+				levels(data[,attrName]) <- intervalNames(boundsList[[i]], noDecimals)
+				if (length(unique(levels(data[,attrName])))==length(boundsList[[i]])+1)
+					break
+				else
+					noDecimals <- noDecimals +1	
+			}
 		}
 	}
 	data
@@ -1130,13 +1137,15 @@ discretize <- function(formula, data, method=c("greedy", "equalFrequency", "equa
 		warning("Possibly this is an error caused by regression formula and classification attribute estimator or vice versa.")
 	}
 	
-	aux <- prepare.Data(dat,formulaExpanded,dependent=TRUE,numericAsOrdered=FALSE,orderedAsNumeric=FALSE, skipNAcolumn=TRUE,skipEqualColumn=FALSE);
+	aux <- prepare.Data(dat,formulaExpanded,dependent=TRUE,numericAsOrdered=FALSE,orderedAsNumeric=FALSE, skipNAcolumn=TRUE,skipEqualColumn=TRUE);
 	discnumvalues <- aux$discnumvalues;
 	discdata <- aux$discdata;
 	discmap <- aux$discmap;
 	numdata <- aux$numdata;
 	nummap <- aux$nummap;
 	skipmap<-aux$skipmap
+	if (length(skipmap) > 0)
+		warning("The discretization for the following attributes was not computed due to inadequate data:", paste(names(dat)[aux$skipmap],collapse=", "))
 	discAttrNames <- dimnames(discdata)[[2]]
 	discValCompressed <- aux$disccharvalues
 	discValues <- aux$discValues
@@ -1194,6 +1203,13 @@ discretize <- function(formula, data, method=c("greedy", "equalFrequency", "equa
 			outBounds[[i]] <- NA
 	}
 	names(outBounds) <- numAttrNames
+	
+	if (length(skipmap) > 0) {
+		for (i in 1:length(skipmap))
+		   outBounds[[length(outBounds)+1]] <- NA
+	   
+		names(outBounds)[(length(outBounds)-length(skipmap)+1):length(outBounds)] <- names(dat)[aux$skipmap]
+	}
 	
 	if (isRegression)
 		outBounds[[1]] <- NULL

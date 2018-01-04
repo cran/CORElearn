@@ -101,7 +101,9 @@ void R_init_CORElearn(DllInfo *dll)
 {
     R_registerRoutines(dll, R_CDef, R_CallDef, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
+    //R_useDynamicSymbols(dll, TRUE); // for debugging to find entry points
     R_forceSymbols(dll, TRUE);
+    //R_forceSymbols(dll, FALSE); // for debugging to find entry points
 
 }
 

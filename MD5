@@ -1,7 +1,7 @@
-832626ac346f723e26e9620c8d13122e *ChangeLog
-5819799bcb43c18e0967941ad8876a16 *DESCRIPTION
+ec90728b3228709ec1be8c40d47a2fef *ChangeLog
+a03e612f56e0c1b3cb40097762812b8c *DESCRIPTION
 1832c437b4950817f42a49cb5ae1c620 *NAMESPACE
-525dfefb4879d1df43ece1f486ba1edf *R/Rinterface.R
+425f21e965856b5d0ad6049f7912cd62 *R/Rinterface.R
 ec31240bfb72989a6041a78a9844b776 *R/dataGenerator.R
 bc4d3c3dd9c8d3428f1163d696a71c0f *R/init.R
 dd6a548d182e5007789e205a3f79e41f *R/ordEval.R
@@ -51,7 +51,7 @@ cbcefa7b7781f888da06a7759112bd65 *man/versionCore.Rd
 88ad116e495f340b40cf7494b9b75d57 *src/Makevars.in
 b7e4c4dfdda77b9e9bf917aac1aa13a5 *src/Makevars.win
 5ac99567124d2a0d3d4851ee1033bff0 *src/Rconvert.cpp
-6f30696dfb62f5acb13d17e3b745fd91 *src/Rfront.cpp
+f5b31c092d5f9d581e3bdd73ed5a076a *src/Rfront.cpp
 dd7731c5cc1436d731ddb57af6fd4be5 *src/Rfront.h
 b40b1b73600442a4383c6b2da02a49c8 *src/binarize.cpp
 ce15be8d60aab6a9202ac3f42bbae5af *src/binarizeReg.cpp
@@ -89,7 +89,7 @@ fe5a9b50b69b5f533c851297a2221340 *src/expr.cpp
 62907f9e94a3eb250b661d078e383f4b *src/expr.h
 ccb1453cfedcb3a0de1e2a7b2cfdbdf2 *src/exprReg.cpp
 b60aefce4a55ce300f956da7177b1593 *src/exprReg.h
-8501abe71783a5e06f5ccdb5939b8a11 *src/frontend.cpp
+bec74dd37836d0ee42d56433d86535a0 *src/frontend.cpp
 5a80b57755b993363d70a206562be30d *src/frontend.h
 71f52c180d9d5be235ae984e43bc48ad *src/ftree.cpp
 090569ca2aff7b0bdfd77dca069a5f54 *src/ftree.h
