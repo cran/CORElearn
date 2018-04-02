@@ -4,7 +4,7 @@ versionCore <- function()
 	tmp$libVersion
 }
 
-predict <- function(object, ...) UseMethod("predict", object)
+#predict <- function(object, ...) UseMethod("predict", object)
 #plot <- function(object, ...) UseMethod("plot", object)
 
 destroyModels <-function(model=NULL)

@@ -1,3 +1,4 @@
+CORElearn-1.52.1, 2018-04-02: fixing bug in declaring my own generic function for predict surfacing due to changes in R3.5.0
 CORElearn-1.52.0, 2017-12-27: making discretization more robust to NA values
 CORElearn-1.51.2, 2017-08-08: fixing grammar error in Description file
 CORElearn-1.51.1, 2017-08-08: added support for cross-validated evaluation of CoreModel

@@ -1,7 +1,7 @@
-ec90728b3228709ec1be8c40d47a2fef *ChangeLog
-a03e612f56e0c1b3cb40097762812b8c *DESCRIPTION
+65984e158169d5b496359020cf775e56 *ChangeLog
+ae532f0b3ec72261f8e3a3cd891f4185 *DESCRIPTION
 1832c437b4950817f42a49cb5ae1c620 *NAMESPACE
-425f21e965856b5d0ad6049f7912cd62 *R/Rinterface.R
+e7c3782ce109ca37c26ca0729d108173 *R/Rinterface.R
 ec31240bfb72989a6041a78a9844b776 *R/dataGenerator.R
 bc4d3c3dd9c8d3428f1163d696a71c0f *R/init.R
 dd6a548d182e5007789e205a3f79e41f *R/ordEval.R
@@ -111,6 +111,7 @@ b06fe6cde0962f678647b4cbe31d98c9 *src/new_new.cpp
 3fb3d48bdb375ee5c96494d35ba447a6 *src/nrutil.h
 a1719d5f4545d81d184fee96d69fc003 *src/options.cpp
 d931ed75b77107158775f5b74f9a9e6b *src/options.h
+431fc5ef5c2f478338a44f656505e70b *src/platform.h
 c511fc0d123c910c13a253e84ecb5c1a *src/platform_unix.h
 431fc5ef5c2f478338a44f656505e70b *src/platform_win.h
 41f3a6a2fe06187c3688ec0695af74d6 *src/printUtil.cpp
