@@ -33,9 +33,6 @@
 #include "error.h"
 #include "options.h"
 
-#if !defined(R_PORT)
-#define Rprintf printf
-#endif
 
 using namespace std ;
 

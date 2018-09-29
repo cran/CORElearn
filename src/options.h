@@ -1,6 +1,8 @@
 #if !defined(OPTIONS_H)
 #define OPTIONS_H
 
+#include <cstdio>
+
 #include "general.h"
 #include "contain.h"
 #include "mstring.h"

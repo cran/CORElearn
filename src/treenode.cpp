@@ -96,7 +96,8 @@ booleanT featureTree::singleAttributeModel(estimation &Estimator, binnode* Node)
       // cached construct was selected - find out which one
       int idx, selectedConstruct = -1 ;
       if (bestType == aCONTINUOUS)
-        idx = bestIdx - noNumeric ;
+        idx =
+ - noNumeric ;
       else
         idx = bestIdx - noDiscrete ;
       for (i=0 ; i < CachedConstructs.filled() ; i++)
