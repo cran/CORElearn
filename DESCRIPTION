@@ -1,7 +1,7 @@
 Package: CORElearn
 Title: Classification, Regression and Feature Evaluation
-Version: 1.53.1
-Date: 2018-09-29
+Version: 1.54.2
+Date: 2020-02-08
 Author: Marko Robnik-Sikonja and Petr Savicky
 Maintainer: "Marko Robnik-Sikonja" <marko.robnik@fri.uni-lj.si>
 Description: A suite of machine learning algorithms written in C++ with the R 
@@ -21,9 +21,9 @@ Description: A suite of machine learning algorithms written in C++ with the R
  The top-level documentation is reachable through ?CORElearn.
 License: GPL-3
 URL: http://lkm.fri.uni-lj.si/rmarko/software/
-Imports: cluster,rpart, stats,nnet
-Suggests: lattice,MASS,rpart.plot,ExplainPrediction
+Imports: cluster,rpart,stats,nnet,plotrix,rpart.plot
+Suggests: lattice,MASS,ExplainPrediction
 NeedsCompilation: yes
-Packaged: 2018-09-29 10:05:52 UTC; rmarko
 Repository: CRAN
-Date/Publication: 2018-09-29 10:30:03 UTC
+Packaged: 2020-02-08 09:47:26 UTC; rmarko
+Date/Publication: 2020-02-08 10:20:07 UTC

@@ -288,8 +288,9 @@ plot.CoreModel<-function(x, trainSet, rfGraphType=c("attrEval","outliers","scali
 	# regression or decision tree
 	if (x$model == "regTree" || x$model == "tree"){           
 		rmodel <- getRpartModel(x, trainSet) ;
-		plot(rmodel)  # ,compress=T,branch=0.5);
-		text(rmodel) # , pretty=0);
+		#plot(rmodel)  # ,compress=T,branch=0.5);
+		#text(rmodel) # , pretty=0);
+		rpart.plot(rmodel,roundint=FALSE,...)
 	}
 	else if (x$model == "rf" || x$model == "rfNear"){
 		if (rfGraphType == "attrEval") {

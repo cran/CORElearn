@@ -72,7 +72,8 @@ oeInst<-function(ord, noAttr, graphTitle = "", normalization=TRUE, instSelection
 }
 
 
-avNormBarObject<-function(oe, ciType=c("two.sided","upper","lower","none"), ciDisplay=c("box","color"), 
+avNormBarObject<-function(oe, ciType=c("two.sided","upper","lower","none"), ciDisplay=c("box","color"),
+        ciDecorate = NULL,
         graphTitle = NULL, ylabLeft = "attribute values", ylabRight="number of values" ,
         xlabel="reinforcement", attrIdx=0, equalUpDown=FALSE, colors=c("green","lightgreen","blue","lightblue")) 
 {
@@ -186,12 +187,16 @@ avNormBarObject<-function(oe, ciType=c("two.sided","upper","lower","none"), ciDi
                 else if (ciType != "none") {
                     # change the color within upper limit of confidence interval 
                     rect(max(-xDown, -statsDown[["highPercentile"]]), y, 0.0, y+0.45*boxHeight, col=downOverColor)                    
-                }                
+                }  
+                if (!is.null(ciDecorate) && abs(statsDown[["highPercentile"]]) < abs(xDown) ) {
+                  segments(-statsDown[["highPercentile"]], y - 0.10,  -statsDown[["highPercentile"]], y + 0.55, lty="dashed")
+                  draw.ellipse(x = -(statsDown[["highPercentile"]]+xDown)/2, y = y+0.225*boxHeight, a = max(0.05, 0.05+(xDown - statsDown[["highPercentile"]])/2), b= 0.05 + 0.225*boxHeight, border=ciDecorate, lwd=2)
+                }
+                
             }
             if (xUp>0) {
                 rect(0.0, y, xUp, y+0.45*boxHeight, col=upColor)
-                #text(xUp/2, y+0.225*boxHeight, labels = format(xUp, digits=2), adj=c(0.5,0.5), cex=chExp, vfont=c("sans serif","plain"))
-            }                
+             }                
             ## box and whiskesrs 
             if (statsUp[["highPercentile"]] > 0){
                 if (ciType=="lower")
@@ -204,7 +209,11 @@ avNormBarObject<-function(oe, ciType=c("two.sided","upper","lower","none"), ciDi
                 else if (ciType != "none"){
                     # change the color within upper limit of confidence interval 
                     rect(min(xUp, statsUp[["highPercentile"]]), y, 0.0, y+0.45*boxHeight, col=upOverColor)                    
-                }                
+                }   
+                if (!is.null(ciDecorate) && abs(statsUp[["highPercentile"]]) < abs(xUp) ) {
+                  segments(statsUp[["highPercentile"]], y - 0.10,  statsUp[["highPercentile"]], y + 0.55, lty="dashed")
+                  draw.ellipse(x = (statsUp[["highPercentile"]]+xUp)/2, y = y+0.225*boxHeight, a = max(0.05, 0.05+(xUp - statsUp[["highPercentile"]])/2), b = 0.05 + 0.225*boxHeight, border=ciDecorate, lwd = 2)
+                }
             }
         }
         par(lwd = 1)
@@ -328,7 +337,7 @@ avSlopeObject<- function(oe, ciType=c("two.sided","upper","lower","none"),attrId
 
 
 attrNormBarObject<-function(oe, graphTitle = "OrdEval for all attributes", 
-        ciType=c("two.sided","upper","lower","none"),ciDisplay=c("box","color"), colors=c("green","lightgreen","blue","lightblue"))
+        ciType=c("two.sided","upper","lower","none"),ciDisplay=c("box","color"), ciDecorate=NULL, colors=c("green","lightgreen","blue","lightblue"))
 {
     ciType = match.arg(ciType)
     ciDisplay=match.arg(ciDisplay)
@@ -405,7 +414,12 @@ attrNormBarObject<-function(oe, graphTitle = "OrdEval for all attributes",
             else if (ciType != "none") {
                 # change the color within upper limit of confidence interval 
                 rect(max(xDown, -stats[["highPercentile"]]), y, 0.0, y+0.45*boxHeight, col=downOverColor)                    
-            }                
+            }  
+            if (!is.null(ciDecorate) && abs(stats[["highPercentile"]]) < abs(xDown) ) {
+              segments(-stats[["highPercentile"]], y - 0.10,  -stats[["highPercentile"]], y + 0.55, lty="dashed")
+              draw.ellipse(x = (-stats[["highPercentile"]]+xDown)/2, y = y+0.225*boxHeight, a = max(0.05, 0.05+(-xDown - stats[["highPercentile"]])/2), b= 0.05 + 0.225*boxHeight, border=ciDecorate, lwd=2)
+            }
+            
          }
         if (xUp>0) {
             rect(0.0, y, xUp, y+0.45*boxHeight, col=upColor)
@@ -424,7 +438,11 @@ attrNormBarObject<-function(oe, graphTitle = "OrdEval for all attributes",
             else if (ciType != "none") {
                 # change the color within upper limit of confidence interval 
                 rect(min(xUp, stats[["highPercentile"]]), y, 0.0, y+0.45*boxHeight, col=upOverColor)                    
-            }                
+            }      
+            if (!is.null(ciDecorate) && abs(stats[["highPercentile"]]) < abs(xUp) ) {
+              segments(stats[["highPercentile"]], y - 0.10,  stats[["highPercentile"]], y + 0.55, lty="dashed")
+              draw.ellipse(x = (stats[["highPercentile"]]+xUp)/2, y = y+0.225*boxHeight, a = max(0.05, 0.05+(xUp - stats[["highPercentile"]])/2), b = 0.05 + 0.225*boxHeight, border=ciDecorate, lwd = 2)
+            }
         
         }
       }

@@ -65,7 +65,7 @@ char VersionString[]="CORElearn, "
 #else
 " standalone"
 #endif
-" version 1.53.1, built on " __DATE__ " at " __TIME__
+" version 1.54.2, built on " __DATE__ " at " __TIME__
 #if defined(_OPENMP)
 " with OpenMP support"
 #endif

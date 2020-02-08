@@ -1,4 +1,7 @@
-CORElearn-1.53.0, 2018-09-29:*changed OpenMP flags to assure compilaion with some obscure compilers
+CORElearn-1.54.1, 2020-02-07: fixing unchecked returns while reading from files
+CORElearn-1.54.0, 2019-06-27: improvements in documentation of attrEval
+CORElearn-1.53.2, 2018-11-17: added ciDecorate parameter to plot.ordEval function
+CORElearn-1.53.1, 2018-09-29:*changed OpenMP flags to assure compilaion with some obscure compilers
 CORElearn-1.53.0, 2018-09-26: fixing bug in checking returned indices of estimators
 CORElearn-1.52.1, 2018-04-02: fixing bug in declaring my own generic function for predict surfacing due to changes in R3.5.0
 CORElearn-1.52.0, 2017-12-27: making discretization more robust to NA values
