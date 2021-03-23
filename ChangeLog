@@ -1,3 +1,6 @@
+CORElearn-1.56.0, 2021-03-23: fixing a bug in calibration, submitted to CRAN
+CORElearn-1.55.0, 2020-02-09: fixing Imports field in Description file
+CORElearn-1.54.2, 2020-02-08: fixing Description and Namespace file, submitted to CRAN 
 CORElearn-1.54.1, 2020-02-07: fixing unchecked returns while reading from files
 CORElearn-1.54.0, 2019-06-27: improvements in documentation of attrEval
 CORElearn-1.53.2, 2018-11-17: added ciDecorate parameter to plot.ordEval function

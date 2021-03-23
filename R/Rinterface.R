@@ -1017,19 +1017,24 @@ calibrate <- function(correctClass, predictedProb, class1=1, method = c("isoReg"
 			interval = double(noInst),
 			calProb = double(noInst),
 			NAOK=TRUE)
+	
 	if (assumeProbabilities == TRUE)
 		tmp$interval[tmp$noIntervals] <- 1 # set sentinel for probabilities
+	else tmp$interval[tmp$noIntervals] <- Inf
 	list(interval = tmp$interval[1:tmp$noIntervals], calProb = tmp$calProb[1:tmp$noIntervals])
 }
 
+
 applyCalibration <- function(predictedProb, calibration) {
-	if (is.null(calibration))
-		return(predictedProb)
-	calIntervals <- apply( outer(predictedProb, calibration$interval, ">"), 1, sum) 
-	
-	calProbs  <- calibration$calProb[calIntervals+1]
-	return(calProbs)
+  if (is.null(calibration))
+    return(predictedProb)
+  
+  calIntervals <- findInterval(predictedProb, calibration$interval) 
+  
+  calProbs  <- calibration$calProb[calIntervals+1]
+  return(calProbs)
 }
+
 
 
 applyDiscretization <- function(data, boundsList, noDecimalsInValueName=2) {

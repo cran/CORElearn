@@ -1,7 +1,7 @@
-fb57894de30cbb86663997059fe329f5 *ChangeLog
-2dfe561f3842c4a180dba9f41436f97c *DESCRIPTION
+f49ccff172ef7486e075d3470a55073f *ChangeLog
+70f90f7086c8769082fa1f1d77c8ac31 *DESCRIPTION
 1ef1fab06166f3232321974c24347955 *NAMESPACE
-36b0fb9b17bb7771abaf03593ea3a2e6 *R/Rinterface.R
+e5bcbb6e4156aeef9ab442ee38b9f80e *R/Rinterface.R
 ec31240bfb72989a6041a78a9844b776 *R/dataGenerator.R
 bc4d3c3dd9c8d3428f1163d696a71c0f *R/init.R
 e2adb9deab11bd1c6f8e4c438bba03fa *R/ordEval.R
@@ -79,7 +79,7 @@ bc9269bae0c5c4acf5e482648fbae8e9 *src/cost.cpp
 9bda4b49837adbdb1a827906d7c3dee6 *src/dataStore.h
 79c5af69a7658941b23772404173c5e6 *src/error.cpp
 3252ab148e5d4c1e309a6353bd202e8f *src/error.h
-32b5e461da4b137eb00adcd64cd26be0 *src/estCommon.cpp
+fa890e643f86c6a50888348367b0b4cf *src/estCommon.cpp
 20a102fb9ab24d6c6ccff3d2ec9a4e08 *src/estOrdAttr.cpp
 0f41239b024075db4cb49be1cf3cb363 *src/estimator.cpp
 60501b4572cd23fcfa24fb0e6ee1ecca *src/estimator.h
@@ -89,7 +89,7 @@ fe5a9b50b69b5f533c851297a2221340 *src/expr.cpp
 62907f9e94a3eb250b661d078e383f4b *src/expr.h
 ccb1453cfedcb3a0de1e2a7b2cfdbdf2 *src/exprReg.cpp
 b60aefce4a55ce300f956da7177b1593 *src/exprReg.h
-3e05c86dfc0ca4bf001706e297ab5c30 *src/frontend.cpp
+741d67574aa61b835505e918f0d96524 *src/frontend.cpp
 5a80b57755b993363d70a206562be30d *src/frontend.h
 71f52c180d9d5be235ae984e43bc48ad *src/ftree.cpp
 090569ca2aff7b0bdfd77dca069a5f54 *src/ftree.h
