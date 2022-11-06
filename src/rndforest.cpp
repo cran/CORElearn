@@ -803,7 +803,7 @@ void featureTree::rfResultLine(FILE *to, int idx,
 		double sensitivity, double specificity, double brier, double kappa) const
 {
 	char idxStr[32] ;
-	if (idx>=0) sprintf(idxStr,"%3d",idx);
+	if (idx>=0) snprintf(idxStr, 32, "%3d",idx);
 	else if (idx == -1) strcpy(idxStr,"avg") ;
 	else if (idx == -2) strcpy(idxStr,"std") ;
 	else strcpy(idxStr,"???") ;
@@ -833,7 +833,7 @@ void featureTree::printAttrEval(FILE *to, marray<int> &idx, marray<marray<double
 	// print header
 	fprintf(to, "\n%18s", "Attribute name") ;
 	for (i=0 ; i < attrEval.filled() ; i++) {
-		if (idx[i]>=0) sprintf(idxStr,"%3d",idx[i]);
+		if (idx[i]>=0) snprintf(idxStr, 32, "%3d",idx[i]);
 		else if (idx[i] == -1) strcpy(idxStr,"avg") ;
 		else if (idx[i] == -2) strcpy(idxStr,"std") ;
 		else strcpy(idxStr,"???") ;
@@ -1362,7 +1362,7 @@ booleanT featureTree::readForest(char *fileName) {
 
 	for (i=0 ; i < opt->rfNoTrees ; i++) {
 		forest[i].t.root = readTree(fin, i) ;
-		sprintf(errBuf, " %d", i) ;
+		snprintf(errBuf, MaxNameLen, " %d", i) ;
 		if (forest[i].t.root == 0) {
 			merror("There were errors while reading tree with index", errBuf);
 			forest.destroy() ;

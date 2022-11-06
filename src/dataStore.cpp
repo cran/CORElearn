@@ -134,7 +134,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 	// check the existance of .names and determine C4.5 or native format
 	char FileName[MaxPath] ;
 
-	sprintf(FileName, "%s%s.dsc", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
+	snprintf(FileName, MaxPath, "%s%s.dsc", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 	FILE *from ;
 	if ((from=fopen(FileName,"r"))!=NULL)
 	{
@@ -170,7 +170,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 		}
 	}
 	else {
-		sprintf(FileName, "%s%s.names", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
+		snprintf(FileName, MaxPath, "%s%s.names", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 		if ((from=fopen(FileName,"r"))!=NULL) {
 			// C4.5 format
 			if (verbose) {
@@ -180,7 +180,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 			c45read c45r ;
 			c45r.readC45names(from) ;
 			// get data
-			sprintf(FileName, "%s%s.data", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
+			snprintf(FileName, MaxPath, "%s%s.data", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 			if ((from=fopen(FileName,"r"))!=NULL)
 			{
 				if (verbose) {
@@ -214,7 +214,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 			else return 0 ;
 			if (!c45r.isRegression) {
 				// get cost matrix
-				sprintf(FileName, "%s%s.costs", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
+				snprintf(FileName, MaxPath, "%s%s.costs", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 				if ((from=fopen(FileName,"r"))!=NULL)
 				{
 					if (verbose) {
@@ -230,7 +230,7 @@ int dataStore::readProblem(booleanT isTrain, booleanT verbose)
 			}
 		}
 		else {
-			sprintf(FileName, "%s%s", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
+			snprintf(FileName, MaxPath, "%s%s", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 			merror("Description file (.dsc or .names) does not exist for problem",FileName) ;
 			return 0 ;
 		}
@@ -254,7 +254,7 @@ int dataStore::readDescription(void)
 {
 	clearDescription();
 	char DescFileName[MaxPath] ;
-	sprintf(DescFileName, "%s%s.dsc", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
+	snprintf(DescFileName, MaxPath, "%s%s.dsc", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 	FILE *from ;
 	if ((from=fopen(DescFileName,"r"))==NULL)
 	{
@@ -313,7 +313,7 @@ int dataStore::readDescription(void)
 			merror("Faulty format of data description file", DescFileName) ;
 			return 0 ;
 		}
-		sscanf(buf,"%d",&temp) ; // how many values attribute has
+		sscanf(buf, "%d",&temp) ; // how many values attribute has
 		if (temp == 0)  // numeric variable
 		{
 			AttrDesc[i].continuous = mTRUE ;
@@ -387,7 +387,7 @@ int dataStore::readDescription(void)
 				}
 				sscanf(buf,"%lf",&fTemp1) ; // first boundary
 				AttrDesc[i].Boundaries[0] = fTemp1 ;
-				sprintf(buf, "( <= %.3f )", fTemp1) ;
+				snprintf(buf, MaxNameLen+1, "( <= %.3f )", fTemp1) ;
 				strcpy(AttrDesc[i].ValueName[0] = new char[strlen(buf)+1], buf) ;
 				fTemp2 = fTemp1 ;
 				// intervals with two boundaries
@@ -400,12 +400,12 @@ int dataStore::readDescription(void)
 					}
 					sscanf(buf,"%lf",&fTemp2) ; // how many values attribute has
 					AttrDesc[i].Boundaries[j] = fTemp2 ;
-					sprintf(buf, "( > %.3f  &  <= %.3f )", fTemp1, fTemp2) ;
+					snprintf(buf, MaxNameLen+1, "( > %.3f  &  <= %.3f )", fTemp1, fTemp2) ;
 					strcpy(AttrDesc[i].ValueName[j] = new char[strlen(buf)+1], buf) ;
 					fTemp1 = fTemp2 ;
 				}
 				// last interval
-				sprintf(buf, "( > %.3f )", fTemp2) ;
+				snprintf(buf, MaxNameLen+1, "( > %.3f )", fTemp2) ;
 				strcpy(AttrDesc[i].ValueName[j] = new char[strlen(buf)+1], buf) ;
 			}
 		}
@@ -462,7 +462,7 @@ int dataStore::readData(booleanT isTrain)
 	clearData(isTrain) ;
 
 	char DataFileName[MaxPath] ;
-	sprintf(DataFileName, "%s%s.dat", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
+	snprintf(DataFileName, MaxPath, "%s%s.dat", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 
 	// check the existance of file
 	FILE *dfrom ;
@@ -516,7 +516,7 @@ int dataStore::readData(booleanT isTrain)
 		{
 			if (token == 0)
 			{
-				sprintf(buf,"%d",i+1) ;
+				snprintf(buf, MaxIntLen, "%d",i+1) ;
 				merror("Not enough values at example",buf) ;
 			}
 			if (AttrDesc[j].continuous)
@@ -525,7 +525,7 @@ int dataStore::readData(booleanT isTrain)
 					nData->Set(i,contJ,NAcont) ;
 					if (j==0) // missing classification
 					{
-						sprintf(buf,"%d",i+1) ;
+						snprintf(buf, MaxIntLen, "%d",i+1) ;
 						merror("Missing class value at example ",buf) ;
 					}
 				}
@@ -557,7 +557,7 @@ int dataStore::readData(booleanT isTrain)
 						dData->Set(i,discJ,NAdisc) ;
 						if (j==0) // missing classification
 						{
-							sprintf(buf,"%d",i+1) ;
+							snprintf(buf, MaxIntLen, "%d",i+1) ;
 							merror("Missing class value at example ",buf) ;
 						}
 					}
@@ -567,13 +567,13 @@ int dataStore::readData(booleanT isTrain)
 						{
 							dData->Set(i,discJ,NAdisc) ;
 							strcpy(msg, "Data file corrupted; example ") ;
-							sprintf(buf,"%d",i+1) ;
+							snprintf(buf, MaxIntLen, "%d",i+1) ;
 							strcat(msg,buf) ;
 							strcat(msg, ", Attribute ") ;
-							sprintf(buf,"%d",j) ;
+							snprintf(buf, MaxIntLen, "%d",j) ;
 							strcat(msg,buf) ;
 							strcat(msg, ": unexisting value (") ;
-							sprintf(buf,"%d",temp) ;
+							snprintf(buf, MaxIntLen, "%d",temp) ;
 							strcat(msg,buf) ;
 							strcat(msg, "). ") ;
 							merror(msg,"") ;
@@ -835,7 +835,7 @@ int dataStore::setDataSplit(int splitIdx)
 		// check the existance of file
 		char ChoiceFileName[MaxPath] ;
 
-		sprintf(ChoiceFileName, "%s.*%ds", opt->domainName.getConstValue(), splitIdx) ;
+		snprintf(ChoiceFileName, MaxPath, "%s.*%ds", opt->domainName.getConstValue(), splitIdx) ;
 		char *FName = getWildcardFileName(opt->dataDirectory.getConstValue(), ChoiceFileName);
 		if (FName == 0) {
 			merror("Nonexistent choices file",ChoiceFileName);
@@ -927,7 +927,7 @@ int dataStore::readCosts(void)
 		return 1 ;
 
 	char CostFileName[MaxPath] ;
-	sprintf(CostFileName, "%s%s.cm", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
+	snprintf(CostFileName, MaxPath, "%s%s.cm", opt->dataDirectory.getConstValue(), opt->domainName.getConstValue()) ;
 
 	CostMatrix.create(noClasses+1,noClasses+1,0.0) ;
 
@@ -947,7 +947,7 @@ int dataStore::readCosts(void)
 
 	char strBuf[MaxNameLen+1], *token ;
 	double costValue ;
-	char buf[16] ;
+	char buf[MaxIntLen] ;
 	char *retVal ;
 	for (i = 1 ; i <= noClasses; i++)
 	{
@@ -966,7 +966,7 @@ int dataStore::readCosts(void)
 		for (j=1 ; j<= noClasses; j++ )
 		{
 			if (token == 0)	 {
-				sprintf(buf,"%d",j) ;
+				snprintf(buf, MaxIntLen, "%d",j) ;
 				merror("Not enough values for class value ",buf) ;
 			}
 			else {

@@ -10,7 +10,7 @@ as well as algorithms for feature selection and evaluation.
 Several algorithms support parallel multithreaded execution via OpenMP (see details in function descriptions)., 
 It is possible to run many functions outside the R environment.
 The description and source code is available on the package web site
-\url{http://lkm.fri.uni-lj.si/rmarko/software}.
+\url{http://lkm.fri.uni-lj.si/rmarko/software/}.
 }
 \details{
 The main functions are 

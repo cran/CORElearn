@@ -1,3 +1,4 @@
+CORElearn-1.57.0, 2022-11-04: fixing an UTF-8 character in comments, submitted to CRAN
 CORElearn-1.56.0, 2021-03-23: fixing a bug in calibration, submitted to CRAN
 CORElearn-1.55.0, 2020-02-09: fixing Imports field in Description file
 CORElearn-1.54.2, 2020-02-08: fixing Description and Namespace file, submitted to CRAN 

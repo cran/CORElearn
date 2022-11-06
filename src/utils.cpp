@@ -767,7 +767,7 @@ double timeMeasureDiff(double Start, double Finish)
 char* getWildcardFileName(const char *Path, const char *WildcardFileName)
 {
 	char fullName[MaxPath] ;
-	sprintf(fullName, "%s%s" ,Path,WildcardFileName) ;
+	snprintf(fullName, MaxPath, "%s%s" ,Path,WildcardFileName) ;
 
 #if defined(MICROSOFT)
 	struct _finddata_t choiceF ;
@@ -776,7 +776,7 @@ char* getWildcardFileName(const char *Path, const char *WildcardFileName)
 		return 0;
 
 	char *FName = new char[strlen(Path)+strlen(choiceF.name)+1] ;
-	sprintf(FName,"%s%s",Path,choiceF.name) ;
+	snprintf(FName, strlen(Path)+strlen(choiceF.name)+1, "%s%s",Path,choiceF.name) ;
 	_findclose(hFile) ;
 	return FName ;
 #endif
