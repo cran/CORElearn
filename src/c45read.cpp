@@ -155,7 +155,7 @@ int c45read::readC45names(FILE *from) {
 
 
 int c45read::readC45data(FILE *from, const char *NAstr) {
-	char buf[MaxLineLen] ;
+	char buf[MaxLineLen], ebuf[MaxLineLen];
 	int strIdx ;
 	c45Data item ;
 	mlistNode<c45Dsc> *ait ;
@@ -197,11 +197,9 @@ int c45read::readC45data(FILE *from, const char *NAstr) {
             		valStr.copy(token) ;
             		pos = ait->value.values.findPos(valStr) ;
             		if (pos < 1){
-						char *ebuf = new char[ait->value.name.len()+20] ;
-						snprintf(ebuf,ait->value.name.len()+20, "%s in line %d",ait->value.name.getValue(),lineNo) ;
+						snprintf(ebuf,MaxLineLen, "%s in line %d",ait->value.name.getValue(),lineNo) ;
             			merror("Invalid value for attribute ", ebuf) ;
-						delete [] ebuf ;
-            			return 0 ;
+						return 0 ;
             		}
             		else {
                 		item.discData[discIdx] = pos ;

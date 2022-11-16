@@ -584,14 +584,14 @@ char* exprReg::descriptionString(exprRegNode* Node)
                     leftString = descriptionString(Node->left) ;
                     rightString = descriptionString(Node->right) ;
                     result = new char[strlen(leftString)+strlen(rightString)+8] ;
-                    snprintf(result, MaxFeatureStrLen, "(%s) * (%s)",leftString,rightString) ;
+                    snprintf(result, strlen(leftString)+strlen(rightString)+8, "(%s) * (%s)",leftString,rightString) ;
                     delete [] leftString ;
                     delete [] rightString ;
                     return result ;
 
         case constTimesAttr:
                     result = new char[strlen(gRT->AttrDesc[gRT->ContIdx[Node->iMain]].AttributeName)+32] ;
-                    snprintf(result, MaxFeatureStrLen, "%.5f*%s",Node->dMain,gRT->AttrDesc[gRT->ContIdx[Node->iMain]].AttributeName) ;
+                    snprintf(result, strlen(gRT->AttrDesc[gRT->ContIdx[Node->iMain]].AttributeName)+32, "%.5f*%s",Node->dMain,gRT->AttrDesc[gRT->ContIdx[Node->iMain]].AttributeName) ;
                     return result ;
 
         case floatConstant:

@@ -82,7 +82,7 @@ char* featureTree::printFTreeDot(void) {
 
 	char buf[MaxFeatureStrLen], dotBuf[MaxFeatureStrLen+30] ;
 
-	snprintf(dotBuf, MaxFeatureStrLen, "digraph \"dotDecisionTree\" {\n") ;
+	snprintf(dotBuf, MaxFeatureStrLen+30, "digraph \"dotDecisionTree\" {\n") ;
 	mstring dotTree(dotBuf) ;
 	char *treeStr = tree2Dot(root, featureNo, leavesNo, featureNode, modelNode) ;
 	dotTree.append(treeStr) ;
@@ -103,7 +103,7 @@ char* featureTree::printFTreeDot(void) {
 	for (i=0 ; i < leavesNo ; i++)
 	{
 		modelDescription = modelNode[i]->Model.descriptionString() ;
-		snprintf(dotBuf, MaxFeatureStrLen, "\tl%d [shape = box, label = \"%s\"]\n", i, modelDescription) ;
+		snprintf(dotBuf, MaxFeatureStrLen+30, "\tl%d [shape = box, label = \"%s\"]\n", i, modelDescription) ;
 		modelStr.append(dotBuf) ;
 		delete [] modelDescription ;
 	}
@@ -144,7 +144,7 @@ char* featureTree::printFTreeStr(void) {
    for (i=0; i < featureNo ; i++)
    {
       Feature2Str(featureNode[i], buf);
-      snprintf(bufLine, MaxFeatureStrLen, "f%d: %s\n", i, buf) ;
+      snprintf(bufLine, MaxFeatureStrLen+30, "f%d: %s\n", i, buf) ;
       fStr.append(bufLine) ;
    }
    fTreeStr.append(fStr) ;
