@@ -1,4 +1,5 @@
-CORElearn-1.57.1, 2022-11-15: fixing bugs introduced by changing sprintf into snprintf, submitted to CRAN
+CORElearn-1.57.3, 2022-11-18: fixing bugs introduced by changing sprintf into snprintf, submitted to CRAN
+CORElearn-1.57.2, 2022-11-15: fixing bugs introduced by changing sprintf into snprintf, submitted to CRAN
 CORElearn-1.57.1, 2022-11-04: changing sprintf into snprintf, submitted to CRAN
 CORElearn-1.57.0, 2022-11-04: fixing an UTF-8 character in comments
 CORElearn-1.56.0, 2021-03-23: fixing a bug in calibration, submitted to CRAN

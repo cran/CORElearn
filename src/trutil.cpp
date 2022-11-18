@@ -277,9 +277,9 @@ char* featureTree::tree2Dot(binnode *branch, int &featureNo, int &leavesNo, marr
          char *buf = new char[MaxLine] ;
 
          if (branch->left->left) // is left one the leaf
-		   snprintf(buf, MaxFeatureStrLen, "\tf%d -> f%d [label = \"yes\"]\n", fNo, featureNo) ;
+		   snprintf(buf, MaxLine, "\tf%d -> f%d [label = \"yes\"]\n", fNo, featureNo) ;
 		 else
-		   snprintf(buf, MaxFeatureStrLen, "\tf%d -> l%d [label = \"yes\"]\n", fNo, leavesNo) ;
+		   snprintf(buf, MaxLine, "\tf%d -> l%d [label = \"yes\"]\n", fNo, leavesNo) ;
 
          mstring treeStr(buf) ;
          char *leftStr = tree2Dot(branch->left, featureNo, leavesNo, featureNode, modelNode);
@@ -287,9 +287,9 @@ char* featureTree::tree2Dot(binnode *branch, int &featureNo, int &leavesNo, marr
          delete [] leftStr ;
 
          if (branch->right->left) // is the right one a leaf?
-		   snprintf(buf, MaxFeatureStrLen, "\tf%d -> f%d [label = \"no\"]\n", fNo, featureNo) ;
+		   snprintf(buf, MaxLine, "\tf%d -> f%d [label = \"no\"]\n", fNo, featureNo) ;
 		 else
-		   snprintf(buf, MaxFeatureStrLen, "\tf%d -> l%d [label = \"no\"]\n", fNo, leavesNo) ;
+		   snprintf(buf, MaxLine, "\tf%d -> l%d [label = \"no\"]\n", fNo, leavesNo) ;
 
          treeStr.append(buf) ;
          delete [] buf ;
