@@ -1188,8 +1188,8 @@ SEXP printTree2R(SEXP modelID) {
 		treeStr = ((featureTree*) tree)->printFTreeStr();
 
 	SEXP out;
-	PROTECT(out = allocVector(STRSXP, 1));
-	SET_STRING_ELT(out, 0, mkChar(treeStr));
+	PROTECT(out = Rf_allocVector(STRSXP, 1));
+	SET_STRING_ELT(out, 0, Rf_mkChar(treeStr));
 	delete [] treeStr ;
 	UNPROTECT(1);
 	return(out);
@@ -1210,8 +1210,8 @@ SEXP printTreeDot2R(SEXP modelID) {
 		treeStr = ((featureTree*) tree)->printFTreeDot();
 
 	SEXP out;
-	PROTECT(out = allocVector(STRSXP, 1));
-	SET_STRING_ELT(out, 0, mkChar(treeStr));
+	PROTECT(out = Rf_allocVector(STRSXP, 1));
+	SET_STRING_ELT(out, 0, Rf_mkChar(treeStr));
 	delete [] treeStr ;
 	UNPROTECT(1);
 	return(out);
@@ -1225,7 +1225,7 @@ SEXP noEqualRows(SEXP data1, SEXP data2, SEXP nrowsd1, SEXP nrowsd2, SEXP ncols,
 	SEXP ans;
 	double d, eps=REAL(tolerance)[0] ;
 
-	PROTECT(ans = allocVector(INTSXP, 1));
+	PROTECT(ans = Rf_allocVector(INTSXP, 1));
 	for (i=0; i < nrd1 ; i++) {
 		for (j=0; j < nrd2 ; j++) {
 			d = 0 ;

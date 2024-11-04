@@ -18,7 +18,7 @@ dynamic link library written in C++.
 An alternative visualization is accessible via function \code{\link{display}}, which outputs tree structure formatted 
 for screen or in dot format.
 }
-\value{ Function returns a \code{\link{rpart.object}}.}
+\value{ Function returns a \code{\link[rpart]{rpart.object}}.}
 \author{ Initial version by John Adeyanju Alao, improvements by Marko Robnik-Sikonja.}
 
 \examples{
@@ -41,7 +41,7 @@ destroyModels(md) # clean up
 # but it cannot plot models in tree leaves 
 }
 
-\seealso{\code{\link{CoreModel}}, \code{\link{plot.CoreModel}},\code{\link{rpart.object}}, \code{\link{display}}
+\seealso{\code{\link{CoreModel}}, \code{\link{plot.CoreModel}},\code{\link[rpart]{rpart.object}}, \code{\link{display}}
 }
 
 \keyword{tree}

@@ -227,7 +227,7 @@ SEXP featureTree::exportSizes(void)
 	SEXP out;
 	int i ;
 	if (forest.defined()) {
-		PROTECT(out = allocVector(INTSXP, opt->rfNoTrees));
+		PROTECT(out = Rf_allocVector(INTSXP, opt->rfNoTrees));
 		for (i=0 ; i < opt->rfNoTrees; i++)
 			//rfWriteTree(fout,2,i) ;
 			INTEGER(out)[i] = getSize(forest[i].t.root);
@@ -246,7 +246,7 @@ SEXP featureTree::exportSumOverLeaves(void)
 	SEXP out;
 	int i ;
 	if (forest.defined()) {
-		PROTECT(out = allocVector(INTSXP, opt->rfNoTrees));
+		PROTECT(out = Rf_allocVector(INTSXP, opt->rfNoTrees));
 		for (i=0 ; i < opt->rfNoTrees; i++)
 			//rfWriteTree(fout,2,i) ;
 			INTEGER(out)[i] = getSumOverLeaves(forest[i].t.root, 0);
@@ -272,51 +272,51 @@ SEXP featureTree::RF2R()
 
 	if (forest.defined()) {
 		// create output vector "out" of length 8
-		PROTECT(out = allocVector(VECSXP, 8));
+		PROTECT(out = Rf_allocVector(VECSXP, 8));
 
 		// modelType
-		PROTECT(aux = allocVector(STRSXP, 1));
-		SET_STRING_ELT(aux, 0, mkChar("randomForest"));
+		PROTECT(aux = Rf_allocVector(STRSXP, 1));
+		SET_STRING_ELT(aux, 0, Rf_mkChar("randomForest"));
 		SET_VECTOR_ELT(out, 0, aux);
 
 		// rfNoTrees
-		PROTECT(aux = allocVector(INTSXP, 1));
+		PROTECT(aux = Rf_allocVector(INTSXP, 1));
 		INTEGER(aux)[0] = opt->rfNoTrees;
 		SET_VECTOR_ELT(out, 1, aux);
 
 		// noClasses
-		PROTECT(aux = allocVector(INTSXP, 1));
+		PROTECT(aux = Rf_allocVector(INTSXP, 1));
 		INTEGER(aux)[0] = noClasses;
 		SET_VECTOR_ELT(out, 2, aux);
 
 		// noAttr
-		PROTECT(aux = allocVector(INTSXP, 1));
+		PROTECT(aux = Rf_allocVector(INTSXP, 1));
 		INTEGER(aux)[0] = noAttr;
 		SET_VECTOR_ELT(out, 3, aux);
 
 		// noNumeric
-		PROTECT(aux = allocVector(INTSXP, 1));
+		PROTECT(aux = Rf_allocVector(INTSXP, 1));
 		INTEGER(aux)[0] = noNumeric;
 		SET_VECTOR_ELT(out, 4, aux);
 
 		// noDiscrete
-		PROTECT(aux = allocVector(INTSXP, 1));
+		PROTECT(aux = Rf_allocVector(INTSXP, 1));
 		INTEGER(aux)[0] = noDiscrete-1;
 		SET_VECTOR_ELT(out, 5, aux);
 
 		// discNoValues
-		PROTECT(aux = allocVector(INTSXP, noDiscrete-1));
+		PROTECT(aux = Rf_allocVector(INTSXP, noDiscrete-1));
 		for (i=1 ; i < noDiscrete; i++)
 			INTEGER(aux)[i-1] = AttrDesc[DiscIdx[i]].NoValues;
 		SET_VECTOR_ELT(out, 6, aux);
 
 		// trees
-		PROTECT(aux = allocVector(VECSXP, opt->rfNoTrees));
+		PROTECT(aux = Rf_allocVector(VECSXP, opt->rfNoTrees));
 		for (i=0 ; i < opt->rfNoTrees; i++) {
-			PROTECT(tree = allocVector(VECSXP, 2));
+			PROTECT(tree = Rf_allocVector(VECSXP, 2));
 
 			// treeIdx
-			PROTECT(treeAux = allocVector(INTSXP, 1));
+			PROTECT(treeAux = Rf_allocVector(INTSXP, 1));
 			INTEGER(treeAux)[0] = i;
 			SET_VECTOR_ELT(tree, 0, treeAux);
 
@@ -324,10 +324,10 @@ SEXP featureTree::RF2R()
 			treeAux = RFtree2R(forest[i].t.root);
 			SET_VECTOR_ELT(tree, 1, treeAux);
 
-			PROTECT(treeNames = allocVector(STRSXP, 2));
-			SET_STRING_ELT(treeNames, 0, mkChar("treeIdx"));
-			SET_STRING_ELT(treeNames, 1, mkChar("structure"));
-			setAttrib(tree, R_NamesSymbol, treeNames);
+			PROTECT(treeNames = Rf_allocVector(STRSXP, 2));
+			SET_STRING_ELT(treeNames, 0, Rf_mkChar("treeIdx"));
+			SET_STRING_ELT(treeNames, 1, Rf_mkChar("structure"));
+			Rf_setAttrib(tree, R_NamesSymbol, treeNames);
 
 			SET_VECTOR_ELT(aux, i, tree);
 
@@ -336,16 +336,16 @@ SEXP featureTree::RF2R()
 		SET_VECTOR_ELT(out, 7, aux);
 
 		// names attribute
-		PROTECT(names = allocVector(STRSXP, 8));
-		SET_STRING_ELT(names, 0, mkChar("modelType"));
-		SET_STRING_ELT(names, 1, mkChar("rfNoTrees"));
-		SET_STRING_ELT(names, 2, mkChar("noClasses"));
-		SET_STRING_ELT(names, 3, mkChar("noAttr"));
-		SET_STRING_ELT(names, 4, mkChar("noNumeric"));
-		SET_STRING_ELT(names, 5, mkChar("noDiscrete"));
-		SET_STRING_ELT(names, 6, mkChar("discNoValues"));
-		SET_STRING_ELT(names, 7, mkChar("trees"));
-		setAttrib(out, R_NamesSymbol, names);
+		PROTECT(names = Rf_allocVector(STRSXP, 8));
+		SET_STRING_ELT(names, 0, Rf_mkChar("modelType"));
+		SET_STRING_ELT(names, 1, Rf_mkChar("rfNoTrees"));
+		SET_STRING_ELT(names, 2, Rf_mkChar("noClasses"));
+		SET_STRING_ELT(names, 3, Rf_mkChar("noAttr"));
+		SET_STRING_ELT(names, 4, Rf_mkChar("noNumeric"));
+		SET_STRING_ELT(names, 5, Rf_mkChar("noDiscrete"));
+		SET_STRING_ELT(names, 6, Rf_mkChar("discNoValues"));
+		SET_STRING_ELT(names, 7, Rf_mkChar("trees"));
+		Rf_setAttrib(out, R_NamesSymbol, names);
 
 		UNPROTECT(10) ;
 		return out ;
@@ -365,58 +365,58 @@ SEXP featureTree::RFtree2R(binnode *branch){
 	SEXP out, aux, names ;
 
     if (branch->Identification == leaf)  {
-				PROTECT(out = allocVector(VECSXP, 3));
+				PROTECT(out = Rf_allocVector(VECSXP, 3));
 				// nodeId
-				PROTECT(aux = allocVector(STRSXP, 1));
-				SET_STRING_ELT(aux, 0, mkChar("leaf"));
+				PROTECT(aux = Rf_allocVector(STRSXP, 1));
+				SET_STRING_ELT(aux, 0, Rf_mkChar("leaf"));
 				SET_VECTOR_ELT(out, 0, aux);
 
 				// classify
-				PROTECT(aux = allocVector(REALSXP, noClasses));
+				PROTECT(aux = Rf_allocVector(REALSXP, noClasses));
 				for (int i=1 ; i <= noClasses ; i++)
 					REAL(aux)[i-1] = branch->Classify[i] ;
 				SET_VECTOR_ELT(out, 1, aux);
 
 				// weight
-				PROTECT(aux = allocVector(REALSXP, 1));
+				PROTECT(aux = Rf_allocVector(REALSXP, 1));
 				REAL(aux)[0] = branch->weight ;
 				SET_VECTOR_ELT(out, 2, aux);
 
 				// names attribute
-				PROTECT(names = allocVector(STRSXP, 3));
-				SET_STRING_ELT(names, 0, mkChar("nodeId"));
-				SET_STRING_ELT(names, 1, mkChar("classify"));
-				SET_STRING_ELT(names, 2, mkChar("weight"));
-				setAttrib(out, R_NamesSymbol, names);
+				PROTECT(names = Rf_allocVector(STRSXP, 3));
+				SET_STRING_ELT(names, 0, Rf_mkChar("nodeId"));
+				SET_STRING_ELT(names, 1, Rf_mkChar("classify"));
+				SET_STRING_ELT(names, 2, Rf_mkChar("weight"));
+				Rf_setAttrib(out, R_NamesSymbol, names);
 
 				UNPROTECT(5) ;// is this correct?
 				return out ;
     }
     else if (branch->Identification == continuousAttribute) {
-				PROTECT(out = allocVector(VECSXP, 6));
+				PROTECT(out = Rf_allocVector(VECSXP, 6));
 
 				// nodeId
-				PROTECT(aux = allocVector(STRSXP, 1));
-				SET_STRING_ELT(aux, 0, mkChar("numericSplit"));
+				PROTECT(aux = Rf_allocVector(STRSXP, 1));
+				SET_STRING_ELT(aux, 0, Rf_mkChar("numericSplit"));
 				SET_VECTOR_ELT(out, 0, aux);
 
 				// attr
-				PROTECT(aux = allocVector(INTSXP, 1));
+				PROTECT(aux = Rf_allocVector(INTSXP, 1));
 				INTEGER(aux)[0] = branch->Construct.root->attrIdx+1;
 				SET_VECTOR_ELT(out, 1, aux);
 
 
 				// split
-				PROTECT(aux = allocVector(REALSXP, 1));
+				PROTECT(aux = Rf_allocVector(REALSXP, 1));
 				REAL(aux)[0] = branch->Construct.splitValue ;
 				SET_VECTOR_ELT(out, 2, aux);
 
 				// NAdefault
-				PROTECT(aux = allocVector(STRSXP, 1));
+				PROTECT(aux = Rf_allocVector(STRSXP, 1));
 	        	if (branch->NAnumValue[branch->Construct.root->attrIdx] <= branch->Construct.splitValue)
-  				   SET_STRING_ELT(aux, 0, mkChar("left"));
+  				   SET_STRING_ELT(aux, 0, Rf_mkChar("left"));
 	        	else
-  				   SET_STRING_ELT(aux, 0, mkChar("right"));
+  				   SET_STRING_ELT(aux, 0, Rf_mkChar("right"));
 				SET_VECTOR_ELT(out, 3, aux);
 
 				// leftTree
@@ -428,28 +428,28 @@ SEXP featureTree::RFtree2R(binnode *branch){
 				SET_VECTOR_ELT(out, 5, aux);
 
 				// names attribute
-				PROTECT(names = allocVector(STRSXP, 6));
-				SET_STRING_ELT(names, 0, mkChar("nodeId"));
-				SET_STRING_ELT(names, 1, mkChar("attr"));
-				SET_STRING_ELT(names, 2, mkChar("split"));
-				SET_STRING_ELT(names, 3, mkChar("NAdefault"));
-				SET_STRING_ELT(names, 4, mkChar("leftTree"));
-				SET_STRING_ELT(names, 5, mkChar("rightTree"));
-				setAttrib(out, R_NamesSymbol, names);
+				PROTECT(names = Rf_allocVector(STRSXP, 6));
+				SET_STRING_ELT(names, 0, Rf_mkChar("nodeId"));
+				SET_STRING_ELT(names, 1, Rf_mkChar("attr"));
+				SET_STRING_ELT(names, 2, Rf_mkChar("split"));
+				SET_STRING_ELT(names, 3, Rf_mkChar("NAdefault"));
+				SET_STRING_ELT(names, 4, Rf_mkChar("leftTree"));
+				SET_STRING_ELT(names, 5, Rf_mkChar("rightTree"));
+				Rf_setAttrib(out, R_NamesSymbol, names);
 
 				UNPROTECT(6) ; // is this correct?
 				return out ;
     }
     else if (branch->Identification == discreteAttribute) {
-     			PROTECT(out = allocVector(VECSXP, 6));
+     			PROTECT(out = Rf_allocVector(VECSXP, 6));
 
 				// nodeId
-				PROTECT(aux = allocVector(STRSXP, 1));
-				SET_STRING_ELT(aux, 0, mkChar("discreteSplit"));
+				PROTECT(aux = Rf_allocVector(STRSXP, 1));
+				SET_STRING_ELT(aux, 0, Rf_mkChar("discreteSplit"));
 				SET_VECTOR_ELT(out, 0, aux);
 
 				// attr
-				PROTECT(aux = allocVector(INTSXP, 1));
+				PROTECT(aux = Rf_allocVector(INTSXP, 1));
 				INTEGER(aux)[0] = branch->Construct.root->attrIdx;
 				SET_VECTOR_ELT(out, 1, aux);
 
@@ -459,18 +459,18 @@ SEXP featureTree::RFtree2R(binnode *branch){
 				for (int i=1 ; i <= AttrDesc[DiscIdx[branch->Construct.root->attrIdx]].NoValues; i++)
 					if (branch->Construct.leftValues[i])
 						noLeft ++ ;
-				PROTECT(aux = allocVector(INTSXP, noLeft));
+				PROTECT(aux = Rf_allocVector(INTSXP, noLeft));
 				for (int i=1 ; i <= AttrDesc[DiscIdx[branch->Construct.root->attrIdx]].NoValues; i++)
 					if (branch->Construct.leftValues[i])
 				       INTEGER(aux)[iLeft++] = i ;
 				SET_VECTOR_ELT(out, 2, aux);
 
 				// NAdefault
-				PROTECT(aux = allocVector(STRSXP, 1));
+				PROTECT(aux = Rf_allocVector(STRSXP, 1));
 				if (branch->Construct.leftValues[branch->NAdiscValue[branch->Construct.root->attrIdx]])
-  				   SET_STRING_ELT(aux, 0, mkChar("left"));
+  				   SET_STRING_ELT(aux, 0, Rf_mkChar("left"));
 	        	else
-  				   SET_STRING_ELT(aux, 0, mkChar("right"));
+  				   SET_STRING_ELT(aux, 0, Rf_mkChar("right"));
 				SET_VECTOR_ELT(out, 3, aux);
 
 				// leftTree
@@ -482,14 +482,14 @@ SEXP featureTree::RFtree2R(binnode *branch){
 				SET_VECTOR_ELT(out, 5, aux);
 
 				// names attribute
-				PROTECT(names = allocVector(STRSXP, 6));
-				SET_STRING_ELT(names, 0, mkChar("nodeId"));
-				SET_STRING_ELT(names, 1, mkChar("attr"));
-				SET_STRING_ELT(names, 2, mkChar("leftValues"));
-				SET_STRING_ELT(names, 3, mkChar("NAdefault"));
-				SET_STRING_ELT(names, 4, mkChar("leftTree"));
-				SET_STRING_ELT(names, 5, mkChar("rightTree"));
-				setAttrib(out, R_NamesSymbol, names);
+				PROTECT(names = Rf_allocVector(STRSXP, 6));
+				SET_STRING_ELT(names, 0, Rf_mkChar("nodeId"));
+				SET_STRING_ELT(names, 1, Rf_mkChar("attr"));
+				SET_STRING_ELT(names, 2, Rf_mkChar("leftValues"));
+				SET_STRING_ELT(names, 3, Rf_mkChar("NAdefault"));
+				SET_STRING_ELT(names, 4, Rf_mkChar("leftTree"));
+				SET_STRING_ELT(names, 5, Rf_mkChar("rightTree"));
+				Rf_setAttrib(out, R_NamesSymbol, names);
 
 				UNPROTECT(6) ; // is this correct?
 				return out ;

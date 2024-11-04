@@ -26,7 +26,7 @@ The function \code{gatherFromList} is an auxiliary function helping in collectio
 }
 \value{
 The functions \code{cvGen} and \code{cvGenStratified} return a vector of indices indicating fold membership i.e. from 1:k.
-The function code{gatherFromList} returns a list with components containing elements of the same name.
+The function \code{gatherFromList} returns a list with components containing elements of the same name.
 }
 
 \author{ Marko Robnik-Sikonja}

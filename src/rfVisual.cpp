@@ -31,31 +31,31 @@ SEXP featureTree::T2Rpart()
         const int varNames = 9;
         int varRealName = varNames-1;
         SEXP outMatrix;
-        PROTECT(outMatrix = allocVector(VECSXP, line*varRealName));
+        PROTECT(outMatrix = Rf_allocVector(VECSXP, line*varRealName));
         nProtected++;
         /*
          * frame names
          */
         SEXP outVector;
-        PROTECT(outVector = allocVector(STRSXP, varNames));
+        PROTECT(outVector = Rf_allocVector(STRSXP, varNames));
         nProtected++;
         /*
          * two colons [sequential index, attribute index]
          */
         SEXP outVectorLabels;
-        PROTECT(outVectorLabels = allocVector(STRSXP, line*3));
+        PROTECT(outVectorLabels = Rf_allocVector(STRSXP, line*3));
         nProtected++;
 
         //frame names
-        SET_STRING_ELT(outVector, 0, mkChar("var"));
-        SET_STRING_ELT(outVector, 1, mkChar("n"));
-        SET_STRING_ELT(outVector, 2, mkChar("wt"));
-        SET_STRING_ELT(outVector, 3, mkChar("dev"));
-        SET_STRING_ELT(outVector, 4, mkChar("yval"));
-        SET_STRING_ELT(outVector, 5, mkChar("complexity"));
-        SET_STRING_ELT(outVector, 6, mkChar("ncompete"));
-        SET_STRING_ELT(outVector, 7, mkChar("nsurrogate"));
-        SET_STRING_ELT(outVector, 8, mkChar("yval2"));
+        SET_STRING_ELT(outVector, 0, Rf_mkChar("var"));
+        SET_STRING_ELT(outVector, 1, Rf_mkChar("n"));
+        SET_STRING_ELT(outVector, 2, Rf_mkChar("wt"));
+        SET_STRING_ELT(outVector, 3, Rf_mkChar("dev"));
+        SET_STRING_ELT(outVector, 4, Rf_mkChar("yval"));
+        SET_STRING_ELT(outVector, 5, Rf_mkChar("complexity"));
+        SET_STRING_ELT(outVector, 6, Rf_mkChar("ncompete"));
+        SET_STRING_ELT(outVector, 7, Rf_mkChar("nsurrogate"));
+        SET_STRING_ELT(outVector, 8, Rf_mkChar("yval2"));
 
         
         /*
@@ -63,22 +63,22 @@ SEXP featureTree::T2Rpart()
          */
         const int splitsNames = 6;
         SEXP outSplitVector;
-        PROTECT(outSplitVector = allocVector(STRSXP, splitsNames-1));
+        PROTECT(outSplitVector = Rf_allocVector(STRSXP, splitsNames-1));
         nProtected++;
 
         /*
          * not leaf nodes. Only inner nodes have an entry in the split matrix
          */
         SEXP outSplitMatrix;
-        PROTECT(outSplitMatrix = allocVector(VECSXP, (treeDepth-1)*splitsNames));
+        PROTECT(outSplitMatrix = Rf_allocVector(VECSXP, (treeDepth-1)*splitsNames));
         nProtected++;
 
         //split names
-        SET_STRING_ELT(outSplitVector, 0, mkChar("count"));
-        SET_STRING_ELT(outSplitVector, 1, mkChar("ncat"));
-        SET_STRING_ELT(outSplitVector, 2, mkChar("improve"));
-        SET_STRING_ELT(outSplitVector, 3, mkChar("index"));
-        SET_STRING_ELT(outSplitVector, 4, mkChar("adj"));
+        SET_STRING_ELT(outSplitVector, 0, Rf_mkChar("count"));
+        SET_STRING_ELT(outSplitVector, 1, Rf_mkChar("ncat"));
+        SET_STRING_ELT(outSplitVector, 2, Rf_mkChar("improve"));
+        SET_STRING_ELT(outSplitVector, 3, Rf_mkChar("index"));
+        SET_STRING_ELT(outSplitVector, 4, Rf_mkChar("adj"));
         
         /*
          * csplit array for discrete attributes.
@@ -97,7 +97,7 @@ SEXP featureTree::T2Rpart()
          */
         const int csplitArrayLen = (treeDepth-1)*currCsplitMax;
         SEXP csplitArray;
-        PROTECT(csplitArray = allocVector(INTSXP, csplitArrayLen));
+        PROTECT(csplitArray = Rf_allocVector(INTSXP, csplitArrayLen));
         nProtected++;
         /*
          * initialize csplit array to 3.
@@ -124,25 +124,25 @@ SEXP featureTree::T2Rpart()
         const int attributeLabelsColumn = 2;
         int attrLabelsSize = attributeLabelsColumn*(treeDepth-1);
         SEXP attributeLabels;
-        PROTECT(attributeLabels = allocVector(STRSXP, attrLabelsSize));
+        PROTECT(attributeLabels = Rf_allocVector(STRSXP, attrLabelsSize));
         nProtected++;
 
         /*
          * final function output
          */
         SEXP out;
-        PROTECT(out = allocVector(VECSXP, 14));
+        PROTECT(out = Rf_allocVector(VECSXP, 14));
         nProtected++;
 
         /*
          * auxiliary variables
          */
         SEXP aux;
-        PROTECT(aux = allocVector(REALSXP, 1));
+        PROTECT(aux = Rf_allocVector(REALSXP, 1));
         nProtected++;
 
         SEXP auxLen;
-        PROTECT(auxLen = allocVector(INTSXP, 1));
+        PROTECT(auxLen = Rf_allocVector(INTSXP, 1));
         nProtected++;
 
         
@@ -150,7 +150,7 @@ SEXP featureTree::T2Rpart()
          * example distribution per node
          */
         SEXP exampleDistr;
-        PROTECT(exampleDistr = allocVector(REALSXP, line*noClasses));
+        PROTECT(exampleDistr = Rf_allocVector(REALSXP, line*noClasses));
         nProtected++;
 
         Pbinnode *aIntNode = new Pbinnode[line];
@@ -172,12 +172,12 @@ SEXP featureTree::T2Rpart()
                 aNode = aIntNode[i];
                 nodeChanged = FALSE;
                 //n, wt
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 REAL(aux)[0] = aNode->weight;
                 SET_VECTOR_ELT(outMatrix, i*varRealName, aux);
                 SET_VECTOR_ELT(outMatrix, i*varRealName+1, aux);
                 //dev
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 double deviation = 0;
                 double deviationPerClass = 0.0;
                 for(int k = 1; k <= noClasses; k++){
@@ -191,13 +191,13 @@ SEXP featureTree::T2Rpart()
                 REAL(aux)[0] = (int)(deviation);
                 SET_VECTOR_ELT(outMatrix, i*varRealName+2, aux);
                 //yval, yval2
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 int classValue = aNode->majorClass;
                 REAL(aux)[0] = classValue;
                 SET_VECTOR_ELT(outMatrix, i*varRealName+3, aux);
                 SET_VECTOR_ELT(outMatrix, i*varRealName+7, aux);
                 //complexity
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 REAL(aux)[0] = 0.5;
                 SET_VECTOR_ELT(outMatrix, i*varRealName+4, aux);
                 if(aNode->Identification != leaf){
@@ -224,7 +224,7 @@ SEXP featureTree::T2Rpart()
                          * sequence index of a line
                          */
                         snprintf(aStr, 128, "%d", aIntLabel[i]);
-                        SET_STRING_ELT(outVectorLabels, i, mkChar(aStr));
+                        SET_STRING_ELT(outVectorLabels, i, Rf_mkChar(aStr));
                 }
                 else{
                         snprintf(aStr, 128, "%d", aIntLabel[i]);
@@ -232,17 +232,17 @@ SEXP featureTree::T2Rpart()
                          * outVectorLabels must be of type STRSXP, 
                          * but sometimes it changes to CLOSXP - closure
                          */
-                        SET_STRING_ELT(outVectorLabels, i, mkChar(aStr));
-                        SET_STRING_ELT(outVectorLabels, i+line, mkChar("<leaf>"));
+                        SET_STRING_ELT(outVectorLabels, i, Rf_mkChar(aStr));
+                        SET_STRING_ELT(outVectorLabels, i+line, Rf_mkChar("<leaf>"));
                         char *desc = aNode->Model.descriptionString();
-                        SET_STRING_ELT(outVectorLabels, i+2*line, mkChar(desc));
+                        SET_STRING_ELT(outVectorLabels, i+2*line, Rf_mkChar(desc));
                         delete [] desc ;
                 }
                 /*
                  * ncompete, nsurrogate
                  * because odfcumsum and !is.leaf in labels.rpart
                  */
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 REAL(aux)[0] = 0;
                 SET_VECTOR_ELT(outMatrix, i*varRealName+5, aux);
                 SET_VECTOR_ELT(outMatrix, i*varRealName+6, aux);
@@ -252,7 +252,7 @@ SEXP featureTree::T2Rpart()
                          * splits:count
                          */
                         int atPos = noLeafCount*splitsNames+1;
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = aNode->left->weight;
                         SET_VECTOR_ELT(outSplitMatrix, atPos, aux);
                 }
@@ -271,20 +271,20 @@ SEXP featureTree::T2Rpart()
                         if(nodeChanged == TRUE){
                                 direction = 1;
                         }
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = direction;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+2, aux);
                         /*
                          * splits:"improve, adj"
                          */
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = 0;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+3, aux);
                         SET_VECTOR_ELT(outSplitMatrix, atPos+5, aux);
                         /*
                          * splits:"index"
                          */
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = aNode->Construct.splitValue;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+4, aux);
                 }
@@ -294,18 +294,18 @@ SEXP featureTree::T2Rpart()
 
                         //splits:"ncat"
                         int atPos = noLeafCount*splitsNames;
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = anAttribute->NoValues;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+2, aux);
 
                         //splits:"improve, adj"
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = 0;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+3, aux);
                         SET_VECTOR_ELT(outSplitMatrix, atPos+5, aux);
 
                         //splits:"index, to je index v csplit tabeli!"
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = csplitIndex;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+4, aux);
                         //csplit index
@@ -341,20 +341,20 @@ SEXP featureTree::T2Rpart()
                          * var line
                          */
                         snprintf(aStr, 128, "%d", anAttributeIndex);
-                        SET_STRING_ELT(outVectorLabels, i+line, mkChar(aStr));
+                        SET_STRING_ELT(outVectorLabels, i+line, Rf_mkChar(aStr));
                         /*
                          * splits:"id"
                          */
                         int atPos = noLeafCount*splitsNames;
-                        auxLen = allocVector(INTSXP, 1);
+                        auxLen = Rf_allocVector(INTSXP, 1);
                         INTEGER(auxLen)[0] = anAttributeIndex;
                         SET_VECTOR_ELT(outSplitMatrix, atPos, auxLen);
 
                         noAttributeCount++;
                         snprintf(aStr, 128, "%d", anAttributeIndex);
-                        SET_STRING_ELT(attributeLabels, noAttributeCount*2, mkChar(aStr));
+                        SET_STRING_ELT(attributeLabels, noAttributeCount*2, Rf_mkChar(aStr));
                         snprintf(aStr, 128, "%s", anAttribute->AttributeName);
-                        SET_STRING_ELT(attributeLabels, noAttributeCount*2+1, mkChar(aStr));
+                        SET_STRING_ELT(attributeLabels, noAttributeCount*2+1, Rf_mkChar(aStr));
                 }
         }
         SET_VECTOR_ELT(out, 0, outMatrix);
@@ -366,22 +366,22 @@ SEXP featureTree::T2Rpart()
         SET_VECTOR_ELT(out, 11, attributeLabels);
         
 
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = line;
         SET_VECTOR_ELT(out, 3, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = varNames-1;
         SET_VECTOR_ELT(out, 4, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = treeDepth-1;
         SET_VECTOR_ELT(out, 7, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = splitsNames;
         SET_VECTOR_ELT(out, 8, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = currCsplitMax;
         SET_VECTOR_ELT(out, 10, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = attributeLabelsColumn;
         SET_VECTOR_ELT(out, 12, auxLen);
 
@@ -413,31 +413,31 @@ SEXP regressionTree::T2Rpart()
         const int varNames = 9;
         int varRealName = varNames-1;
         SEXP outMatrix;
-        PROTECT(outMatrix = allocVector(VECSXP, line*varRealName));
+        PROTECT(outMatrix = Rf_allocVector(VECSXP, line*varRealName));
         nProtected++;
         /*
          * frame names
          */
         SEXP outVector;
-        PROTECT(outVector = allocVector(STRSXP, varNames));
+        PROTECT(outVector = Rf_allocVector(STRSXP, varNames));
         nProtected++;
         /*
          * two colons [sequential index, attribute index]
          */
         SEXP outVectorLabels;
-        PROTECT(outVectorLabels = allocVector(STRSXP, line*3));
+        PROTECT(outVectorLabels = Rf_allocVector(STRSXP, line*3));
         nProtected++;
 
         //frame names
-        SET_STRING_ELT(outVector, 0, mkChar("var"));
-        SET_STRING_ELT(outVector, 1, mkChar("n"));
-        SET_STRING_ELT(outVector, 2, mkChar("wt"));
-        SET_STRING_ELT(outVector, 3, mkChar("dev"));
-        SET_STRING_ELT(outVector, 4, mkChar("yval"));
-        SET_STRING_ELT(outVector, 5, mkChar("complexity"));
-        SET_STRING_ELT(outVector, 6, mkChar("ncompete"));
-        SET_STRING_ELT(outVector, 7, mkChar("nsurrogate"));
-        SET_STRING_ELT(outVector, 8, mkChar("yval2"));
+        SET_STRING_ELT(outVector, 0, Rf_mkChar("var"));
+        SET_STRING_ELT(outVector, 1, Rf_mkChar("n"));
+        SET_STRING_ELT(outVector, 2, Rf_mkChar("wt"));
+        SET_STRING_ELT(outVector, 3, Rf_mkChar("dev"));
+        SET_STRING_ELT(outVector, 4, Rf_mkChar("yval"));
+        SET_STRING_ELT(outVector, 5, Rf_mkChar("complexity"));
+        SET_STRING_ELT(outVector, 6, Rf_mkChar("ncompete"));
+        SET_STRING_ELT(outVector, 7, Rf_mkChar("nsurrogate"));
+        SET_STRING_ELT(outVector, 8, Rf_mkChar("yval2"));
 
         
         /*
@@ -445,22 +445,22 @@ SEXP regressionTree::T2Rpart()
          */
         const int splitsNames = 6;
         SEXP outSplitVector;
-        PROTECT(outSplitVector = allocVector(STRSXP, splitsNames-1));
+        PROTECT(outSplitVector = Rf_allocVector(STRSXP, splitsNames-1));
         nProtected++;
 
         /*
          * not leaf nodes. Only inner nodes have an entry in the split matrix
          */
         SEXP outSplitMatrix;
-        PROTECT(outSplitMatrix = allocVector(VECSXP, (treeDepth-1)*splitsNames));
+        PROTECT(outSplitMatrix = Rf_allocVector(VECSXP, (treeDepth-1)*splitsNames));
         nProtected++;
 
         //split names
-        SET_STRING_ELT(outSplitVector, 0, mkChar("count"));
-        SET_STRING_ELT(outSplitVector, 1, mkChar("ncat"));
-        SET_STRING_ELT(outSplitVector, 2, mkChar("improve"));
-        SET_STRING_ELT(outSplitVector, 3, mkChar("index"));
-        SET_STRING_ELT(outSplitVector, 4, mkChar("adj"));
+        SET_STRING_ELT(outSplitVector, 0, Rf_mkChar("count"));
+        SET_STRING_ELT(outSplitVector, 1, Rf_mkChar("ncat"));
+        SET_STRING_ELT(outSplitVector, 2, Rf_mkChar("improve"));
+        SET_STRING_ELT(outSplitVector, 3, Rf_mkChar("index"));
+        SET_STRING_ELT(outSplitVector, 4, Rf_mkChar("adj"));
         
         /*
          * csplit array for descrete attributes.
@@ -479,7 +479,7 @@ SEXP regressionTree::T2Rpart()
          */
         const int csplitArrayLen = (treeDepth-1)*currCsplitMax;
         SEXP csplitArray;
-        PROTECT(csplitArray = allocVector(INTSXP, csplitArrayLen));
+        PROTECT(csplitArray = Rf_allocVector(INTSXP, csplitArrayLen));
         nProtected++;
         /*
          * initailize csplit array to 3.
@@ -506,25 +506,25 @@ SEXP regressionTree::T2Rpart()
         const int attributeLabelsColumn = 2;
         int attrLabelsSize = attributeLabelsColumn*(treeDepth-1);
         SEXP attributeLabels;
-        PROTECT(attributeLabels = allocVector(STRSXP, attrLabelsSize));
+        PROTECT(attributeLabels = Rf_allocVector(STRSXP, attrLabelsSize));
         nProtected++;
 
         /*
          * final function output
          */
         SEXP out;
-        PROTECT(out = allocVector(VECSXP, 14));
+        PROTECT(out = Rf_allocVector(VECSXP, 14));
         nProtected++;
 
         /*
          * auxeliary variables
          */
         SEXP aux;
-        PROTECT(aux = allocVector(REALSXP, 1));
+        PROTECT(aux = Rf_allocVector(REALSXP, 1));
         nProtected++;
 
         SEXP auxLen;
-        PROTECT(auxLen = allocVector(INTSXP, 1));
+        PROTECT(auxLen = Rf_allocVector(INTSXP, 1));
         nProtected++;
 
         PbinnodeReg *aIntNode = new PbinnodeReg[line];
@@ -545,24 +545,24 @@ SEXP regressionTree::T2Rpart()
                 aNode = aIntNode[i];
                 nodeChanged = FALSE;
                 //n, wt
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 REAL(aux)[0] = aNode->weight;
                 SET_VECTOR_ELT(outMatrix, i*varRealName, aux);
                 SET_VECTOR_ELT(outMatrix, i*varRealName+1, aux);
                 //dev
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 double deviation = 0;
                 deviation = aNode->MSE;
                 REAL(aux)[0] = (int)(deviation);
                 SET_VECTOR_ELT(outMatrix, i*varRealName+2, aux);
                 //yval, yval2
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 double classValue = aNode->averageClassValue;
                 REAL(aux)[0] = classValue;
                 SET_VECTOR_ELT(outMatrix, i*varRealName+3, aux);
                 SET_VECTOR_ELT(outMatrix, i*varRealName+7, aux);
                 //complexity
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 REAL(aux)[0] = 0.5;
                 SET_VECTOR_ELT(outMatrix, i*varRealName+4, aux);
                 if(aNode->Identification != leaf){
@@ -589,7 +589,7 @@ SEXP regressionTree::T2Rpart()
                          * sequence index of a line
                          */
                         snprintf(aStr, 128, "%d", aIntLabel[i]);
-                        SET_STRING_ELT(outVectorLabels, i, mkChar(aStr));
+                        SET_STRING_ELT(outVectorLabels, i, Rf_mkChar(aStr));
                 }
                 else{
                         snprintf(aStr, 128, "%d", aIntLabel[i]);
@@ -597,17 +597,17 @@ SEXP regressionTree::T2Rpart()
                          * outVectorLabels must be of type STRSXP, 
                          * but sometimes it changes to CLOSXP - closure
                          */
-                        SET_STRING_ELT(outVectorLabels, i, mkChar(aStr));
-                        SET_STRING_ELT(outVectorLabels, i+line, mkChar("<leaf>"));
+                        SET_STRING_ELT(outVectorLabels, i, Rf_mkChar(aStr));
+                        SET_STRING_ELT(outVectorLabels, i+line, Rf_mkChar("<leaf>"));
                         char *desc = aNode->Model.descriptionString();
-                        SET_STRING_ELT(outVectorLabels, i+2*line, mkChar(desc));
+                        SET_STRING_ELT(outVectorLabels, i+2*line, Rf_mkChar(desc));
                         delete [] desc ;
                 }
                 /*
                  * ncompete, nsurrogate
                  * because odfcumsum and !is.leaf in labels.rpart
                  */
-                aux = allocVector(REALSXP, 1);
+                aux = Rf_allocVector(REALSXP, 1);
                 REAL(aux)[0] = 0;
                 SET_VECTOR_ELT(outMatrix, i*varRealName+5, aux);
                 SET_VECTOR_ELT(outMatrix, i*varRealName+6, aux);
@@ -617,7 +617,7 @@ SEXP regressionTree::T2Rpart()
                          * splits:count
                          */
                         int atPos = noLeafCount*splitsNames+1;
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = aNode->left->weight;
                         SET_VECTOR_ELT(outSplitMatrix, atPos, aux);
                 }
@@ -636,20 +636,20 @@ SEXP regressionTree::T2Rpart()
                         if(nodeChanged == TRUE){
                                 direction = 1;
                         }
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = direction;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+2, aux);
                         /*
                          * splits:"improve, adj"
                          */
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = 0;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+3, aux);
                         SET_VECTOR_ELT(outSplitMatrix, atPos+5, aux);
                         /*
                          * splits:"index"
                          */
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = aNode->Construct.splitValue;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+4, aux);
                 }
@@ -659,18 +659,18 @@ SEXP regressionTree::T2Rpart()
 
                         //splits:"ncat"
                         int atPos = noLeafCount*splitsNames;
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = anAttribute->NoValues;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+2, aux);
 
                         //splits:"improve, adj"
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = 0;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+3, aux);
                         SET_VECTOR_ELT(outSplitMatrix, atPos+5, aux);
 
                         //splits:"index, to je index v csplit tabeli!"
-                        aux = allocVector(REALSXP, 1);
+                        aux = Rf_allocVector(REALSXP, 1);
                         REAL(aux)[0] = csplitIndex;
                         SET_VECTOR_ELT(outSplitMatrix, atPos+4, aux);
                         //csplit index
@@ -708,20 +708,20 @@ SEXP regressionTree::T2Rpart()
                          * var line
                          */
                         snprintf(aStr, 128, "%d", anAttributeIndex);
-                        SET_STRING_ELT(outVectorLabels, i+line, mkChar(aStr));
+                        SET_STRING_ELT(outVectorLabels, i+line, Rf_mkChar(aStr));
                         /*
                          * splits:"id"
                          */
                         int atPos = noLeafCount*splitsNames;
-                        auxLen = allocVector(INTSXP, 1);
+                        auxLen = Rf_allocVector(INTSXP, 1);
                         INTEGER(auxLen)[0] = anAttributeIndex;
                         SET_VECTOR_ELT(outSplitMatrix, atPos, auxLen);
 
                         noAttributeCount++;
                         snprintf(aStr, 128, "%d", anAttributeIndex);
-                        SET_STRING_ELT(attributeLabels, noAttributeCount*2, mkChar(aStr));
+                        SET_STRING_ELT(attributeLabels, noAttributeCount*2, Rf_mkChar(aStr));
                         snprintf(aStr, 128, "%s", anAttribute->AttributeName);
-                        SET_STRING_ELT(attributeLabels, noAttributeCount*2+1, mkChar(aStr));
+                        SET_STRING_ELT(attributeLabels, noAttributeCount*2+1, Rf_mkChar(aStr));
                 }
         }
         SET_VECTOR_ELT(out, 0, outMatrix);
@@ -733,22 +733,22 @@ SEXP regressionTree::T2Rpart()
         SET_VECTOR_ELT(out, 11, attributeLabels);
         
 
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = line;
         SET_VECTOR_ELT(out, 3, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = varNames-1;
         SET_VECTOR_ELT(out, 4, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = treeDepth-1;
         SET_VECTOR_ELT(out, 7, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = splitsNames;
         SET_VECTOR_ELT(out, 8, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = currCsplitMax;
         SET_VECTOR_ELT(out, 10, auxLen);
-        auxLen = allocVector(INTSXP, 1);
+        auxLen = Rf_allocVector(INTSXP, 1);
         INTEGER(auxLen)[0] = attributeLabelsColumn;
         SET_VECTOR_ELT(out, 12, auxLen);
 
@@ -836,7 +836,7 @@ SEXP featureTree::proximity(bool distance)
         int nProtected = 0;
 
         SEXP out;
-        PROTECT(out = allocMatrix(REALSXP, NoCases, NoCases));
+        PROTECT(out = Rf_allocMatrix(REALSXP, NoCases, NoCases));
         nProtected++;
 
         // initialize proximity matrix
@@ -876,7 +876,7 @@ SEXP featureTree::proximityM(bool distance)
         int nProtected = 0;
 
         SEXP out;
-        PROTECT(out = allocMatrix(REALSXP, NoCases, NoCases));
+        PROTECT(out = Rf_allocMatrix(REALSXP, NoCases, NoCases));
         nProtected++;
 
         marray<IntSortRec> near(NoCases) ;
@@ -991,7 +991,7 @@ SEXP featureTree::importance2RCluster(marray<double> &varEval, marray<booleanT> 
         int nProtected = 0;
 
         SEXP out;
-        PROTECT(out = allocVector(REALSXP, noAttr));
+        PROTECT(out = Rf_allocVector(REALSXP, noAttr));
         nProtected++;
 
         varImportanceCluster(varEval, cluster);

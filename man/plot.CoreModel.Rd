@@ -25,11 +25,11 @@
     For classification and regression trees (models "tree" and "regTree") the visualization produces a graph 
     representing structure
     of classification and regression tree, respectively. This process exploits graphical capabilities of 
-    \code{\link{rpart.plot}} package. Internal structures of 
-    \code{CoreModel} are converted to \code{\link{rpart.object}} and then visualized by calling
-    \code{\link{rpart.plot}} using default parameters. Any additional parameters are passed on to this function. For further 
-    control use the \code{\link{getRpartModel}} function and call the function \code{\link{rpart.plot}} 
-    or \code{\link{plot.rpart}} with different parameters.  
+    \code{rpart.plot} package. Internal structures of 
+    \code{CoreModel} are converted to \code{\link[rpart]{rpart.object}} and then visualized by calling
+    \code{\link[rpart.plot]{rpart.plot}} using default parameters. Any additional parameters are passed on to this function. For further 
+    control use the \code{\link{getRpartModel}} function and call the function \code{\link[rpart.plot]{rpart.plot}} 
+    or \code{\link[rpart]{plot.rpart}} with different parameters.  
     Note that \code{rpart.plot} can only display a single value in a leaf, which is not appropriate for model trees using e.g., 
     linear regression in the leaves. For these cases function \code{\link{display}} is a better alternative.
     
@@ -101,7 +101,7 @@ destroyModels(mdRF) # clean up
 \seealso{
 \code{\link{CoreModel}},
 \code{\link{rfProximity}},
-\code{\link{pam}},
+\code{\link[cluster]{pam}},
 \code{\link{rfClustering}},
 \code{\link{rfAttrEvalClustering}},
 \code{\link{rfOutliers}},

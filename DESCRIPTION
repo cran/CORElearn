@@ -1,9 +1,14 @@
 Package: CORElearn
 Title: Classification, Regression and Feature Evaluation
-Version: 1.57.3
+Version: 1.57.3.1
 Date: 2022-11-18
-Author: Marko Robnik-Sikonja and Petr Savicky
-Maintainer: "Marko Robnik-Sikonja" <marko.robnik@fri.uni-lj.si>
+Authors@R: c(person(given = "Marko",
+                    family = "Robnik-Sikonja",
+                    role = c("aut", "cre"),
+		      email = "marko.robnik@fri.uni-lj.si"),
+             person(given = "Petr",
+                    family = "Savicky",
+                    role = "aut"))
 Description: A suite of machine learning algorithms written in C++ with the R 
  interface contains several learning techniques for classification and regression.
  Predictive models include e.g., classification and regression trees with
@@ -25,5 +30,8 @@ Imports: cluster,stats,nnet,plotrix,rpart.plot
 Suggests: lattice,MASS,ExplainPrediction
 NeedsCompilation: yes
 Repository: CRAN
-Packaged: 2022-11-18 09:55:04 UTC; marko
-Date/Publication: 2022-11-18 14:10:06 UTC
+Packaged: 2024-11-04 22:09:49 UTC; hornik
+Date/Publication: 2024-11-04 22:25:55 UTC
+Author: Marko Robnik-Sikonja [aut, cre],
+  Petr Savicky [aut]
+Maintainer: Marko Robnik-Sikonja <marko.robnik@fri.uni-lj.si>
